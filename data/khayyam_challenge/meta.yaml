@@ -1,0 +1,14 @@
+question_col: "Question Body"
+
+choice_cols:
+  - "Choice 1"
+  - "Choice 2"
+  - "Choice 3"
+  - "Choice 4"
+
+answer_col: "Key"
+
+# list one or more columns whose values define categories
+category_cols:
+  - "Level"          # difficulty level
+  # - "Subject"        # domain of question

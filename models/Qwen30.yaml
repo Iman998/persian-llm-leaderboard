@@ -1,0 +1,4 @@
+name: Qwen/Qwen3-30B-A3B
+api_key: "34fb371240b4a97d06a0bf2066b76d6e39653c99a543aac32cf04df6a8560925"
+base_url: "http://37.228.138.184:6790/v1"
+model: "Qwen30"

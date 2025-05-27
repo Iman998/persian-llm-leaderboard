@@ -1,0 +1,41 @@
+{# ------------------------------------------------------------------------- #
+#  SYSTEM INSTRUCTIONS – shown once per request                             #
+# ------------------------------------------------------------------------- #}
+{% set sys_prompt %}
+You are an expert Persian-language multiple-choice solver.
+• Read the question and the numbered choices.
+• Explain briefly *why* the correct option is right (max 3 sentences).
+• End with one line exactly in the format:
+  Correct option: ****n****
+  where n is the index (1-N) of the right choice.
+Any deviation from this format will be scored as an error.
+{% endset -%}
+
+{# ------------------------------------------------------------------------- #
+#  FEW-SHOT EXAMPLES                                                         #
+# ------------------------------------------------------------------------- #}
+{% for ex in shots %}
+<|begin_of_example|>
+سؤال: {{ ex.question }}
+{% for i, choice in enumerate(ex.choices, 1) -%}
+{{ i }}) {{ choice }}
+{% endfor %}
+پاسخ: {{ ex.rationale }}
+Correct option: ****{{ ex.answer }}****
+<|end_of_example|>
+
+{% endfor -%}
+
+{# ------------------------------------------------------------------------- #
+#  QUERY INSTANCE                                                            #
+# ------------------------------------------------------------------------- #}
+<|system|>
+{{ sys_prompt }}
+<|end|>
+
+سؤال: {{ question }}
+{% for i, choice in enumerate(choices, 1) -%}
+{{ i }}) {{ choice }}
+{% endfor %}
+
+لطفاً به فارسی دلیل کوتاه بیاور و سپس خط پایانی را دقیقاً مطابق فرمت بنویس.

@@ -1,0 +1,83 @@
+###############################################################################
+#  Persian-LLM-Leaderboard – .gitignore
+#
+#  Covers:
+#    • Typical Python / Streamlit project artefacts
+#    • Large data / result outputs that should not enter Git history
+#    • Common IDE, OS and virtual-env folders
+###############################################################################
+
+############################
+#  Python byte-code & cache
+############################
+__pycache__/
+*.py[cod]          # .pyc, .pyo, …
+*.so               # C-extensions
+*.pyd
+*.pyo
+
+#################################
+#  Virtual-env / dependency dirs
+#################################
+.venv/
+venv/
+env/
+env.bak/
+*.egg-info/
+dist/
+build/
+.tox/
+.cache/            # pip cache, pytest cache, etc.
+
+#####################
+#  Jupyter notebooks
+#####################
+.ipynb_checkpoints/
+
+#####################
+#  IDE / Editor misc
+#####################
+.vscode/
+.idea/
+*.swp
+*.swo
+*.swn
+
+##################
+#  OS artefacts
+##################
+.DS_Store
+Thumbs.db
+
+##############################
+#  Logs & coverage artefacts
+##############################
+*.log
+coverage.xml
+htmlcov/
+pytest_cache/
+
+##############################
+#  Streamlit
+##############################
+.streamlit/*.toml   # e.g., secrets.toml
+
+##############################
+#  Project-specific folders
+##############################
+# Large raw datasets – keep meta.yaml but ignore bulky CSV/JSON files
+data/**/             # ignore everything under data/
+!data/**/meta.yaml   # …except meta.yaml files (needed for column specs)
+
+# Model checkpoints or HF downloads (if any)
+checkpoints/
+models/**/checkpoint-*/
+
+# Results & dashboards (re-generated each run)
+results/
+dashboard/
+
+# Temporary scratch files
+*.tmp
+*.bak
+*~

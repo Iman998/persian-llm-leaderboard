@@ -1,0 +1,7 @@
+openai
+pandas
+pyyaml
+streamlit
+scikit-learn
+tqdm
+matplotlib
