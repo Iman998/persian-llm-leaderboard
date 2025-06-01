@@ -2,46 +2,62 @@
 
 A Streamlit-based leaderboard for evaluating Large Language Models (LLMs) specifically optimized for the Persian language.
 
-## Overview
-This project provides an intuitive interface to compare and benchmark various LLMs based on their performance in Persian language tasks.
+## 🚀 Overview
 
-## Features
-- Interactive leaderboard displaying LLM performances.
-- Model outputs comparison.
-- Datasets tailored specifically for the Persian language.
-- Streamlit-based easy-to-use user interface.
+This project provides an intuitive interface for comparing and benchmarking various Persian LLMs based on their performance across specialized datasets. It helps researchers and developers easily identify strengths and weaknesses of different language models.
 
-## Project Structure
+## 🌟 Features
+
+* **Interactive Leaderboard:** Real-time visual representation of LLM performances.
+* **Model Outputs Comparison:** Directly compare predictions from multiple models side-by-side.
+* **Persian-specific Datasets:** Utilize datasets specifically curated for Persian language evaluation.
+* **User-friendly Interface:** Built with Streamlit for an intuitive, hassle-free experience.
+
+## 📁 Project Structure
+
+```
 .
 ├── data
-│ ├── khayyam_challenge.csv
-│ └── ...
+│   ├── khayyam_challenge.csv     # Evaluation dataset
+│   └── ...                       # Additional datasets
 ├── scripts
-│ └── run_eval.py
+│   └── run_eval.py               # Evaluation script
 ├── evaluators
-│ └── mcq_evaluator.py
+│   └── mcq_evaluator.py          # Evaluation logic for multiple-choice questions
 ├── app
-│ └── streamlit_app.py
+│   └── streamlit_app.py          # Streamlit dashboard
 ├── README.md
 └── DOCUMENTATION.md
+```
 
+## 🛠️ Technologies
 
-## Technologies
-- Python
-- Streamlit
-- Pandas
+* Python
+* Streamlit
+* Pandas
 
-## Requirements
-- Python 3.10 or higher
-- Streamlit
-- Pandas
-- Other dependencies in `requirements.txt`
+## 📋 Requirements
 
-## Quick Start
-For detailed instructions, please see the [DOCUMENTATION.md](./DOCUMENTATION.md) file.
+* Python 3.10 or higher
+* Streamlit
+* Pandas
+* Additional dependencies listed in `requirements.txt`
 
-## Contributing
-Contributions are welcome! Please submit pull requests or open an issue to discuss enhancements.
+## 🚦 Quick Start
 
-## License
-This project is open-source, available under the MIT License.
+Detailed setup and usage instructions are available in the [DOCUMENTATION.md](./DOCUMENTATION.md).
+
+Briefly, to start the dashboard:
+
+```bash
+pip install -r requirements.txt
+streamlit run app/streamlit_app.py
+```
+
+## 🤝 Contributing
+
+Contributions and suggestions are welcome! Feel free to open issues or submit pull requests to enhance this project.
+
+## 📄 License
+
+This project is licensed under the MIT License.

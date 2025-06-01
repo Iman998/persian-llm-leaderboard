@@ -26,7 +26,7 @@ import pandas as pd
 import yaml
 from jinja2 import Environment
 from tqdm import tqdm
-from openai import OpenAI, APIConnectionError, APITimeoutError
+from openai import OpenAI, APIConnectionError, APITimeoutError, BadRequestError
 
 # ────────────────────────────────────────────────────────────────────────────
 # Regex: **** ۱۲.0 **** → captures "۱۲.0"  (Persian or ASCII digits, dot allowed)
@@ -108,7 +108,7 @@ class MCQEvaluator:
                 try:
                     text = self._query_model(prompt)
                     return idx, self._extract(text), text
-                except (APIConnectionError, APITimeoutError) as e:
+                except (APIConnectionError, APITimeoutError, BadRequestError) as e:
                     self.logger.warning(
                         "row %d retry %d/%d: %s", idx, attempt, self.max_retries, e
                     )
@@ -157,7 +157,7 @@ class MCQEvaluator:
         resp = self.client.chat.completions.create(
             model=self.model_name,
             messages=[
-                {"role": "system", "content": "Persian MCQ evaluator"},
+                {"role": "system",   "content": "You are an expert evaluator for Persian multiple-choice questions (MCQs). Your task is to carefully read each question and its options, determine the most accurate answer based on logic and knowledge, and explain your reasoning briefly in Persian if needed."},
                 {"role": "user",   "content": prompt},
             ],
             temperature=0.01,

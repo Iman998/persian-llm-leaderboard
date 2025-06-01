@@ -11,4 +11,8 @@ answer_col: "Key"
 # list one or more columns whose values define categories
 category_cols:
   - "Level"          # difficulty level
-  # - "Subject"        # domain of question
+  - "Domain"        # domain of question
+  - "Sub Domain"        # sub domain of question
+  - "Course Name"        # course of question
+  - "Grade Title"
+  - "Education Period"
