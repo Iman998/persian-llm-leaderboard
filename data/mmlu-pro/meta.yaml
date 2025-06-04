@@ -5,8 +5,14 @@ choice_cols:
   - "choice2"
   - "choice3"
   - "choice4"
+  - "choice5"
+  - "choice6"
+  - "choice7"
+  - "choice8"
+  - "choice9"
+  - "choice10"
 
-answer_col: "answer"
+answer_col: "answer_index"
 
 # list one or more columns whose values define categories
 category_cols:
