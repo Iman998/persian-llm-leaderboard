@@ -41,13 +41,31 @@ fi
 log(){ printf "%s[%s]%s %s\n" "$BOLD" "$1" "$NC" "$2"; }
 
 ##############################################################################
-# Helper: create a temporary CSV with N random rows (header preserved)       #
+# Helper: create a clean CSV sample with N random rows (header preserved)    #
+# Uses Python/Pandas so quoting & embedded newlines are handled correctly.   #
 ##############################################################################
 make_sample () {
   local src_csv="$1" n="$2"
   local tmp
   tmp="$(mktemp --suffix=.csv)"
-  { head -n 1 "$src_csv"; tail -n +2 "$src_csv" | shuf -n "$n"; } > "$tmp"
+  python - "$src_csv" "$n" "$tmp" <<'PY'
+import sys, pandas as pd, csv
+src, n, out = sys.argv[1], int(sys.argv[2]), sys.argv[3]
+
+# Read with the tolerant python engine
+df = pd.read_csv(
+    src,
+    engine="python",
+    quoting=csv.QUOTE_MINIMAL,
+    quotechar='"',
+    escapechar="\\",
+    on_bad_lines="skip",
+)
+
+n = min(n, len(df))
+sample = df.sample(n, random_state=42)          # deterministic shuffle
+sample.to_csv(out, index=False)
+PY
   echo "$tmp"
 }
 
