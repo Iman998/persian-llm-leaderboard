@@ -15,7 +15,7 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # Edit these lists as needed                                                 #
 ##############################################################################
 MODEL_LIST=( "gemma-3-27b-it" )     # ← models/<name>.yaml
-DATASET_LIST=( "mmlu" )             # ← data/<dataset>/test.csv
+DATASET_LIST=( "mmlu-pro" )             # ← data/<dataset>/test.csv
 WORKERS=100                         # Python worker threads
 ##############################################################################
 
