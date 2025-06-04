@@ -13,7 +13,7 @@ Clone the repository and navigate into the project directory:
 ```bash
 git clone https://github.com/yourusername/persian-llm-leaderboard.git
 cd persian-llm-leaderboard
-```
+````
 
 ### Step 2: Python Environment Setup
 
@@ -51,16 +51,34 @@ To evaluate all predefined models and datasets at once, use:
 bash run_all.sh
 ```
 
-To manually run individual evaluations, use:
+### Optional: Sample Random Subset of Rows
+
+You can evaluate a random sample of `N` rows from each dataset using:
 
 ```bash
-python scripts/run_eval.py --model MODEL_NAME --dataset DATASET_NAME
+bash run_all.sh --n_rows N
 ```
 
 **Example:**
 
 ```bash
-python scripts/run_eval.py --model Qwen30 --dataset khayyam_challenge
+bash run_all.sh --n_rows 250
+```
+
+This is useful for quick testing or partial evaluation when working with large datasets.
+
+### Manually Run Individual Evaluations
+
+You can also run evaluations manually using:
+
+```bash
+python scripts/run_eval.py --model MODEL_NAME --dataset DATASET_PATH [--n_rows N]
+```
+
+**Example:**
+
+```bash
+python scripts/run_eval.py --model Qwen30 --dataset data/khayyam_challenge/test.csv --n_rows 250
 ```
 
 Evaluation results are saved under the `results/` directory.
@@ -90,11 +108,12 @@ To expand the leaderboard:
 * **Datasets:**
 
   * Add new CSV files to the `data/` directory.
-  * Update evaluation scripts in `scripts/run_eval.py` to recognize new datasets.
+  * Ensure `scripts/run_eval.py` supports your dataset's format.
 
 * **Models:**
 
-  * Integrate new model configurations within the evaluation scripts located in the `scripts/` and `evaluators/` directories.
+  * Add model configuration files to `models/`.
+  * Update any evaluation logic in `scripts/` or `evaluators/` if necessary.
 
 ---
 

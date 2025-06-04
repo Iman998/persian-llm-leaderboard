@@ -116,16 +116,28 @@ def main() -> None:  # noqa: D401
             print(f"⚠️  column '{cat}' missing – skipped")
             continue
 
-        cat_df = (
-            result_df
-            .groupby(cat, dropna=False)
-            .apply(
-                lambda g: (g["pred"].map(_norm) == g[answer_col].map(_norm)).mean() * 100,
-                include_groups=False,
+        # compatibility: pandas < 2.1 does not support include_groups
+        def _cat_acc(g: pd.DataFrame) -> float:
+            return (g["pred"].map(_norm) == g["Key"].map(_norm)).mean() * 100
+
+        try:
+            cat_df = (
+                result_df
+                .groupby(cat, dropna=False)
+                .apply(_cat_acc, include_groups=False)
+                .reset_index(name="Accuracy")
+                .sort_values(cat)
             )
-            .reset_index(name="Accuracy")
-            .sort_values(cat)
-        )
+        except TypeError:
+            # older pandas versions (< 2.1) lack include_groups
+            cat_df = (
+                result_df
+                .groupby(cat, dropna=False)
+                .apply(_cat_acc)
+                .reset_index(name="Accuracy")
+                .sort_values(cat)
+            )
+            
         cat_file = out_path.with_name(f"{out_path.stem}_{cat}.csv")
         cat_df.to_csv(cat_file, index=False)
         print(f"📊  {cat} breakdown → {cat_file}")

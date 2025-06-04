@@ -47,12 +47,27 @@ This project provides an intuitive interface for comparing and benchmarking vari
 
 Detailed setup and usage instructions are available in the [DOCUMENTATION.md](./DOCUMENTATION.md).
 
-Briefly, to start the dashboard:
+
+To start the dashboard:
 
 ```bash
 pip install -r requirements.txt
 streamlit run app/streamlit_app.py
+````
+
+To evaluate all models:
+
+```bash
+bash run_all.sh
 ```
+
+To evaluate on a random subset of `N` rows (e.g. 250 rows per dataset):
+
+```bash
+bash run_all.sh --n_rows 250
+```
+
+> **Note:** The `--n_rows` option is useful for quick benchmarking or debugging with a smaller sample of data.
 
 ## 🤝 Contributing
 
@@ -61,3 +76,8 @@ Contributions and suggestions are welcome! Feel free to open issues or submit pu
 ## 📄 License
 
 This project is licensed under the MIT License.
+
+```
+
+Let me know if you also want to update the `DOCUMENTATION.md` to reflect this option more thoroughly.
+```
