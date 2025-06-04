@@ -1,73 +1,89 @@
 #!/usr/bin/env python3
-"""
-Streamlit dashboard for Persian-LLM leaderboard.
+"""Streamlit dashboard for Persian‑LLM leaderboard (meta‑driven + raw toggle).
 
-• Leaderboard page – global CSV.
-• Dataset view     – pick a dataset, then any models to compare:
-    • Row outputs   – question, gold, predictions side-by-side
-    • Category      – accuracy by any category column, side-by-side
+Add‑ons (2025‑06‑03)
+--------------------
+* **Raw answers toggle** – checkbox lets you include/exclude the full model
+  output column (``raw``) in the row‑comparison table.
+* **Category filters** – when a dataset defines ``category_cols`` in its
+  ``meta.yaml`` you can interactively filter the row table by any combination
+  of category values.
 """
+from __future__ import annotations
 
-from pathlib import Path
 import re
+from pathlib import Path
 from typing import Dict, List, Tuple
 
 import pandas as pd
 import streamlit as st
+import yaml
 
-st.set_page_config(page_title="Persian-LLM Leaderboard", layout="wide")
+st.set_page_config(page_title="Persian‑LLM Leaderboard", layout="wide")
 
 RESULTS_DIR   = Path("results")
+DATASETS_DIR  = Path("datasets")  # where <dataset>/meta.yaml lives
 DASHBOARD_CSV = Path("dashboard/leaderboard.csv")
-MODELS_DIR    = Path("models")          # to detect valid model names
+MODELS_DIR    = Path("models")
 
-# ───────────── helpers ─────────────────────────────────────────────── #
+# ───────────── helpers ──────────────────────────────────────────────── #
 
 @st.cache_data(show_spinner=False)
-def load_csv(path: Path) -> pd.DataFrame:
+def load_csv(path: Path) -> pd.DataFrame:  # noqa: D401
     return pd.read_csv(path)
 
-def num_cols(df: pd.DataFrame) -> List[str]:
+@st.cache_data(show_spinner=False)
+def load_meta(ds: str):
+    """Return meta‑info dict with question/answer/category columns."""
+    meta_file = DATASETS_DIR / ds / "meta.yaml"
+    if meta_file.exists():
+        cfg = yaml.safe_load(meta_file.read_text())
+    else:
+        cfg = {}
+    return {
+        "question_col": cfg.get("question_col", "question"),
+        "answer_col":   cfg.get("answer_col", "Key"),
+        "category_cols": cfg.get("category_cols", []),
+    }
+
+
+def numeric_cols(df: pd.DataFrame) -> List[str]:
     return [c for c in df.columns if pd.api.types.is_numeric_dtype(df[c])]
+
 
 def gradient(df: pd.DataFrame):
     try:
-        import matplotlib  # noqa
+        import matplotlib  # noqa: F401
         return (
-            df.style.background_gradient(axis=0, cmap="Greens", subset=num_cols(df))
+            df.style.background_gradient(axis=0, cmap="Greens", subset=numeric_cols(df))
               .highlight_max(axis=0, subset=["Average"], color="#ffd60a")
         )
     except ImportError:
         return df
 
-# ---------- build regex for parsing filenames ------------------------ #
+# ---------- build regex for parsing filenames ------------------------- #
 model_names = sorted([p.stem for p in MODELS_DIR.glob("*.yaml")], key=len, reverse=True)
 models_alt  = "|".join(map(re.escape, model_names))
-FILE_RE = re.compile(
-    rf"^(?P<dataset>.+?)_(?P<model>{models_alt})(?:_(?P<suffix>.+?))?\.csv$"
-)
+FILE_RE = re.compile(rf"^(?P<dataset>.+?)_(?P<model>{models_alt})(?:_(?P<suffix>.+?))?\.csv$")
+
 
 def parse_file(p: Path) -> Tuple[str, str, str]:
-    """
-    results/<dataset>_<model>[ _<suffix> ].csv
-    suffix == 'raw' or category name or ''
-    """
     m = FILE_RE.match(p.name)
     if not m:
         raise ValueError(f"Unexpected filename {p.name}")
-    ds, mdl, suff = m.group("dataset", "model", "suffix")
-    return ds, mdl, suff or ""
+    ds, mdl, suf = m.group("dataset", "model", "suffix")
+    return ds, mdl, suf or ""
 
-# ---------- scan results directory ----------------------------------- #
-main_map: Dict[Tuple[str, str], Path] = {}          # (ds, model) → main.csv
-raw_map:  Dict[Tuple[str, str], Path] = {}          # (ds, model) → raw.csv
-cat_map:  Dict[Tuple[str, str, str], Path] = {}     # (ds, model, cat)
+# ---------- scan results directory ------------------------------------ #
+main_map: Dict[Tuple[str, str], Path] = {}
+raw_map:  Dict[Tuple[str, str], Path] = {}
+cat_map:  Dict[Tuple[str, str, str], Path] = {}
 
 for p in RESULTS_DIR.glob("*.csv"):
     ds, mdl, suf = parse_file(p)
     if suf == "raw":
         raw_map[(ds, mdl)] = p
-    elif suf:  # category
+    elif suf:
         cat_map[(ds, mdl, suf)] = p
     else:
         main_map[(ds, mdl)] = p
@@ -77,12 +93,12 @@ if not datasets:
     st.error("No result CSVs in ./results – run evaluations first.")
     st.stop()
 
-# ───────────── sidebar navigation ──────────────────────────────────── #
+# ───────────── sidebar navigation ───────────────────────────────────── #
 page = st.sidebar.radio("📑 Page", ["Leaderboard", "Dataset view"])
 
 # ───────────── Leaderboard page ─────────────────────────────────────── #
 if page == "Leaderboard":
-    st.title("🏆 Persian-LLM Leaderboard")
+    st.title("🏆 Persian‑LLM Leaderboard")
     if not DASHBOARD_CSV.exists():
         st.warning("Leaderboard CSV not found – build it first.")
         st.stop()
@@ -91,14 +107,15 @@ if page == "Leaderboard":
     st.dataframe(gradient(board_df), use_container_width=True, height=600)
 
     with st.expander("📊 Quick chart"):
-        metric = st.selectbox("Metric", num_cols(board_df), 0)
+        metric = st.selectbox("Metric", numeric_cols(board_df), 0)
         st.bar_chart(board_df[["Model", metric]].set_index("Model"))
 
     st.download_button("Download CSV", DASHBOARD_CSV.read_bytes(), "leaderboard.csv")
     st.stop()
 
-# ───────────── Dataset view page ─────────────────────────────────────── #
+# ───────────── Dataset view page ────────────────────────────────────── #
 ds_sel = st.sidebar.selectbox("📂 Dataset", datasets)
+meta = load_meta(ds_sel)
 models_in_ds = sorted({k[1] for k in main_map if k[0] == ds_sel})
 models_sel   = st.sidebar.multiselect("🧠 Models", models_in_ds, default=models_in_ds[:1])
 
@@ -108,22 +125,61 @@ if not models_sel:
     st.info("Select at least one model.")
     st.stop()
 
-tabs = st.tabs(["📄 Row outputs", "📊 Category scores"])
+# Category filters ------------------------------------------------------ #
+cat_filters = {}
+if meta["category_cols"]:
+    with st.sidebar.expander("🔍 Category filters", expanded=False):
+        for col in meta["category_cols"]:
+            raw_file_any = raw_map.get((ds_sel, models_sel[0]))  # sample file
+            if raw_file_any is not None:
+                col_vals = load_csv(raw_file_any)[col].dropna().unique()
+                sel = st.multiselect(col, sorted(col_vals))
+                if sel:
+                    cat_filters[col] = set(sel)
+
+# Raw toggle ------------------------------------------------------------ #
+show_raw = st.sidebar.checkbox("Show raw model output", value=False)
+
+# Build tabs ------------------------------------------------------------ #
+row_tab, cat_tab = st.tabs(["📄 Row outputs", "📊 Category scores"])
+
+question_aliases = {meta["question_col"], "Question Body", "question"}
+answer_aliases   = {meta["answer_col"], "Gold", "Key", "answer"}
 
 # ---------- Row outputs ------------------------------------------------ #
-with tabs[0]:
+with row_tab:
     merged = None
     for m in models_sel:
         raw_file = raw_map.get((ds_sel, m))
         if not raw_file:
             st.warning(f"No raw file for {m}")
             continue
-        df = load_csv(raw_file)[["Question Body", "Key", "pred"]]
-        df = df.rename(columns={"Key": "Gold", "pred": m})
-        merged = df if merged is None else merged.merge(df[[m]], left_index=True, right_index=True)
+        df = load_csv(raw_file)
+
+        # Apply category filters first
+        for col, allowed in cat_filters.items():
+            if col in df.columns:
+                df = df[df[col].isin(allowed)]
+
+        q_present = next((c for c in question_aliases if c in df.columns), None)
+        g_present = next((c for c in answer_aliases if c in df.columns), None)
+        if q_present is None or g_present is None or "pred" not in df.columns:
+            st.warning(f"Columns missing in {raw_file.name}; skipped.")
+            continue
+
+        keep_cols = [q_present, g_present, "pred"]
+        if show_raw and "raw" in df.columns:
+            keep_cols.append("raw")
+        df = df[keep_cols].rename(columns={
+            q_present: "Question",
+            g_present: "Gold",
+            "pred": m,
+            "raw": f"{m}‑raw" if show_raw else "raw",
+        })
+        merged = df if merged is None else merged.merge(df.drop(columns=["Question", "Gold" if "Gold" in df.columns else g_present]), left_index=True, right_index=True)
 
     if merged is None:
-        st.warning("No raw files for selected models.")
+        st.warning("No compatible raw files for selected models.")
     else:
         st.dataframe(merged.head(500), use_container_width=True, height=400)
         st.download_button(
@@ -133,8 +189,8 @@ with tabs[0]:
         )
 
 # ---------- Category scores ------------------------------------------- #
-with tabs[1]:
-    cats = sorted({key[2] for key in cat_map if key[0] == ds_sel and key[1] in models_sel})
+with cat_tab:
+    cats = sorted({k[2] for k in cat_map if k[0] == ds_sel and k[1] in models_sel})
     if not cats:
         st.info("No category CSVs available.")
         st.stop()

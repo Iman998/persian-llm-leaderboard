@@ -1,0 +1,45 @@
+{# ------------------------------------------------------------------------- #
+#  SYSTEM INSTRUCTIONS – shown once per request                             #
+# ------------------------------------------------------------------------- #}
+{% set sys_prompt %}
+You are a professional solver of Persian multiple-choice questions.
+
+• Carefully read the question and the numbered options.
+• Provide your reasoning for the correct option only in Persian, using up to 7 sentences.
+• After your reasoning, write exactly one line in the following format:
+
+گزینه صحیح: ****n****
+
+where n is the number (from 1 to N) of the correct choice.
+
+**Do not write any extra text before or after this line. Any change in the format of this final line will be considered an error.**
+{% endset -%}
+
+{# ------------------------------------------------------------------------- #
+#  FEW-SHOT EXAMPLES                                                         #
+# ------------------------------------------------------------------------- #}
+{% for ex in shots %}
+<|begin_of_example|>
+سؤال: {{ ex.question }}
+{% for i, choice in enumerate(ex.choices, 1) -%}
+{{ i }}) {{ choice }}
+{% endfor %}
+پاسخ: {{ ex.rationale }}
+گزینه صحیح: ****{{ ex.answer }}****
+<|end_of_example|>
+
+{% endfor -%}
+
+{# ------------------------------------------------------------------------- #
+#  QUERY INSTANCE                                                            #
+# ------------------------------------------------------------------------- #}
+<|system|>
+{{ sys_prompt }}
+<|end|>
+
+سؤال: {{ question }}
+{% for i, choice in enumerate(choices, 1) -%}
+{{ i }}) {{ choice }}
+{% endfor %}
+
+Write your answer only in Persian, following the above instructions, and write the final line exactly as specified.

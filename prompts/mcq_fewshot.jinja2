@@ -2,13 +2,17 @@
 #  SYSTEM INSTRUCTIONS – shown once per request                             #
 # ------------------------------------------------------------------------- #}
 {% set sys_prompt %}
-You are an expert Persian-language multiple-choice solver.
-• Read the question and the numbered choices.
-• Explain briefly *why* the correct option is right (max 3 sentences).
-• End with one line exactly in the format:
-  Correct option: ****n****
-  where n is the index (1-N) of the right choice.
-Any deviation from this format will be scored as an error.
+You are a professional multiple-choice question (MCQ) solver.
+
+• Carefully read the question and the numbered options.
+• Provide your reasoning for the correct option in English, using up to 7 sentences.
+• After your explanation, write exactly one line in the following format:
+
+Correct option: ****n****
+
+where n is the number (from 1 to N) of the correct choice.
+
+**Do not write any extra text before or after this line. Any change in the format of this final line will be considered an error.**
 {% endset -%}
 
 {# ------------------------------------------------------------------------- #
@@ -16,11 +20,11 @@ Any deviation from this format will be scored as an error.
 # ------------------------------------------------------------------------- #}
 {% for ex in shots %}
 <|begin_of_example|>
-سؤال: {{ ex.question }}
+Question: {{ ex.question }}
 {% for i, choice in enumerate(ex.choices, 1) -%}
 {{ i }}) {{ choice }}
 {% endfor %}
-پاسخ: {{ ex.rationale }}
+Answer: {{ ex.rationale }}
 Correct option: ****{{ ex.answer }}****
 <|end_of_example|>
 
@@ -33,9 +37,9 @@ Correct option: ****{{ ex.answer }}****
 {{ sys_prompt }}
 <|end|>
 
-سؤال: {{ question }}
+Question: {{ question }}
 {% for i, choice in enumerate(choices, 1) -%}
 {{ i }}) {{ choice }}
 {% endfor %}
 
-لطفاً به فارسی دلیل کوتاه بیاور و سپس خط پایانی را دقیقاً مطابق فرمت بنویس.
+Write your answer in English according to the instructions above, and write the final line exactly as specified.

@@ -11,7 +11,7 @@ IFS=$'\n\t'
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 #──────────────────────────── EDIT THESE LISTS ↓ ────────────────────────────#
-MODEL_LIST=( "gemma-3-27b-it" )           # →  models/Qwen30.yaml
+MODEL_LIST=( "ZharfaSmall" )           # →  models/Qwen30.yaml
 DATASET_LIST=( "khayyam_challenge" ) # →  data/khayyam_challenge/*.*
 WORKERS=100                           # threads per Python evaluation
 #────────────────────────────────────────────────────────────────────────────#
@@ -28,7 +28,7 @@ log "INFO" "Worker threads per run: $WORKERS"
 
 for model in "${MODEL_LIST[@]}"; do
   for ds in "${DATASET_LIST[@]}"; do
-    csv="data/${ds}/${ds}.csv"
+    csv="data/${ds}/test.csv"
     meta="data/${ds}/meta.yaml"
     if [[ ! -f "$csv" ]]; then
       log "${YEL}SKIP${NC}" "$csv not found"

@@ -1,0 +1,15 @@
+question_col: "question"
+
+choice_cols:
+  - "choice1"
+  - "choice2"
+  - "choice3"
+  - "choice4"
+
+answer_col: "answer"
+
+# list one or more columns whose values define categories
+category_cols:
+  - "Subject"          # subjects of question
+  - "Category"          # categories of question
+  - "SubCategory"        # sub categories of question
