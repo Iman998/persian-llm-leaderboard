@@ -14,6 +14,8 @@ from typing import Any, Callable, Dict, List, Tuple
 import pandas as pd
 import yaml
 
+from .data_utils import _norm
+
 # Desired column order in the final leaderboard (extend as needed)
 COL_ORDER: List[str] = [
     "Model Type",
@@ -27,21 +29,8 @@ COL_ORDER: List[str] = [
     "parsinlu_nli (Accuracy)",
     "parsinlu_qqp (Accuracy)",
     "persian_ARC (Accuracy)",
-    "pquad (f1)",
+"pquad (f1)",
 ]
-
-_PERS_DIGITS = str.maketrans("۰۱۲۳۴۵۶۷۸۹", "0123456789")
-
-
-def _norm(x) -> str:  # noqa: ANN001
-    """Normalise answer strings for robust comparison."""
-    if pd.isna(x):
-        return ""
-    s = str(x).strip().translate(_PERS_DIGITS)
-    try:
-        return str(int(float(s)))
-    except ValueError:
-        return s
 
 
 # ────────────────────────────── metric helpers ────────────────────────────── #
