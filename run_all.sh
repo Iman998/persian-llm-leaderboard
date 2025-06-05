@@ -91,7 +91,9 @@ for model in "${MODEL_LIST[@]}"; do
       suffix=""
     fi
 
-    out="results/${ds}/${model}${suffix}.csv"
+    out_dir="results/${ds}/${model}"
+    mkdir -p "$out_dir"
+    out="${out_dir}/${model}${suffix}.csv"
     log "${GRN}RUN${NC}" "$model × $ds → $out"
 
     python "$ROOT/scripts/run_eval.py" \
@@ -103,9 +105,11 @@ for model in "${MODEL_LIST[@]}"; do
       --workers "$WORKERS" \
       --out     "$out"
 
-    
     if [[ -n "$N_ROWS" ]]; then
-      cp "$out" "results/${ds}/${model}.csv"
+      cp "$out" "results/${ds}/${model}/${model}.csv"
+      for f in "${out%.csv}"_*.csv; do
+        [[ -f "$f" ]] && cp "$f" "results/${ds}/${model}${f#${out%.csv}}"
+      done
     fi
 
     # Remove temporary sample

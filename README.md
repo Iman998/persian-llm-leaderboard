@@ -53,7 +53,7 @@ To start the dashboard:
 ```bash
 pip install -r requirements.txt
 streamlit run app/streamlit_app.py
-````
+```
 
 To evaluate all models:
 
@@ -76,5 +76,3 @@ Contributions and suggestions are welcome! Feel free to open issues or submit pu
 ## 📄 License
 
 This project is licensed under the MIT License.
-
-Let me know if you also want to update the `DOCUMENTATION.md` to reflect this option more thoroughly.

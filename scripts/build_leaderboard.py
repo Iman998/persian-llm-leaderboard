@@ -13,8 +13,9 @@ Key features
    hard‑coding.
 3. **Excludes per‑category breakdown files** – any CSV whose *model stub*
    still contains an underscore (e.g. ``gemma-3-27b-it_Category.csv``) is
-   skipped. The main CSV is always ``results/<dataset>/<model>.csv``.
-   4. **English‑only comments**.
+   skipped. The main CSV is always ``results/<dataset>/<model>/<model>.csv``.
+4. **Averages duplicate rows** – repeated model/dataset pairs are averaged
+   using ``pivot_table``.
 """
 from __future__ import annotations
 
@@ -77,7 +78,7 @@ def pick_metric(ds_name: str) -> Tuple[Callable, str]:
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--results_dir", default="results",
-                        help="Directory containing results/<dataset>/<model>.csv files.")
+                        help="Directory containing results/<dataset>/<model>/<model>.csv files.")
     parser.add_argument("--out", required=True,
                         help="Output path for the leaderboard CSV.")
     parser.add_argument("--datasets_dir", default="data",
@@ -101,7 +102,10 @@ def main() -> None:
         m = file_re.match(csv_path.name)
         if not m:
             continue
-        dataset = csv_path.parent.name
+        try:
+            dataset = csv_path.relative_to(args.results_dir).parts[0]
+        except ValueError:
+            dataset = csv_path.parent.parent.name
         model_stub, suffix = m.group("model", "suffix")
         if suffix or dataset.endswith(("raw", "Level")):
             continue
@@ -142,20 +146,27 @@ def main() -> None:
         print("No result CSVs found; nothing to build.")
         return
 
-    # Long → wide pivot --------------------------------------------------------
+    # Long → wide pivot (average duplicates) ----------------------------------
     long = pd.DataFrame(rows)
     wide = (
-        long.pivot(index=["model_type", "model"],
-                    columns="dataset", values="value")
-            .reset_index()
+        long.pivot_table(
+            index=["model_type", "model"],
+            columns="dataset",
+            values="value",
+            aggfunc="mean",
+        )
+        .reset_index()
     )
     wide.columns.name = None
 
     # Rename dataset columns with metric label --------------------------------
     rename_map = {
         ds: f"{ds} ({lbl})"
-        for ds, lbl in long.drop_duplicates("dataset")[["dataset", "metric_label"]]
-        .itertuples(index=False)
+        for ds, lbl in (
+            long[["dataset", "metric_label"]]
+            .drop_duplicates("dataset")
+            .itertuples(index=False)
+        )
     }
     rename_map.update({"model_type": "Model Type", "model": "Model"})
     wide = wide.rename(columns=rename_map)

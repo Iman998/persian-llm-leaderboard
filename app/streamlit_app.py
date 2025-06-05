@@ -71,13 +71,20 @@ FILE_RE_LEGACY = re.compile(rf"^(?P<dataset>.+?)_(?P<model>{models_alt})(?:_(?P<
 def parse_file(p: Path) -> Tuple[str, str, str] | None:
     m = FILE_RE_NEW.match(p.name)
     if m:
-        ds = p.parent.name
+        try:
+            ds = p.relative_to(RESULTS_DIR).parts[0]
+        except ValueError:
+            ds = p.parent.parent.name     
         mdl, suf = m.group("model", "suffix")
+        if suf and suf.isdigit():
+            return None
         return ds, mdl, suf or ""
 
     m = FILE_RE_LEGACY.match(p.name)
     if m:
         ds, mdl, suf = m.group("dataset", "model", "suffix")
+        if suf and suf.isdigit():
+            return None
         return ds, mdl, suf or ""
 
     return None
@@ -92,8 +99,11 @@ for p in RESULTS_DIR.rglob("*.csv"):
     if not parsed:
         continue
     ds, mdl, suf = parsed
-    if suf == "raw":
+    if suf == "raw" or suf.endswith("_raw"):
         raw_map[(ds, mdl)] = p
+    elif suf.isdigit() or suf.split("_", 1)[0].isdigit():
+        # ignore n_rows sample outputs
+        continue
     elif suf:
         cat_map[(ds, mdl, suf)] = p
     else:
@@ -215,7 +225,11 @@ with cat_tab:
     for m in models_sel:
         p = cat_map.get((ds_sel, m, cat_sel))
         if p:
-            df_c = load_csv(p).rename(columns={"Accuracy": m}).set_index(cat_sel)
+            df_c = load_csv(p)
+            if cat_sel not in df_c.columns:
+                st.warning(f"{cat_sel} column missing in {p.name}; skipped.")
+                continue
+            df_c = df_c.rename(columns={"Accuracy": m}).set_index(cat_sel)
             frames.append(df_c)
 
     if frames:
