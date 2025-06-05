@@ -1,7 +1,8 @@
 """CLI logic for evaluating a single model on a dataset.
 
 This module exposes :func:`main` used by :mod:`scripts.run_eval` to
-materialise evaluation results."""
+materialise evaluation results.  Helper functions handle argument
+parsing, configuration loading, sampling, evaluation and result saving."""
 
 from __future__ import annotations
 
@@ -31,9 +32,8 @@ def _load_module(path: str):
     return mod
 
 
-# ───────────────────────────────── main ───────────────────────────────── #
-
-def main() -> None:  # noqa: D401
+def parse_args() -> argparse.Namespace:
+    """Return parsed CLI arguments."""
     parser = argparse.ArgumentParser()
     parser.add_argument("--dataset", required=True)
     parser.add_argument("--meta", required=True)
@@ -54,35 +54,33 @@ def main() -> None:  # noqa: D401
         action="store_true",
         help="Enable INFO-level logs",
     )
-    args = parser.parse_args()
+    return parser.parse_args()
 
-    if args.verbose:
-        logging.getLogger().setLevel(logging.INFO)
 
+def load_configs(args: argparse.Namespace) -> tuple[type, dict[str, Any], dict[str, Any], pd.DataFrame]:
+    """Load model/meta YAML and dataset, returning the Evaluator class."""
     Evaluator = getattr(_load_module(args.evaluator), "MCQEvaluator")
-
     model_cfg: dict[str, Any] = yaml.safe_load(Path(args.model).read_text())
     meta_cfg: dict[str, Any] = yaml.safe_load(Path(args.meta).read_text())
     df = _read_dataset(args.dataset, verbose=args.verbose)
+    return Evaluator, model_cfg, meta_cfg, df
 
-    if args.n_rows:
-        df = df.sample(n=min(args.n_rows, len(df)), random_state=42)
-        logging.info(
-            "Sampling %d rows → dataframe now has %d rows",
-            args.n_rows,
-            len(df),
-        )
 
-    answer_col: str = meta_cfg.get("answer_col", "Key")
-    question_col: str = meta_cfg.get("question_col", "question")
+def sample_dataset(df: pd.DataFrame, n_rows: int | None, verbose: bool) -> pd.DataFrame:
+    """Optionally sample ``n_rows`` from ``df``."""
+    if n_rows:
+        df = df.sample(n=min(n_rows, len(df)), random_state=42)
+        logging.info("Sampling %d rows → dataframe now has %d rows", n_rows, len(df))
+    return df
 
-    if answer_col not in df.columns:
-        sys.exit(
-            f"❌  Column '{answer_col}' (answer_col) not found in dataset. "
-            "Check meta.yaml::answer_col and CSV headers."
-        )
 
-    # ── evaluation ───────────────────────────────────────────────────── #
+def run_evaluation(
+    Evaluator: type,
+    model_cfg: dict[str, Any],
+    df: pd.DataFrame,
+    args: argparse.Namespace,
+) -> pd.DataFrame:
+    """Instantiate ``Evaluator`` and evaluate the dataframe."""
     evaluator = Evaluator(
         model_cfg=model_cfg,
         prompt_path=Path(args.prompt),
@@ -90,22 +88,27 @@ def main() -> None:  # noqa: D401
         shots=args.shots,
         max_retries=5,
     )
-    result_df = evaluator.evaluate_df(df, max_workers=args.workers)
+    return evaluator.evaluate_df(df, max_workers=args.workers)
 
-    # ── dashboard-friendly columns ────────────────────────────────────── #
+
+def save_results(
+    result_df: pd.DataFrame,
+    meta_cfg: dict[str, Any],
+    out_path: Path,
+    answer_col: str,
+    question_col: str,
+) -> None:
+    """Write evaluation outputs and per-category breakdowns."""
     if "Key" not in result_df.columns:
         result_df["Key"] = result_df[answer_col]
 
     if "Question Body" not in result_df.columns and question_col in result_df.columns:
         result_df = result_df.rename(columns={question_col: "Question Body"})
 
-    # ── save main results ─────────────────────────────────────────────── #
-    out_path = Path(args.out)
     out_path.parent.mkdir(parents=True, exist_ok=True)
     result_df.to_csv(out_path, index=False)
     print(f"✅  main results → {out_path}")
 
-    # ── per-category breakdowns ───────────────────────────────────────── #
     for cat in meta_cfg.get("category_cols", []):
         if cat not in result_df.columns:
             print(f"⚠️  column '{cat}' missing – skipped")
@@ -133,8 +136,33 @@ def main() -> None:  # noqa: D401
         cat_df.to_csv(cat_file, index=False)
         print(f"📊  {cat} breakdown → {cat_file}")
 
-    # ── raw copy for dashboard download ───────────────────────────────── #
     raw_file = out_path.with_name(f"{out_path.stem}_raw.csv")
     result_df.to_csv(raw_file, index=False)
     print(f"🗃️  raw outputs → {raw_file}")
+
+
+# ───────────────────────────────── main ───────────────────────────────── #
+
+def main() -> None:  # noqa: D401
+    args = parse_args()
+
+    if args.verbose:
+        logging.getLogger().setLevel(logging.INFO)
+
+    Evaluator, model_cfg, meta_cfg, df = load_configs(args)
+    df = sample_dataset(df, args.n_rows, args.verbose)
+
+    answer_col: str = meta_cfg.get("answer_col", "Key")
+    question_col: str = meta_cfg.get("question_col", "question")
+
+    if answer_col not in df.columns:
+        sys.exit(
+            f"❌  Column '{answer_col}' (answer_col) not found in dataset. "
+            "Check meta.yaml::answer_col and CSV headers."
+        )
+
+    result_df = run_evaluation(Evaluator, model_cfg, df, args)
+
+    out_path = Path(args.out)
+    save_results(result_df, meta_cfg, out_path, answer_col, question_col)
 
