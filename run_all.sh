@@ -91,7 +91,7 @@ for model in "${MODEL_LIST[@]}"; do
       suffix=""
     fi
 
-    out="results/${ds}_${model}${suffix}.csv"
+    out="results/${ds}/${model}${suffix}.csv"
     log "${GRN}RUN${NC}" "$model × $ds → $out"
 
     python "$ROOT/scripts/run_eval.py" \
@@ -102,6 +102,11 @@ for model in "${MODEL_LIST[@]}"; do
       --shots   3 \
       --workers "$WORKERS" \
       --out     "$out"
+
+    
+    if [[ -n "$N_ROWS" ]]; then
+      cp "$out" "results/${ds}/${model}.csv"
+    fi
 
     # Remove temporary sample
     [[ -n "${csv_sample:-}" && -f "$csv_sample" ]] && rm -f "$csv_sample"
@@ -114,6 +119,7 @@ done
 ##############################################################################
 python "$ROOT/scripts/build_leaderboard.py" \
   --results_dir results \
+  --datasets_dir data \
   --out dashboard/leaderboard.csv
 
 log "${GRN}DONE${NC}" "Dashboard updated → dashboard/leaderboard.csv"

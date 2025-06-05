@@ -5,3 +5,4 @@ streamlit
 scikit-learn
 tqdm
 matplotlib
+jinja2

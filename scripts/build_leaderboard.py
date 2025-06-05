@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """build_leaderboard.py
 ────────────────────────────────────────────────────────
-Scan ``results/*.csv`` produced by *run_eval.py*, look up each dataset’s
+Scan ``results/**/*.csv`` produced by *run_eval.py*, look up each dataset’s
 ``meta.yaml`` to find its *answer column*, compute the appropriate metric, and
 emit a single leaderboard CSV.
 
@@ -13,8 +13,8 @@ Key features
    hard‑coding.
 3. **Excludes per‑category breakdown files** – any CSV whose *model stub*
    still contains an underscore (e.g. ``gemma-3-27b-it_Category.csv``) is
-   skipped. The main CSV is always ``<dataset>_<model>.csv``.
-4. **English‑only comments**.
+   skipped. The main CSV is always ``results/<dataset>/<model>.csv``.
+   4. **English‑only comments**.
 """
 from __future__ import annotations
 
@@ -22,6 +22,7 @@ import argparse
 import sys
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Tuple
+import re
 
 import pandas as pd
 import yaml
@@ -29,7 +30,7 @@ import yaml
 # Desired column order in the final leaderboard (extend as needed)
 COL_ORDER: List[str] = [
     "Model Type", "Model", "Average",
-    "MMLU (Accuracy)", "MMLU-PRO (Accuracy)", "bbh (Accuracy)",
+    "mmlu (Accuracy)", "mmlu-pro (Accuracy)", "bbh (Accuracy)",
     "khayyam_challenge (Accuracy)", "parsinlu_mc (Accuracy)",
     "parsinlu_nli (Accuracy)", "parsinlu_qqp (Accuracy)",
     "persian_ARC (Accuracy)", "pquad (f1)",
@@ -76,25 +77,33 @@ def pick_metric(ds_name: str) -> Tuple[Callable, str]:
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--results_dir", default="results",
-                        help="Directory containing <dataset>_<model>.csv files.")
+                        help="Directory containing results/<dataset>/<model>.csv files.")
     parser.add_argument("--out", required=True,
                         help="Output path for the leaderboard CSV.")
-    parser.add_argument("--datasets_dir", default="datasets",
+    parser.add_argument("--datasets_dir", default="data",
                         help="Root folder where each dataset has a meta.yaml.")
     parser.add_argument("--models_dir", default="models",
                         help="Directory containing <model>.yaml files.")
     args = parser.parse_args()
 
+    model_names = sorted(
+    [p.stem for p in Path(args.models_dir).glob("*.yaml")],
+    key=len, reverse=True
+    )
+    models_alt = "|".join(map(re.escape, model_names))
+    file_re = re.compile(
+        rf"^(?P<model>{models_alt})(?:_(?P<suffix>.+?))?\.csv$"
+    )
+
     rows: List[Dict[str, Any]] = []
 
-    for csv_path in Path(args.results_dir).glob("*.csv"):
-        # Main results follow <dataset>_<model>.csv.  Any extra underscore in
-        # the *model stub* means it is a per‑category breakdown → skip.
-        stem_parts = csv_path.stem.split("_", 1)
-        if len(stem_parts) != 2:
+    for csv_path in Path(args.results_dir).rglob("*.csv"):
+        m = file_re.match(csv_path.name)
+        if not m:
             continue
-        dataset, model_stub = stem_parts
-        if "_" in model_stub or dataset.endswith(("raw", "Level")):
+        dataset = csv_path.parent.name
+        model_stub, suffix = m.group("model", "suffix")
+        if suffix or dataset.endswith(("raw", "Level")):
             continue
 
         # Load model metadata --------------------------------------------------

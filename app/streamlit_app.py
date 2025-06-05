@@ -22,7 +22,7 @@ import yaml
 st.set_page_config(page_title="Persian‑LLM Leaderboard", layout="wide")
 
 RESULTS_DIR   = Path("results")
-DATASETS_DIR  = Path("datasets")  # where <dataset>/meta.yaml lives
+DATASETS_DIR  = Path("data")  # where <dataset>/meta.yaml lives
 DASHBOARD_CSV = Path("dashboard/leaderboard.csv")
 MODELS_DIR    = Path("models")
 
@@ -64,23 +64,34 @@ def gradient(df: pd.DataFrame):
 # ---------- build regex for parsing filenames ------------------------- #
 model_names = sorted([p.stem for p in MODELS_DIR.glob("*.yaml")], key=len, reverse=True)
 models_alt  = "|".join(map(re.escape, model_names))
-FILE_RE = re.compile(rf"^(?P<dataset>.+?)_(?P<model>{models_alt})(?:_(?P<suffix>.+?))?\.csv$")
+FILE_RE_NEW    = re.compile(rf"^(?P<model>{models_alt})(?:_(?P<suffix>.+?))?\.csv$")
+FILE_RE_LEGACY = re.compile(rf"^(?P<dataset>.+?)_(?P<model>{models_alt})(?:_(?P<suffix>.+?))?\.csv$")
 
 
-def parse_file(p: Path) -> Tuple[str, str, str]:
-    m = FILE_RE.match(p.name)
-    if not m:
-        raise ValueError(f"Unexpected filename {p.name}")
-    ds, mdl, suf = m.group("dataset", "model", "suffix")
-    return ds, mdl, suf or ""
+def parse_file(p: Path) -> Tuple[str, str, str] | None:
+    m = FILE_RE_NEW.match(p.name)
+    if m:
+        ds = p.parent.name
+        mdl, suf = m.group("model", "suffix")
+        return ds, mdl, suf or ""
+
+    m = FILE_RE_LEGACY.match(p.name)
+    if m:
+        ds, mdl, suf = m.group("dataset", "model", "suffix")
+        return ds, mdl, suf or ""
+
+    return None
 
 # ---------- scan results directory ------------------------------------ #
 main_map: Dict[Tuple[str, str], Path] = {}
 raw_map:  Dict[Tuple[str, str], Path] = {}
 cat_map:  Dict[Tuple[str, str, str], Path] = {}
 
-for p in RESULTS_DIR.glob("*.csv"):
-    ds, mdl, suf = parse_file(p)
+for p in RESULTS_DIR.rglob("*.csv"):
+    parsed = parse_file(p)
+    if not parsed:
+        continue
+    ds, mdl, suf = parsed
     if suf == "raw":
         raw_map[(ds, mdl)] = p
     elif suf:
@@ -132,7 +143,11 @@ if meta["category_cols"]:
         for col in meta["category_cols"]:
             raw_file_any = raw_map.get((ds_sel, models_sel[0]))  # sample file
             if raw_file_any is not None:
-                col_vals = load_csv(raw_file_any)[col].dropna().unique()
+                df_sample = load_csv(raw_file_any)
+                if col not in df_sample.columns:
+                    st.warning(f"Column {col} not found in {raw_file_any.name}; skipping filter.")
+                    continue
+                col_vals = df_sample[col].dropna().unique()                
                 sel = st.multiselect(col, sorted(col_vals))
                 if sel:
                     cat_filters[col] = set(sel)
