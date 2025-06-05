@@ -11,6 +11,13 @@ IFS=$'\n\t'
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
+# Ensure pandas is available before proceeding
+if ! python -c "import pandas" >/dev/null 2>&1; then
+  printf 'Error: Python module "pandas" is required.\n' >&2
+  printf '       Please run "pip install -r requirements.txt" first.\n' >&2
+  exit 1
+fi
+
 ##############################################################################
 # Edit these lists as needed                                                 #
 ##############################################################################
