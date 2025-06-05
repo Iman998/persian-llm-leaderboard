@@ -11,105 +11,21 @@ Add‑ons (2025‑06‑03)
 """
 from __future__ import annotations
 
-import re
-from pathlib import Path
-from typing import Dict, List, Tuple
-
 import pandas as pd
 import streamlit as st
-import yaml
+
+from utils import (
+    DASHBOARD_CSV,
+    gradient,
+    load_csv,
+    load_meta,
+    numeric_cols,
+    scan_result_maps,
+)
 
 st.set_page_config(page_title="Persian‑LLM Leaderboard", layout="wide")
 
-RESULTS_DIR   = Path("results")
-DATASETS_DIR  = Path("data")  # where <dataset>/meta.yaml lives
-DASHBOARD_CSV = Path("dashboard/leaderboard.csv")
-MODELS_DIR    = Path("models")
-
-# ───────────── helpers ──────────────────────────────────────────────── #
-
-@st.cache_data(show_spinner=False)
-def load_csv(path: Path) -> pd.DataFrame:  # noqa: D401
-    return pd.read_csv(path)
-
-@st.cache_data(show_spinner=False)
-def load_meta(ds: str):
-    """Return meta‑info dict with question/answer/category columns."""
-    meta_file = DATASETS_DIR / ds / "meta.yaml"
-    if meta_file.exists():
-        cfg = yaml.safe_load(meta_file.read_text())
-    else:
-        cfg = {}
-    return {
-        "question_col": cfg.get("question_col", "question"),
-        "answer_col":   cfg.get("answer_col", "Key"),
-        "category_cols": cfg.get("category_cols", []),
-    }
-
-
-def numeric_cols(df: pd.DataFrame) -> List[str]:
-    return [c for c in df.columns if pd.api.types.is_numeric_dtype(df[c])]
-
-
-def gradient(df: pd.DataFrame):
-    try:
-        import matplotlib  # noqa: F401
-        return (
-            df.style.background_gradient(axis=0, cmap="Greens", subset=numeric_cols(df))
-              .highlight_max(axis=0, subset=["Average"], color="#ffd60a")
-        )
-    except ImportError:
-        return df
-
-# ---------- build regex for parsing filenames ------------------------- #
-model_names = sorted([p.stem for p in MODELS_DIR.glob("*.yaml")], key=len, reverse=True)
-models_alt  = "|".join(map(re.escape, model_names))
-FILE_RE_NEW    = re.compile(rf"^(?P<model>{models_alt})(?:_(?P<suffix>.+?))?\.csv$")
-FILE_RE_LEGACY = re.compile(rf"^(?P<dataset>.+?)_(?P<model>{models_alt})(?:_(?P<suffix>.+?))?\.csv$")
-
-
-def parse_file(p: Path) -> Tuple[str, str, str] | None:
-    m = FILE_RE_NEW.match(p.name)
-    if m:
-        try:
-            ds = p.relative_to(RESULTS_DIR).parts[0]
-        except ValueError:
-            ds = p.parent.parent.name     
-        mdl, suf = m.group("model", "suffix")
-        if suf and suf.isdigit():
-            return None
-        return ds, mdl, suf or ""
-
-    m = FILE_RE_LEGACY.match(p.name)
-    if m:
-        ds, mdl, suf = m.group("dataset", "model", "suffix")
-        if suf and suf.isdigit():
-            return None
-        return ds, mdl, suf or ""
-
-    return None
-
-# ---------- scan results directory ------------------------------------ #
-main_map: Dict[Tuple[str, str], Path] = {}
-raw_map:  Dict[Tuple[str, str], Path] = {}
-cat_map:  Dict[Tuple[str, str, str], Path] = {}
-
-for p in RESULTS_DIR.rglob("*.csv"):
-    parsed = parse_file(p)
-    if not parsed:
-        continue
-    ds, mdl, suf = parsed
-    if suf == "raw" or suf.endswith("_raw"):
-        raw_map[(ds, mdl)] = p
-    elif suf.isdigit() or suf.split("_", 1)[0].isdigit():
-        # ignore n_rows sample outputs
-        continue
-    elif suf:
-        cat_map[(ds, mdl, suf)] = p
-    else:
-        main_map[(ds, mdl)] = p
-
-datasets = sorted({k[0] for k in main_map})
+datasets, main_map, raw_map, cat_map = scan_result_maps()
 if not datasets:
     st.error("No result CSVs in ./results – run evaluations first.")
     st.stop()
