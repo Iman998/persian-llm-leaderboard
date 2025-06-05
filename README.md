@@ -18,7 +18,9 @@ This project provides an intuitive interface for comparing and benchmarking vari
 ```
 .
 ├── data
-│   ├── khayyam_challenge.csv     # Evaluation dataset
+│   ├── khayyam_challenge
+│   │   ├── test.csv              # Evaluation dataset
+│   │   └── meta.yaml             # Dataset metadata
 │   └── ...                       # Additional datasets
 ├── scripts
 │   └── run_eval.py               # Evaluation script
@@ -75,4 +77,4 @@ Contributions and suggestions are welcome! Feel free to open issues or submit pu
 
 ## 📄 License
 
-This project is licensed under the MIT License.
+This project is licensed under the [MIT License](LICENSE).

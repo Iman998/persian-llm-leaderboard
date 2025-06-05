@@ -13,7 +13,7 @@ Clone the repository and navigate into the project directory:
 ```bash
 git clone https://github.com/yourusername/persian-llm-leaderboard.git
 cd persian-llm-leaderboard
-````
+```
 
 ### Step 2: Python Environment Setup
 
