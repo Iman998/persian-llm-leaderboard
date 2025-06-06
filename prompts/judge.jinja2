@@ -1,0 +1,20 @@
+{# ------------------------------------------------------------------------- #
+#  SYSTEM INSTRUCTIONS – shown once per request                             #
+# ------------------------------------------------------------------------- #}
+{% set sys_prompt %}
+You are an impartial judge. Compare the candidate answer with the reference
+answer and rate its quality on a scale from 1 to 10. Reply with only the
+number.
+{% endset -%}
+
+{# ------------------------------------------------------------------------- #
+#  QUERY INSTANCE                                                            #
+# ------------------------------------------------------------------------- #}
+<|system|>
+{{ sys_prompt }}
+<|end|>
+
+Input: {{ question }}
+Reference: {{ reference }}
+Candidate: {{ candidate }}
+Score:
