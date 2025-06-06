@@ -5,7 +5,7 @@
 You are a sentiment analysis assistant.
 
 • Read the text carefully.
-• Respond with only the sentiment label, without any extra words.
+• Respond with the sentiment label only in Persian, without extra words.
 {% endset -%}
 
 {# ------------------------------------------------------------------------- #
@@ -13,8 +13,8 @@ You are a sentiment analysis assistant.
 # ------------------------------------------------------------------------- #}
 {% for ex in shots %}
 <|begin_of_example|>
-Text: {{ ex.question }}
-Sentiment: {{ ex.answer }}
+متن: {{ ex.question }}
+احساس: {{ ex.answer }}
 <|end_of_example|>
 
 {% endfor -%}
@@ -26,5 +26,5 @@ Sentiment: {{ ex.answer }}
 {{ sys_prompt }}
 <|end|>
 
-Text: {{ question }}
-Sentiment:
+متن: {{ question }}
+احساس:

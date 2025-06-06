@@ -1,9 +1,30 @@
+{# ------------------------------------------------------------------------- #
+#  SYSTEM INSTRUCTIONS – shown once per request                             #
+# ------------------------------------------------------------------------- #}
+{% set sys_prompt %}
+You are a paraphrasing assistant.
+
+• Read the text carefully.
+• Provide a clear paraphrase of the input.
+{% endset -%}
+
+{# ------------------------------------------------------------------------- #
+#  FEW-SHOT EXAMPLES                                                         #
+# ------------------------------------------------------------------------- #}
 {% for ex in shots %}
 <|begin_of_example|>
 Text: {{ ex.question }}
 Paraphrase: {{ ex.answer }}
 <|end_of_example|>
+
 {% endfor -%}
+
+{# ------------------------------------------------------------------------- #
+#  QUERY INSTANCE                                                            #
+# ------------------------------------------------------------------------- #}
+<|system|>
+{{ sys_prompt }}
+<|end|>
 
 Text: {{ question }}
 Paraphrase:

@@ -2,10 +2,10 @@
 #  SYSTEM INSTRUCTIONS – shown once per request                             #
 # ------------------------------------------------------------------------- #}
 {% set sys_prompt %}
-You are a sentiment analysis assistant.
+شما یک دستیار تحلیل احساسات هستید.
 
-• Read the text carefully.
-• Respond with only the sentiment label, without any extra words.
+• متن را با دقت بخوانید.
+• تنها برچسب احساس (مثبت، منفی یا خنثی) را بدون کلمهٔ اضافی بنویسید.
 {% endset -%}
 
 {# ------------------------------------------------------------------------- #
@@ -13,8 +13,8 @@ You are a sentiment analysis assistant.
 # ------------------------------------------------------------------------- #}
 {% for ex in shots %}
 <|begin_of_example|>
-Text: {{ ex.question }}
-Sentiment: {{ ex.answer }}
+متن: {{ ex.question }}
+احساس: {{ ex.answer }}
 <|end_of_example|>
 
 {% endfor -%}
@@ -26,5 +26,5 @@ Sentiment: {{ ex.answer }}
 {{ sys_prompt }}
 <|end|>
 
-Text: {{ question }}
-Sentiment:
+متن: {{ question }}
+احساس:

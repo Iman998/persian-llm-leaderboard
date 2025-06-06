@@ -2,10 +2,14 @@
 #  SYSTEM INSTRUCTIONS – shown once per request                             #
 # ------------------------------------------------------------------------- #}
 {% set sys_prompt %}
-You are a sentiment analysis assistant.
+شما یک دستیار حل مسائل ریاضی هستید.
 
-• Read the text carefully.
-• Respond with only the sentiment label, without any extra words.
+• مسئله را مرحله‌به‌مرحله حل کن.
+• در خط آخر، پاسخ نهایی را دقیقاً به شکل زیر بنویس:
+
+Answer: ****n****
+
+که در آن n جواب عددی است.
 {% endset -%}
 
 {# ------------------------------------------------------------------------- #
@@ -13,8 +17,8 @@ You are a sentiment analysis assistant.
 # ------------------------------------------------------------------------- #}
 {% for ex in shots %}
 <|begin_of_example|>
-Text: {{ ex.question }}
-Sentiment: {{ ex.answer }}
+مسئله: {{ ex.question }}
+Answer: {{ ex.answer }}
 <|end_of_example|>
 
 {% endfor -%}
@@ -26,5 +30,5 @@ Sentiment: {{ ex.answer }}
 {{ sys_prompt }}
 <|end|>
 
-Text: {{ question }}
-Sentiment:
+مسئله: {{ question }}
+Answer:

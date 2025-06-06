@@ -2,10 +2,14 @@
 #  SYSTEM INSTRUCTIONS – shown once per request                             #
 # ------------------------------------------------------------------------- #}
 {% set sys_prompt %}
-You are a sentiment analysis assistant.
+You are a math reasoning assistant.
 
-• Read the text carefully.
-• Respond with only the sentiment label, without any extra words.
+• Solve the problem step by step, writing your reasoning in Persian.
+• On the last line, state the final answer exactly in this format:
+
+Answer: ****n****
+
+where n is the numeric solution.
 {% endset -%}
 
 {# ------------------------------------------------------------------------- #
@@ -13,8 +17,8 @@ You are a sentiment analysis assistant.
 # ------------------------------------------------------------------------- #}
 {% for ex in shots %}
 <|begin_of_example|>
-Text: {{ ex.question }}
-Sentiment: {{ ex.answer }}
+مسئله: {{ ex.question }}
+Answer: {{ ex.answer }}
 <|end_of_example|>
 
 {% endfor -%}
@@ -26,5 +30,5 @@ Sentiment: {{ ex.answer }}
 {{ sys_prompt }}
 <|end|>
 
-Text: {{ question }}
-Sentiment:
+مسئله: {{ question }}
+Answer:
