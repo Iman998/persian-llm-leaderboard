@@ -91,6 +91,17 @@ def main() -> None:
 
     rows: List[Dict[str, Any]] = []
 
+    def _pretty_metric(name: str) -> str:
+        """Return a display-friendly metric label."""
+        mapping = {
+            "accuracy": "Accuracy",
+            "exact_match": "Exact match",
+            "f1": "f1",
+            "bleu": "BLEU",
+            "rouge": "ROUGE",
+        }
+        return mapping.get(name, name)
+
     for csv_path in Path(args.results_dir).rglob("*.csv"):
         m = file_re.match(csv_path.name)
         if not m:
@@ -135,7 +146,7 @@ def main() -> None:
             rows.append(
                 {
                     "dataset": dataset,
-                    "metric_label": metric_name,
+                    "metric_label": _pretty_metric(metric_name),
                     "model": model_name,
                     "model_type": model_type,
                     "value": value,
