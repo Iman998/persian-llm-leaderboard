@@ -76,7 +76,17 @@ def load_configs(args: argparse.Namespace) -> tuple[type, dict[str, Any], dict[s
         args.prompt = meta_cfg.get("prompt_template", "prompts/mcq_fewshot.jinja2")
 
     class_name = "".join(part.title() for part in Path(args.evaluator).stem.split("_"))
-    Evaluator = getattr(_load_module(args.evaluator), class_name)
+    module = _load_module(args.evaluator)
+    Evaluator = getattr(module, class_name, None)
+    if Evaluator is None:
+        for attr in dir(module):
+            if attr.lower() == class_name.lower():
+                Evaluator = getattr(module, attr)
+                break
+    if Evaluator is None:
+        raise AttributeError(
+            f"Class '{class_name}' not found in {args.evaluator}"
+        )
 
     model_cfg: dict[str, Any] = yaml.safe_load(Path(args.model).read_text())
     df = _read_dataset(args.dataset, verbose=args.verbose)
