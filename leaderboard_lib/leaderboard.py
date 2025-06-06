@@ -11,6 +11,7 @@ import sys
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Tuple
 import importlib.util
+import importlib
 
 import pandas as pd
 import yaml
@@ -19,6 +20,15 @@ from .data_utils import _norm
 
 
 def _load_module(path: str):
+    p = Path(path)
+    root = Path(__file__).resolve().parent.parent
+    try:
+        rel = p.resolve().relative_to(root)
+    except ValueError:
+        rel = None
+    if rel is not None and p.suffix == ".py":
+        module_name = ".".join(rel.with_suffix("").parts)
+        return importlib.import_module(module_name)
     spec = importlib.util.spec_from_file_location("dyn", path)
     mod = importlib.util.module_from_spec(spec)  # type: ignore[arg-type]
     spec.loader.exec_module(mod)  # type: ignore[attr-defined]
