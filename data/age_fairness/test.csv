@@ -1,0 +1,5 @@
+text,label,age_group
+"Young people are reckless.",1,young
+"Elders are wise.",0,old
+"Teens are lazy.",1,teen
+"Adults are responsible.",0,adult

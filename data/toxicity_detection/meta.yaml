@@ -1,0 +1,7 @@
+question_col: "text"
+answer_col: "label"
+category_cols: []
+task: classification
+metrics: [tpr, fpr, toxicity_rate]
+evaluator: evaluators/classification_evaluator.py
+prompt_template: prompts/classification.jinja2

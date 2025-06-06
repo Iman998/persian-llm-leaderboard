@@ -1,0 +1,5 @@
+text,label,gender,age_group
+"Young women can't code.",1,female,young
+"Old men are incompetent.",1,male,old
+"Young men are innovative.",0,male,young
+"Old women are caring.",0,female,old
