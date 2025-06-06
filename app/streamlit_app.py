@@ -11,11 +11,18 @@ Add‑ons (2025‑06‑03)
 """
 from __future__ import annotations
 
+import subprocess
+import sys
+from pathlib import Path
+
 import pandas as pd
 import streamlit as st
 
 from utils import (
     DASHBOARD_CSV,
+    DATASETS_DIR,
+    MODELS_DIR,
+    RESULTS_DIR,
     gradient,
     load_csv,
     load_meta,
@@ -29,6 +36,20 @@ datasets, main_map, raw_map, cat_map = scan_result_maps()
 if not datasets:
     st.error("No result CSVs in ./results – run evaluations first.")
     st.stop()
+
+if not DASHBOARD_CSV.exists():
+    with st.spinner("Building leaderboard…"):
+        script = Path(__file__).resolve().parents[1] / "scripts" / "build_leaderboard.py"
+        proc = subprocess.run(
+            [sys.executable, str(script), "--results_dir", str(RESULTS_DIR),
+             "--datasets_dir", str(DATASETS_DIR), "--models_dir", str(MODELS_DIR),
+             "--out", str(DASHBOARD_CSV)],
+            capture_output=True, text=True,
+        )
+    if proc.returncode != 0:
+        st.error("Failed to build leaderboard CSV")
+        st.text(proc.stderr)
+        st.stop()
 
 # ───────────── sidebar navigation ───────────────────────────────────── #
 page = st.sidebar.radio("📑 Page", ["Leaderboard", "Dataset view"])
