@@ -26,7 +26,7 @@ This project provides an intuitive interface for comparing and benchmarking vari
 │
 │   # meta.yaml fields
 │   # -----------------
-│   # task: dataset type (e.g. multiple_choice, open_ended)
+│   # task: dataset type (e.g. multiple_choice, open_ended, text_generation)
 │   # metrics: list of metric names to compute
 │   # evaluator: path to the evaluator class
 │   # prompt_template: default prompt for the dataset

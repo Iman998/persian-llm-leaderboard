@@ -122,7 +122,7 @@ To expand the leaderboard:
 
   * Add new CSV files to the `data/` directory.
   * Provide a `meta.yaml` describing the dataset:
-    - `task`: task type (e.g. `multiple_choice`, `open_ended`)
+    - `task`: task type (e.g. `multiple_choice`, `open_ended`, `text_generation`)
     - `metrics`: list of metric modules to compute
     - `evaluator`: path to the evaluator class
     - `prompt_template`: default prompt template
