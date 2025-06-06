@@ -18,10 +18,11 @@ import streamlit as st
 # ---------------------------------------------------------------------------
 # Project paths
 # ---------------------------------------------------------------------------
-RESULTS_DIR = Path("results")
-DATASETS_DIR = Path("data")        # where <dataset>/meta.yaml lives
-DASHBOARD_CSV = Path("dashboard/leaderboard.csv")
-MODELS_DIR = Path("models")
+ROOT_DIR = Path(__file__).resolve().parents[1]
+RESULTS_DIR = ROOT_DIR / "results"
+DATASETS_DIR = ROOT_DIR / "data"        # where <dataset>/meta.yaml lives
+DASHBOARD_CSV = ROOT_DIR / "dashboard" / "leaderboard.csv"
+MODELS_DIR = ROOT_DIR / "models"
 
 
 @st.cache_data(show_spinner=False)
