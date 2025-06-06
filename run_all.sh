@@ -15,7 +15,13 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # Edit these lists as needed                                                 #
 ##############################################################################
 MODEL_LIST=( "gpt-4.1-nano-2025-04-14" )     # ← models/<name>.yaml
-DATASET_LIST=( "mmlu-pro" )             # ← data/<dataset>/test.csv
+DATASET_LIST=(
+  "mmlu-pro" \
+  "sentiment" \
+  "nli" \
+  "paraphrase" \
+  "reading_comprehension" \
+)             # ← data/<dataset>/test.csv
 WORKERS=100                         # Python worker threads
 ##############################################################################
 

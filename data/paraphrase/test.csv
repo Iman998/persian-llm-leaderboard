@@ -1,0 +1,3 @@
+text,label
+"Sentence1: او به مدرسه رفت. Sentence2: او به آموزشگاه رفت.",not_paraphrase
+"Sentence1: من عاشق برنامه نویسی هستم. Sentence2: من برنامه نویسی را دوست دارم.",paraphrase
