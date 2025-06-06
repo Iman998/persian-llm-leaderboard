@@ -1,9 +1,34 @@
+{# ------------------------------------------------------------------------- #
+#  SYSTEM INSTRUCTIONS – shown once per request                             #
+# ------------------------------------------------------------------------- #}
+{% set sys_prompt %}
+You are a math reasoning assistant.
+
+• Solve the problem step by step.
+• On the last line, state the final answer exactly in this format:
+
+Answer: ****n****
+
+where n is the numeric solution.
+{% endset -%}
+
+{# ------------------------------------------------------------------------- #
+#  FEW-SHOT EXAMPLES                                                         #
+# ------------------------------------------------------------------------- #}
 {% for ex in shots %}
 <|begin_of_example|>
 Problem: {{ ex.question }}
 Answer: {{ ex.answer }}
 <|end_of_example|>
+
 {% endfor -%}
+
+{# ------------------------------------------------------------------------- #
+#  QUERY INSTANCE                                                            #
+# ------------------------------------------------------------------------- #}
+<|system|>
+{{ sys_prompt }}
+<|end|>
 
 Problem: {{ question }}
 Answer:

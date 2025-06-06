@@ -1,9 +1,30 @@
+{# ------------------------------------------------------------------------- #
+#  SYSTEM INSTRUCTIONS – shown once per request                             #
+# ------------------------------------------------------------------------- #}
+{% set sys_prompt %}
+You are a short-answer assistant.
+
+• Read the question carefully.
+• Provide a concise answer in one or two sentences.
+{% endset -%}
+
+{# ------------------------------------------------------------------------- #
+#  FEW-SHOT EXAMPLES                                                         #
+# ------------------------------------------------------------------------- #}
 {% for ex in shots %}
 <|begin_of_example|>
 Question: {{ ex.question }}
 Answer: {{ ex.answer }}
 <|end_of_example|>
+
 {% endfor -%}
+
+{# ------------------------------------------------------------------------- #
+#  QUERY INSTANCE                                                            #
+# ------------------------------------------------------------------------- #}
+<|system|>
+{{ sys_prompt }}
+<|end|>
 
 Question: {{ question }}
 Answer:

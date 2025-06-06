@@ -1,10 +1,32 @@
+{# ------------------------------------------------------------------------- #
+#  SYSTEM INSTRUCTIONS – shown once per request                             #
+# ------------------------------------------------------------------------- #}
+{% set sys_prompt %}
+You are a helpful coding assistant.
+
+• Read the task description carefully.
+• Provide a complete solution using code only.
+• Do not include any explanatory text.
+{% endset -%}
+
+{# ------------------------------------------------------------------------- #
+#  FEW-SHOT EXAMPLES                                                         #
+# ------------------------------------------------------------------------- #}
 {% for ex in shots %}
 <|begin_of_example|>
 Task: {{ ex.question }}
 Code:
 {{ ex.answer }}
 <|end_of_example|>
+
 {% endfor -%}
+
+{# ------------------------------------------------------------------------- #
+#  QUERY INSTANCE                                                            #
+# ------------------------------------------------------------------------- #}
+<|system|>
+{{ sys_prompt }}
+<|end|>
 
 Task: {{ question }}
 Code:
