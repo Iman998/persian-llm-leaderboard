@@ -1,0 +1,9 @@
+{% for ex in shots %}
+<|begin_of_example|>
+Question: {{ ex.question }}
+Answer: {{ ex.answer }}
+<|end_of_example|>
+{% endfor -%}
+
+Question: {{ question }}
+Answer:
