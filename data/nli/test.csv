@@ -1,0 +1,4 @@
+text,label
+"Premise: هوا آفتابی است. Hypothesis: امروز بارانی است.",contradiction
+"Premise: او در تهران زندگی می‌کند. Hypothesis: او در ایران زندگی می‌کند.",entailment
+"Premise: این کتاب جالب است. Hypothesis: نویسنده این کتاب مشهور است.",neutral

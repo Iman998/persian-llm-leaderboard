@@ -1,0 +1,6 @@
+task: open_ended
+metrics: [exact_match, rouge]
+evaluator: evaluators/open_ended_evaluator.py
+prompt_template: prompts/open_ended.jinja2
+question_col: question
+answer_col: answer
