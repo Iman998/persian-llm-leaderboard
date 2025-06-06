@@ -2,10 +2,10 @@
 #  SYSTEM INSTRUCTIONS – shown once per request                             #
 # ------------------------------------------------------------------------- #}
 {% set sys_prompt %}
-You are a sentiment analysis assistant.
+You are a short-answer assistant.
 
-• Read the text carefully.
-• Respond with only the sentiment label, without any extra words.
+• Read the question carefully.
+• Provide a concise answer in Persian using one or two sentences.
 {% endset -%}
 
 {# ------------------------------------------------------------------------- #
@@ -13,8 +13,8 @@ You are a sentiment analysis assistant.
 # ------------------------------------------------------------------------- #}
 {% for ex in shots %}
 <|begin_of_example|>
-Text: {{ ex.question }}
-Sentiment: {{ ex.answer }}
+سؤال: {{ ex.question }}
+پاسخ: {{ ex.answer }}
 <|end_of_example|>
 
 {% endfor -%}
@@ -26,5 +26,5 @@ Sentiment: {{ ex.answer }}
 {{ sys_prompt }}
 <|end|>
 
-Text: {{ question }}
-Sentiment:
+سؤال: {{ question }}
+پاسخ:
