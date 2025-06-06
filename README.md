@@ -22,6 +22,13 @@ This project provides an intuitive interface for comparing and benchmarking vari
 │   │   ├── test.csv              # Evaluation dataset
 │   │   └── meta.yaml             # Dataset metadata
 │   └── ...                       # Additional datasets
+│
+│   # meta.yaml fields
+│   # -----------------
+│   # task: dataset type (e.g. multiple_choice, open_ended)
+│   # metrics: list of metric names to compute
+│   # evaluator: path to the evaluator class
+│   # prompt_template: default prompt for the dataset
 ├── scripts
 │   └── run_eval.py               # Evaluation script
 ├── evaluators
@@ -62,6 +69,8 @@ To evaluate all models:
 ```bash
 bash run_all.sh
 ```
+The script now reads each dataset's `meta.yaml` to determine the
+appropriate evaluator, prompt template and metrics.
 
 To evaluate on a random subset of `N` rows (e.g. 250 rows per dataset):
 

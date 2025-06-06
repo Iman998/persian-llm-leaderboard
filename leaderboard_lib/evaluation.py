@@ -38,10 +38,10 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--dataset", required=True)
     parser.add_argument("--meta", required=True)
     parser.add_argument("--model", required=True)
-    parser.add_argument("--prompt", required=True)
+    parser.add_argument("--prompt")
     parser.add_argument("--shots", type=int, default=0)
     parser.add_argument("--workers", type=int, default=4)
-    parser.add_argument("--evaluator", default="evaluators/mcq_evaluator.py")
+    parser.add_argument("--evaluator")
     parser.add_argument("--out", required=True)
     parser.add_argument(
         "--n_rows",
@@ -59,9 +59,16 @@ def parse_args() -> argparse.Namespace:
 
 def load_configs(args: argparse.Namespace) -> tuple[type, dict[str, Any], dict[str, Any], pd.DataFrame]:
     """Load model/meta YAML and dataset, returning the Evaluator class."""
-    Evaluator = getattr(_load_module(args.evaluator), "MCQEvaluator")
-    model_cfg: dict[str, Any] = yaml.safe_load(Path(args.model).read_text())
     meta_cfg: dict[str, Any] = yaml.safe_load(Path(args.meta).read_text())
+    if not args.evaluator:
+        args.evaluator = meta_cfg.get("evaluator", "evaluators/mcq_evaluator.py")
+    if not args.prompt:
+        args.prompt = meta_cfg.get("prompt_template", "prompts/mcq_fewshot.jinja2")
+
+    class_name = "".join(part.title() for part in Path(args.evaluator).stem.split("_"))
+    Evaluator = getattr(_load_module(args.evaluator), class_name)
+
+    model_cfg: dict[str, Any] = yaml.safe_load(Path(args.model).read_text())
     df = _read_dataset(args.dataset, verbose=args.verbose)
     return Evaluator, model_cfg, meta_cfg, df
 
