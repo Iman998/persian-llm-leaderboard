@@ -13,6 +13,7 @@ import logging
 import sys
 from pathlib import Path
 from typing import Any
+import shutil
 
 import pandas as pd
 import yaml
@@ -192,4 +193,16 @@ def main() -> None:  # noqa: D401
 
     out_path = Path(args.out)
     save_results(result_df, meta_cfg, out_path, answer_col, question_col)
+
+    # ------------------------------------------------------------------
+    # Ensure sampled runs appear on the leaderboard
+    # ------------------------------------------------------------------
+    if args.n_rows:
+        base_stem = out_path.stem.rsplit(f"_{args.n_rows}", 1)[0]
+        dst = out_path.with_name(base_stem + out_path.suffix)
+        if dst != out_path:
+            shutil.copy2(out_path, dst)
+            for f in out_path.parent.glob(f"{out_path.stem}_*.csv"):
+                new_name = f.name.replace(out_path.stem, base_stem, 1)
+                shutil.copy2(f, f.with_name(new_name))
 
