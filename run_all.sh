@@ -96,11 +96,21 @@ for model in "${MODEL_LIST[@]}"; do
     out="${out_dir}/${model}${suffix}.csv"
     log "${GRN}RUN${NC}" "$model × $ds → $out"
 
+    prompt="$(python - <<'PY' "$meta"
+import sys, yaml; print(yaml.safe_load(open(sys.argv[1])).get('prompt_template', 'prompts/mcq_fewshot.jinja2'))
+PY
+)"
+    evaluator="$(python - <<'PY' "$meta"
+import sys, yaml; print(yaml.safe_load(open(sys.argv[1])).get('evaluator', 'evaluators/mcq_evaluator.py'))
+PY
+)"
+
     python "$ROOT/scripts/run_eval.py" \
       --dataset "$dataset_file" \
       --meta    "$meta" \
       --model   "models/${model}.yaml" \
-      --prompt  "prompts/mcq_fewshot.jinja2" \
+      --prompt  "$prompt" \
+      --evaluator "$evaluator" \
       --shots   3 \
       --workers "$WORKERS" \
       --out     "$out"

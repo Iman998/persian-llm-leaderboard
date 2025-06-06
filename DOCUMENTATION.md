@@ -50,6 +50,8 @@ To evaluate all predefined models and datasets at once, use:
 ```bash
 bash run_all.sh
 ```
+The script automatically uses each dataset's `meta.yaml` to select the
+evaluator, prompt template and metrics.
 
 ### Optional: Sample Random Subset of Rows
 
@@ -113,6 +115,11 @@ To expand the leaderboard:
 * **Datasets:**
 
   * Add new CSV files to the `data/` directory.
+  * Provide a `meta.yaml` describing the dataset:
+    - `task`: task type (e.g. `multiple_choice`, `open_ended`)
+    - `metrics`: list of metric modules to compute
+    - `evaluator`: path to the evaluator class
+    - `prompt_template`: default prompt template
   * Ensure `scripts/run_eval.py` supports your dataset's format.
 
 * **Models:**

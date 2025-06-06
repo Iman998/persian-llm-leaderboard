@@ -10,11 +10,19 @@ import re
 import sys
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Tuple
+import importlib.util
 
 import pandas as pd
 import yaml
 
 from .data_utils import _norm
+
+
+def _load_module(path: str):
+    spec = importlib.util.spec_from_file_location("dyn", path)
+    mod = importlib.util.module_from_spec(spec)  # type: ignore[arg-type]
+    spec.loader.exec_module(mod)  # type: ignore[attr-defined]
+    return mod
 
 # Desired column order in the final leaderboard (extend as needed)
 COL_ORDER: List[str] = [
@@ -40,21 +48,9 @@ def accuracy(df: pd.DataFrame, answer_col: str) -> float:
     return (df["pred"].map(_norm) == df[answer_col].map(_norm)).mean() * 100.0
 
 
-def dummy(_: pd.DataFrame, __: str | None = None) -> float:  # noqa: D401,E501
-    """Placeholder metric for generation / short-answer datasets."""
-    return 0.0
-
-_METRIC_SUFFIX_MAP: Dict[str, Tuple[Callable, str]] = {
-    "generation": (dummy, "Dummy"),
-    "shortanswer": (dummy, "Basic_containment"),
-}
-
-
-def pick_metric(ds_name: str) -> Tuple[Callable, str]:
-    for suffix, (fn, label) in _METRIC_SUFFIX_MAP.items():
-        if ds_name.endswith(suffix):
-            return fn, label
-    return accuracy, "Accuracy"
+def load_metric(name: str) -> Callable[[pd.Series, pd.Series], float]:
+    mod = _load_module(f"metrics/{name}.py")
+    return getattr(mod, "compute")
 
 
 # ─────────────────────────── leaderboard builder ──────────────────────────── #
@@ -118,18 +114,23 @@ def main() -> None:
             continue  # skip if answer column absent
 
         # Metric selection -----------------------------------------------------
-        metric_fn, metric_label = pick_metric(dataset)
-        value = metric_fn(df, answer_col) if metric_fn is not dummy else metric_fn(df)
+        metrics = ["accuracy"]
+        if meta_file.exists():
+            metrics = meta_cfg.get("metrics", ["accuracy"])
 
-        rows.append(
-            {
-                "dataset": dataset,
-                "model": model_name,
-                "model_type": model_type,
-                "metric_label": metric_label,
-                "value": value,
-            }
-        )
+        for metric_name in metrics:
+            metric_fn = load_metric(metric_name)
+            value = metric_fn(df["pred"], df[answer_col])
+
+            rows.append(
+                {
+                    "dataset": dataset,
+                    "metric_label": metric_name,
+                    "model": model_name,
+                    "model_type": model_type,
+                    "value": value,
+                }
+            )
 
     if not rows:
         print("No result CSVs found; nothing to build.")
@@ -140,7 +141,7 @@ def main() -> None:
     wide = (
         long.pivot_table(
             index=["model_type", "model"],
-            columns="dataset",
+            columns=["dataset", "metric_label"],
             values="value",
             aggfunc="mean",
         )
@@ -150,7 +151,7 @@ def main() -> None:
 
     # Rename dataset columns with metric label --------------------------------
     rename_map = {
-        ds: f"{ds} ({lbl})" for ds, lbl in long[["dataset", "metric_label"]].drop_duplicates("dataset").itertuples(index=False)
+        (ds, lbl): f"{ds} ({lbl})" for ds, lbl in long[["dataset", "metric_label"]].drop_duplicates().itertuples(index=False)
     }
     rename_map.update({"model_type": "Model Type", "model": "Model"})
     wide = wide.rename(columns=rename_map)

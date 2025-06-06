@@ -1,0 +1,10 @@
+{% for ex in shots %}
+<|begin_of_example|>
+Task: {{ ex.question }}
+Code:
+{{ ex.answer }}
+<|end_of_example|>
+{% endfor -%}
+
+Task: {{ question }}
+Code:

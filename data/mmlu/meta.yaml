@@ -13,3 +13,7 @@ category_cols:
   - "Subject"          # subjects of question
   - "Category"          # categories of question
   - "SubCategory"        # sub categories of question
+task: multiple_choice
+metrics: [accuracy]
+evaluator: evaluators/mcq_evaluator.py
+prompt_template: prompts/mcq_fewshot.jinja2
