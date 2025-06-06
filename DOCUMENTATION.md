@@ -74,16 +74,21 @@ This is useful for quick testing or partial evaluation when working with large d
 You can also run evaluations manually using:
 
 ```bash
-python scripts/run_eval.py --model MODEL_NAME --dataset DATASET_PATH [--n_rows N]
+python scripts/run_eval.py --model MODEL_NAME --dataset DATASET_PATH --out results/<dataset>/<model>/<model>.csv [--n_rows N]
 ```
 
 **Example:**
 
 ```bash
-python scripts/run_eval.py --model Qwen30 --dataset data/khayyam_challenge/test.csv --n_rows 250
+python scripts/run_eval.py --model Qwen30 --dataset data/khayyam_challenge/test.csv --out results/khayyam_challenge/Qwen30/Qwen30.csv --n_rows 250
 ```
 
 Evaluation results are saved under `results/<dataset>/<model>/<model>.csv`.
+After running `scripts/run_eval.py` you must rebuild the leaderboard:
+
+```bash
+python scripts/build_leaderboard.py --results_dir results --datasets_dir data --out dashboard/leaderboard.csv
+```
 
 When you sample rows with `run_all.sh --n_rows N` or pass `--n_rows` to
 `scripts/run_eval.py`, each run writes `results/<dataset>/<model>/<model>_N.csv`
