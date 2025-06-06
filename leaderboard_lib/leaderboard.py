@@ -161,10 +161,13 @@ def main() -> None:
 
     # Rename dataset columns with metric label --------------------------------
     rename_map = {
-        (ds, lbl): f"{ds} ({lbl})" for ds, lbl in long[["dataset", "metric_label"]].drop_duplicates().itertuples(index=False)
+        (ds, lbl): f"{ds} ({lbl})"
+        for ds, lbl in long[["dataset", "metric_label"]]
+        .drop_duplicates()
+        .itertuples(index=False)
     }
-    rename_map.update({"model_type": "Model Type", "model": "Model"})
-    wide = wide.rename(columns=rename_map)
+    rename_map.update({("model_type", ""): "Model Type", ("model", ""): "Model"})
+    wide.columns = [rename_map.get(tuple(c), c if isinstance(c, str) else c[0] if c[1] == "" else f"{c[0]} ({c[1]})") for c in wide.columns]
 
     # Ensure expected columns exist -------------------------------------------
     for col in COL_ORDER:
