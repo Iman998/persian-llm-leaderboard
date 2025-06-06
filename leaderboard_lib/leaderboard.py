@@ -59,7 +59,19 @@ def accuracy(df: pd.DataFrame, answer_col: str) -> float:
 
 
 def load_metric(name: str) -> Callable[[pd.Series, pd.Series], float]:
-    mod = _load_module(f"metrics/{name}.py")
+    """Load ``compute`` from ``metrics/<name>.py``.
+
+    Raises a ``FileNotFoundError`` if the metric module does not exist to help
+    troubleshoot missing metrics.
+    """
+
+    path = Path("metrics") / f"{name}.py"
+    if not path.is_file():
+        raise FileNotFoundError(f"Metric '{name}' not found: expected {path}")
+
+    mod = _load_module(str(path))
+    if not hasattr(mod, "compute"):
+        raise AttributeError(f"Metric module {path} is missing a 'compute' function")
     return getattr(mod, "compute")
 
 
@@ -95,10 +107,10 @@ def main() -> None:
         """Return a display-friendly metric label."""
         mapping = {
             "accuracy": "Accuracy",
-            "exact_match": "Exact match",
-            "f1": "f1",
+            "exact_match": "Exact Match",
+            "f1": "F1",
             "bleu": "BLEU",
-            "rouge": "ROUGE",
+            "rouge": "ROUGE-L",
         }
         return mapping.get(name, name)
 
