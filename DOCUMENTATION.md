@@ -85,9 +85,10 @@ python scripts/run_eval.py --model Qwen30 --dataset data/khayyam_challenge/test.
 
 Evaluation results are saved under `results/<dataset>/<model>/<model>.csv`.
 
-When you sample rows with `run_all.sh --n_rows N`, each run writes
-`results/<dataset>/<model>/<model>_N.csv` and also copies it to
-`results/<dataset>/<model>/<model>.csv` so the leaderboard has a consistent filename.
+When you sample rows with `run_all.sh --n_rows N` or pass `--n_rows` to
+`scripts/run_eval.py`, each run writes `results/<dataset>/<model>/<model>_N.csv`
+and also copies it to `results/<dataset>/<model>/<model>.csv` so the leaderboard
+has a consistent filename.
 Each model now has its own subfolder containing the main CSV, raw outputs, and per‑category scores.
 
 ---
