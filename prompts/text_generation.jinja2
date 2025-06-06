@@ -1,9 +1,30 @@
+{# ------------------------------------------------------------------------- #
+#  SYSTEM INSTRUCTIONS – shown once per request                             #
+# ------------------------------------------------------------------------- #}
+{% set sys_prompt %}
+You are a text generation assistant.
+
+• Read the input carefully.
+• Produce the requested text or translation without extra commentary.
+{% endset -%}
+
+{# ------------------------------------------------------------------------- #
+#  FEW-SHOT EXAMPLES                                                         #
+# ------------------------------------------------------------------------- #}
 {% for ex in shots %}
 <|begin_of_example|>
 Input: {{ ex.question }}
 Output: {{ ex.answer }}
 <|end_of_example|>
+
 {% endfor -%}
+
+{# ------------------------------------------------------------------------- #
+#  QUERY INSTANCE                                                            #
+# ------------------------------------------------------------------------- #}
+<|system|>
+{{ sys_prompt }}
+<|end|>
 
 Input: {{ question }}
 Output:
