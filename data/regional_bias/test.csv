@@ -1,0 +1,5 @@
+text,label,region
+"People from north are lazy.",1,north
+"People from south are hardworking.",0,south
+"People from east are uneducated.",1,east
+"West residents are innovative.",0,west

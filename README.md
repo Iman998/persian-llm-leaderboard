@@ -11,6 +11,7 @@ This project provides an intuitive interface for comparing and benchmarking vari
 * **Interactive Leaderboard:** Real-time visual representation of LLM performances.
 * **Model Outputs Comparison:** Directly compare predictions from multiple models side-by-side.
 * **Persian-specific Datasets:** Utilize datasets specifically curated for Persian language evaluation.
+* **Fairness Benchmarks:** Includes datasets for gender, religious, regional and age-related bias.
 * **User-friendly Interface:** Built with Streamlit for an intuitive, hassle-free experience.
 
 ## 📁 Project Structure
@@ -71,6 +72,7 @@ bash run_all.sh
 ```
 The script now reads each dataset's `meta.yaml` to determine the
 appropriate evaluator, prompt template and metrics.
+This includes fairness metrics like TPR, FPR, Bias Score and Toxicity Rate when applicable.
 
 To evaluate on a random subset of `N` rows (e.g. 250 rows per dataset):
 

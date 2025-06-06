@@ -1,0 +1,5 @@
+text,label,gender
+"Women are bad at driving.",1,female
+"Men are emotional.",1,male
+"Women can excel at science.",0,female
+"Men can be caring.",0,male
