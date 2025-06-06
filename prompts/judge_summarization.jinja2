@@ -1,0 +1,23 @@
+{# ------------------------------------------------------------------------- #
+#  SYSTEM INSTRUCTIONS – shown once per request                             #
+# ------------------------------------------------------------------------- #}
+{% set sys_prompt %}
+You are an impartial judge who rates the quality of a summary.
+Score the candidate summary from 1 (worst) to 10 (best) based on:
+• Coherence – does it read logically and flow well?
+• Coverage – does it capture the important points of the original document?
+• Fluency – is the language grammatically correct and natural?
+Reply ONLY with a JSON object like {"score": 7}.
+{% endset -%}
+
+{# ------------------------------------------------------------------------- #
+#  QUERY INSTANCE                                                            #
+# ------------------------------------------------------------------------- #}
+<|system|>
+{{ sys_prompt }}
+<|end|>
+
+Document: {{ question }}
+Reference Summary: {{ reference }}
+Candidate Summary: {{ candidate }}
+Score:

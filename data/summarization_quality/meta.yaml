@@ -1,0 +1,7 @@
+question_col: "document"
+answer_col: "reference"
+candidate_col: "candidate"
+task: text_generation
+metrics: [rouge]
+evaluator: evaluators/judge_evaluator.py
+prompt_template: prompts/judge_summarization.jinja2

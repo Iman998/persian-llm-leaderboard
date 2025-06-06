@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+import json
 import re
 import pandas as pd
 
@@ -44,6 +45,26 @@ class JudgeEvaluator(BaseEvaluator):
         return self.template.render(**query)
 
     def _extract(self, text: str) -> str | None:
+        """Return the first numeric score from ``text``.
+
+        The model is expected to output a JSON object like ``{"score": 7}``. If
+        JSON parsing fails, fall back to extracting the first number found in the
+        text (Persian or ASCII digits).
+        """
+
+        text = text.strip()
+        if not text:
+            return None
+
+        # Attempt JSON parsing first -----------------------------------------
+        try:
+            data = json.loads(text)
+            if isinstance(data, dict) and "score" in data:
+                return str(data["score"]).translate(PERS_TO_ASCII).strip()
+        except json.JSONDecodeError:
+            pass
+
+        # Fallback to regex extraction ---------------------------------------
         m = SCORE_REGEX.search(text)
         if not m:
             return None
