@@ -12,6 +12,8 @@ from jinja2 import Environment
 from tqdm import tqdm
 from openai import OpenAI, APIConnectionError, APITimeoutError, BadRequestError
 
+from leaderboard_lib.utils import load_api_key
+
 
 class BaseEvaluator:
     """Base class for evaluating datasets with an LLM backend."""
@@ -27,8 +29,13 @@ class BaseEvaluator:
         max_retries: int = 3,
     ) -> None:
         # OpenAI client ------------------------------------------------------
+        api_key = model_cfg.get("api_key") or load_api_key()
+        if not api_key:
+            raise RuntimeError(
+                "OpenAI API key missing. Set OPENAI_API_KEY or use secrets.toml"
+            )
         self.client = OpenAI(
-            api_key=model_cfg["api_key"],
+            api_key=api_key,
             base_url=model_cfg["base_url"],
             timeout=100_000,
         )
