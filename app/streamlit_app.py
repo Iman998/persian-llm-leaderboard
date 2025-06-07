@@ -172,7 +172,9 @@ elif page == "Dataset view":
             start = (page - 1) * page_size
             end = start + page_size
             st.dataframe(
-                merged.iloc[start:end], use_container_width=True, height=400
+                gradient(merged.iloc[start:end]),
+                use_container_width=True,
+                height=400,
             )
             st.download_button(
                 "Download comparison CSV",
@@ -211,7 +213,9 @@ elif page == "Dataset view":
             )
             start = (page - 1) * page_size
             end = start + page_size
-            st.dataframe(comp.iloc[start:end], use_container_width=True)
+            st.dataframe(
+                gradient(comp.iloc[start:end]), use_container_width=True
+            )
             st.bar_chart(comp)
             st.download_button(
                 "Download category comparison",
@@ -317,7 +321,9 @@ elif page == "LLM Judge":
             )
             start = (page - 1) * page_size
             end = start + page_size
-            st.dataframe(comp_df.iloc[start:end], use_container_width=True)
+            st.dataframe(
+                gradient(comp_df.iloc[start:end]), use_container_width=True
+            )
             st.bar_chart(comp_df)
             st.download_button(
                 "Download category comparison",

@@ -56,18 +56,41 @@ def numeric_cols(df: pd.DataFrame) -> List[str]:
     return [c for c in df.columns if pd.api.types.is_numeric_dtype(df[c])]
 
 
-def gradient(df: pd.DataFrame):
-    """Return a DataFrame style with a green gradient.
+def medal_colors(avgs: pd.Series) -> List[str]:
+    """Map ``Average`` values to medal colors.
 
-    The function highlights the ``Average`` column and falls back to returning
-    ``df`` untouched if ``matplotlib`` is not installed.
+    Returns a list of hex color strings (or ``""`` when no medal applies)
+    corresponding to each value in ``avgs`` sorted by rank. The top three
+    values receive gold, silver and bronze respectively.
     """
+
+    ranks = avgs.rank(method="first", ascending=False).astype(int)
+    medal_map = {1: "#FFD700", 2: "#C0C0C0", 3: "#CD7F32"}
+    return [medal_map.get(r, "") for r in ranks]
+
+
+def gradient(df: pd.DataFrame):
+    """Return a styled DataFrame with numeric gradients and medal highlights."""
+
     try:
         import matplotlib  # noqa: F401
-        return (
-            df.style.background_gradient(axis=0, cmap="Greens", subset=numeric_cols(df))
-              .highlight_max(axis=0, subset=["Average"], color="#ffd60a")
+
+        medal_cols = medal_colors(df.get("Average", pd.Series(dtype=float)))
+
+        def _avg_style(_: pd.Series) -> List[str]:
+            return [f"background-color: {c}" if c else "" for c in medal_cols]
+
+        def _model_style(_: pd.Series) -> List[str]:
+            return [f"color: {c}" if c else "" for c in medal_cols]
+
+        styler = (
+            df.style.background_gradient(
+                axis=0, cmap="RdYlGn", subset=numeric_cols(df)
+            )
+            .apply(_avg_style, subset=["Average"], axis=0)
+            .apply(_model_style, subset=["Model"], axis=0)
         )
+        return styler
     except ImportError:  # pragma: no cover - optional dependency
         return df
 
