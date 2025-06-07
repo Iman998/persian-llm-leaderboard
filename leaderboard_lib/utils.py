@@ -27,6 +27,8 @@ def _load_module(path: str):
         module_name = ".".join(rel.with_suffix("").parts)
         return importlib.import_module(module_name)
     spec = importlib.util.spec_from_file_location("dyn", path)
+    if spec is None or spec.loader is None:
+        raise ImportError(f"Cannot load module from {path!r}")
     mod = importlib.util.module_from_spec(spec)  # type: ignore[arg-type]
     spec.loader.exec_module(mod)  # type: ignore[attr-defined]
     return mod
