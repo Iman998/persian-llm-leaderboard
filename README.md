@@ -13,6 +13,7 @@ This project provides an intuitive interface for comparing and benchmarking vari
 * **Persian-specific Datasets:** Utilize datasets specifically curated for Persian language evaluation.
 * **Fairness Benchmarks:** Includes datasets for gender, religious, regional and age-related bias.
 * **User-friendly Interface:** Built with Streamlit for an intuitive, hassle-free experience.
+* **Interactive Quick Chart:** Use sliders to pick the metric, adjust the page size, and set the start index.
 
 ## 📁 Project Structure
 
@@ -64,6 +65,8 @@ To start the dashboard:
 pip install -r requirements.txt
 streamlit run app/streamlit_app.py
 ```
+
+The dashboard includes a **Quick chart** expander where you can choose the metric and use sliders to control how many models are displayed and where the chart starts.
 
 To evaluate all models:
 
