@@ -161,7 +161,19 @@ elif page == "Dataset view":
         if merged is None:
             st.warning("No compatible raw files for selected models.")
         else:
-            st.dataframe(merged.head(500), use_container_width=True, height=400)
+            page_size = st.selectbox(
+                "Rows per page", [50, 100, 200], key="rows_page_size"
+            )
+            total_rows = len(merged)
+            total_pages = max(1, (total_rows + page_size - 1) // page_size)
+            page = st.number_input(
+                "Page", 1, total_pages, 1, key="rows_page", format="%d"
+            )
+            start = (page - 1) * page_size
+            end = start + page_size
+            st.dataframe(
+                merged.iloc[start:end], use_container_width=True, height=400
+            )
             st.download_button(
                 "Download comparison CSV",
                 merged.to_csv(index=False).encode(),
@@ -189,7 +201,17 @@ elif page == "Dataset view":
 
         if frames:
             comp = pd.concat(frames, axis=1)
-            st.dataframe(comp, use_container_width=True)
+            page_size = st.selectbox(
+                "Rows per page", [50, 100, 200], key="cat_page_size"
+            )
+            total_rows = len(comp)
+            total_pages = max(1, (total_rows + page_size - 1) // page_size)
+            page = st.number_input(
+                "Page", 1, total_pages, 1, key="cat_page", format="%d"
+            )
+            start = (page - 1) * page_size
+            end = start + page_size
+            st.dataframe(comp.iloc[start:end], use_container_width=True)
             st.bar_chart(comp)
             st.download_button(
                 "Download category comparison",
@@ -285,7 +307,17 @@ elif page == "LLM Judge":
 
         if frames:
             comp_df = pd.concat(frames, axis=1)
-            st.dataframe(comp_df, use_container_width=True)
+            page_size = st.selectbox(
+                "Rows per page", [50, 100, 200], key="judge_cat_page_size"
+            )
+            total_rows = len(comp_df)
+            total_pages = max(1, (total_rows + page_size - 1) // page_size)
+            page = st.number_input(
+                "Page", 1, total_pages, 1, key="judge_cat_page", format="%d"
+            )
+            start = (page - 1) * page_size
+            end = start + page_size
+            st.dataframe(comp_df.iloc[start:end], use_container_width=True)
             st.bar_chart(comp_df)
             st.download_button(
                 "Download category comparison",
