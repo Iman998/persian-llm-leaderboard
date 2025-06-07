@@ -96,21 +96,6 @@ and also copies it to `results/<dataset>/<model>/<model>.csv` so the leaderboard
 has a consistent filename.
 Each model now has its own subfolder containing the main CSV, raw outputs, and per‑category scores.
 
-### Running LLM Judge Evaluations
-
-Some datasets use a separate model to score candidate answers. To run these evaluations you can either include the
-judge datasets in `run_all.sh` or invoke `scripts/run_eval.py` manually. Example:
-
-```bash
-python scripts/run_eval.py --model JUDGE_MODEL \
-    --dataset data/translation_quality/test.csv \
-    --evaluator evaluators/judge_evaluator.py \
-    --prompt prompts/judge_translation.jinja2 \
-    --out results/translation_quality/JUDGE_MODEL/JUDGE_MODEL.csv
-```
-
-The judge model's YAML file must specify `api_key` and `base_url` so the evaluator can contact the API.
-
 ---
 
 ## 🌐 Launching the Streamlit Dashboard
@@ -126,24 +111,6 @@ Then, open your browser and navigate to:
 ```
 http://localhost:8501
 ```
-The sidebar includes an **LLM Judge** page where you can explore scores from judge evaluations.
-
----
-
-## 📐 Judge Metrics Explained
-
-The repository defines several metrics used during evaluation (see the `metrics/` directory):
-
-* **accuracy** – portion of predictions equal to the reference.【F:metrics/accuracy.py†L2-L16】
-* **exact_match** – strict string match of prediction and label.【F:metrics/exact_match.py†L1-L16】
-* **f1** – token-level F1 over shared words.【F:metrics/f1.py†L4-L18】
-* **bleu** – 4‑gram BLEU with brevity penalty for translations.【F:metrics/bleu.py†L1-L27】
-* **rouge** – ROUGE-L based on the longest common subsequence.【F:metrics/rouge.py†L1-L25】
-* **llm_judge_score** – mean numeric rating returned by the judge model.【F:metrics/llm_judge_score.py†L1-L4】
-* **precision**, **recall** and **matthews_corrcoef** – common classification metrics.【F:metrics/precision.py†L1-L19】【F:metrics/recall.py†L1-L18】【F:metrics/matthews_corrcoef.py†L1-L22】
-* **tpr** and **fpr** – true and false positive rates.【F:metrics/tpr.py†L1-L12】【F:metrics/fpr.py†L1-L12】
-* **bias_score** – `(1 - TPR) + FPR` to capture bias.【F:metrics/bias_score.py†L1-L15】
-* **toxicity_rate** – fraction of outputs flagged toxic.【F:metrics/toxicity_rate.py†L1-L8】
 
 ---
 
