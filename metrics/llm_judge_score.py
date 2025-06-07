@@ -1,3 +1,6 @@
+"""Aggregated score for LLM-as-judge outputs."""
+
+
 def compute(preds, labels):
     """Return the mean of predictions converted to float."""
     values = [float(p) for p in preds]

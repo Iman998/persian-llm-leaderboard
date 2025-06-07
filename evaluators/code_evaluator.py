@@ -1,3 +1,5 @@
+"""Evaluator for code generation benchmarks."""
+
 from __future__ import annotations
 
 from pathlib import Path

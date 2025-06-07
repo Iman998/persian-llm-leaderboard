@@ -1,3 +1,5 @@
+"""Specialised evaluator for classification-style datasets."""
+
 from __future__ import annotations
 
 from pathlib import Path
