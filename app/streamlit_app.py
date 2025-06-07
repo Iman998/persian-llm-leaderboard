@@ -188,4 +188,62 @@ elif page == "Dataset view":
 
 elif page == "LLM Judge":
     st.title("🤖 LLM Judge")
-    st.info("This section is under construction.")
+
+    judge_datasets = [
+        d
+        for d in datasets
+        if "summarization" in d.lower() or "translation" in d.lower()
+    ]
+
+    if not judge_datasets:
+        st.info("No LLM-judge datasets available.")
+        st.stop()
+
+    ds_sel = st.sidebar.selectbox("📂 Dataset", judge_datasets)
+
+    models = sorted({m for (ds, m) in main_map if ds == ds_sel})
+    if not models:
+        st.info("No model results for this dataset.")
+        st.stop()
+
+    frames = []
+    metric_names: set[str] = set()
+    for m in models:
+        p = main_map.get((ds_sel, m))
+        if not p:
+            continue
+        df = load_csv(p)
+        df_num = df.apply(pd.to_numeric, errors="coerce")
+        cols = [
+            c
+            for c in df_num.columns
+            if (
+                c.lower().startswith("score")
+                or c.lower().startswith("pred")
+                or "judge" in c.lower()
+            )
+            and not df_num[c].isna().all()
+        ]
+        if not cols:
+            cols = [c for c in df_num.columns if not df_num[c].isna().all()]
+        if not cols:
+            continue
+
+        scores = {c: df_num[c].mean() for c in cols}
+        if len(scores) > 1:
+            scores["Average"] = sum(scores.values()) / len(scores)
+        frames.append({"Model": m, **scores})
+        metric_names.update(scores.keys())
+
+    if not frames:
+        st.info("No judge scores found.")
+        st.stop()
+
+    metric_order = ["Model"] + [c for c in sorted(metric_names) if c != "Model"]
+    df_table = pd.DataFrame(frames)[metric_order]
+    st.dataframe(gradient(df_table), use_container_width=True, height=500)
+    st.download_button(
+        "Download CSV",
+        df_table.to_csv(index=False).encode(),
+        file_name=f"{ds_sel}_judge_scores.csv",
+    )
