@@ -17,6 +17,7 @@ from pathlib import Path
 
 import pandas as pd
 import streamlit as st
+import altair as alt
 
 from utils import (
     DASHBOARD_CSV,
@@ -66,7 +67,19 @@ if page == "Leaderboard":
 
     with st.expander("📊 Quick chart"):
         metric = st.selectbox("Metric", numeric_cols(board_df), 0)
-        st.bar_chart(board_df[["Model", metric]].set_index("Model"))
+        max_models = len(board_df)
+        page_size = st.slider("Models per view", 1, max_models, min(10, max_models))
+        start = st.slider("Start index", 0, max_models - page_size, 0)
+        chart_df = board_df.iloc[start:start + page_size]
+        chart = (
+            alt.Chart(chart_df)
+            .mark_bar()
+            .encode(
+                x=alt.X(metric, type="quantitative"),
+                y=alt.Y("Model", sort="-x"),
+            )
+        )
+        st.altair_chart(chart, use_container_width=True)
 
     st.download_button("Download CSV", DASHBOARD_CSV.read_bytes(), "leaderboard.csv")
     st.stop()
