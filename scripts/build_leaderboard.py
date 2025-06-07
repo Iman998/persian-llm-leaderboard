@@ -15,6 +15,6 @@ if str(ROOT_DIR) not in sys.path:
 from leaderboard_lib.leaderboard import main
 
 if __name__ == "__main__":
-    if sys.version_info < (3, 9):
-        sys.exit("Python ≥ 3.9 required")
+    if sys.version_info < (3, 10):
+        sys.exit("Python ≥ 3.10 required")
     main()
