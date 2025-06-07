@@ -14,6 +14,7 @@ from typing import Dict, List, Tuple
 import pandas as pd
 import yaml
 import streamlit as st
+import numpy as np
 
 # ---------------------------------------------------------------------------
 # Project paths
@@ -73,15 +74,36 @@ def gradient(df: pd.DataFrame):
     """Return a styled DataFrame with numeric gradients and medal highlights."""
 
     try:
-        import matplotlib  # noqa: F401
+        import matplotlib
+        from matplotlib import cm, colors as mcolors
 
         medal_cols = medal_colors(df.get("Average", pd.Series(dtype=float)))
 
         def _avg_style(_: pd.Series) -> List[str]:
             return [f"background-color: {c}" if c else "" for c in medal_cols]
 
+        avgs = df.get("Average", pd.Series(dtype=float)).astype(float)
+        if avgs.empty:
+            model_styles = ["" for _ in range(len(df))]
+        else:
+            vmin, vmax = float(avgs.min()), float(avgs.max())
+            denom = vmax - vmin if vmax != vmin else 1.0
+            cmap = cm.get_cmap("RdYlGn")
+
+            def _style(v: float) -> str:
+                if np.isnan(v):
+                    return ""
+                frac = (v - vmin) / denom
+                rgb = cmap(frac)[:3]
+                bg = mcolors.rgb2hex(rgb)
+                brightness = 0.2126 * rgb[0] + 0.7152 * rgb[1] + 0.0722 * rgb[2]
+                text = "#000000" if brightness > 0.5 else "#FFFFFF"
+                return f"background-color: {bg}; color: {text}"
+
+            model_styles = [_style(v) for v in avgs]
+
         def _model_style(_: pd.Series) -> List[str]:
-            return [f"color: {c}" if c else "" for c in medal_cols]
+            return model_styles
 
         styler = (
             df.style.background_gradient(
