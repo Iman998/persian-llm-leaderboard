@@ -6,6 +6,7 @@ import importlib
 import importlib.util
 from pathlib import Path
 import os
+import re
 import tomllib
 
 
@@ -30,13 +31,22 @@ def _load_module(path: str):
     spec.loader.exec_module(mod)  # type: ignore[attr-defined]
     return mod
 
-def load_api_key() -> str | None:
-    """Return the OpenAI API key from environment or ``secrets.toml``.
+def load_api_key(model_name: str | None = None) -> str | None:
+    """Return the OpenAI API key for *model_name*.
 
-    The function checks the ``OPENAI_API_KEY`` environment variable first. If
-    not present, it looks for ``secrets.toml`` in the repository root and
-    returns ``[openai].api_key`` or ``api_key`` from the TOML file.
+    The lookup order is:
+    1. ``OPENAI_API_KEY_<MODEL>`` environment variable if *model_name* is given
+       (converted to an uppercase identifier).
+    2. ``OPENAI_API_KEY`` environment variable.
+    3. ``secrets.toml`` – ``[model_keys].[MODEL]`` if present.
+    4. ``secrets.toml`` – ``[openai].api_key`` or top-level ``api_key``.
     """
+
+    if model_name:
+        ident = re.sub(r"[^A-Za-z0-9]", "_", model_name).upper()
+        key = os.getenv(f"OPENAI_API_KEY_{ident}")
+        if key:
+            return key
 
     key = os.getenv("OPENAI_API_KEY")
     if key:
@@ -46,6 +56,13 @@ def load_api_key() -> str | None:
     if secrets_file.exists():
         data = tomllib.loads(secrets_file.read_text())
         if isinstance(data, dict):
+            model_keys = data.get("model_keys")
+            if (
+                model_name is not None
+                and isinstance(model_keys, dict)
+                and model_name in model_keys
+            ):
+                return model_keys[model_name]
             if "api_key" in data:
                 return data["api_key"]
             openai_section = data.get("openai")

@@ -100,11 +100,19 @@ python scripts/run_eval.py --model JUDGE_MODEL \
 
 Model configuration files in `models/` specify only the model name and base URL.
 The OpenAI API key is provided at runtime via the `OPENAI_API_KEY` environment
-variable or a `secrets.toml` file in the project root. Example `secrets.toml`:
+variable or a `secrets.toml` file in the project root.
+
+Each model can also have its own key by setting `OPENAI_API_KEY_<MODEL>` or by
+listing the key under `[model_keys]` in `secrets.toml`.
+Example `secrets.toml`:
 
 ```toml
 [openai]
-api_key = "sk-your-key"
+api_key = "default-key"
+
+[model_keys]
+Qwen30 = "sk-qwen"
+gemma-3-27b-it = "sk-gemma"
 ```
 
 Be sure to add `secrets.toml` to `.gitignore` so the key is not committed:
