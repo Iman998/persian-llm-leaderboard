@@ -85,6 +85,30 @@ bash run_all.sh --n_rows 250
 `run_all.sh` automatically rebuilds the leaderboard. If you run evaluations manually with `scripts/run_eval.py`, call `scripts/build_leaderboard.py` afterward to update `dashboard/leaderboard.csv`.
 The Streamlit dashboard will also attempt to build the leaderboard automatically when results are present but the CSV is missing.
 
+## 🤖 LLM Judge Evaluation
+
+Some datasets use a second model to "judge" the quality of a candidate answer. To run these evaluations include the
+desired judge datasets in `run_all.sh`'s `DATASET_LIST` or call `scripts/run_eval.py` directly:
+
+```bash
+python scripts/run_eval.py --model JUDGE_MODEL \
+    --dataset data/summarization_quality/test.csv \
+    --evaluator evaluators/judge_evaluator.py \
+    --prompt prompts/judge_summarization.jinja2 \
+    --out results/summarization_quality/JUDGE_MODEL/JUDGE_MODEL.csv
+```
+
+Model configuration files in `models/` must specify the API key and base URL for the judge model, e.g.
+
+```yaml
+name: gpt-4.1-nano-2025-04-14
+api_key: "YOUR_API_KEY"
+base_url: "https://api.example.com/v1"
+model: "gpt-4.1-nano-2025-04-14"
+```
+
+After running a judge evaluation, restart the Streamlit dashboard and select the **LLM Judge** page to explore the scores.
+
 ## 🤝 Contributing
 
 Contributions and suggestions are welcome! Feel free to open issues or submit pull requests to enhance this project.
