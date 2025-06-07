@@ -1,3 +1,5 @@
+"""Evaluator base for short-answer question answering tasks."""
+
 from __future__ import annotations
 
 from pathlib import Path

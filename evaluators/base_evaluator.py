@@ -1,3 +1,5 @@
+"""Base evaluator providing OpenAI request logic and prompting support."""
+
 from __future__ import annotations
 
 from pathlib import Path

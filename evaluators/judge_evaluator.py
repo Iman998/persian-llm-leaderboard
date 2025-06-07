@@ -1,3 +1,5 @@
+"""Evaluator that uses an LLM to grade other model outputs."""
+
 from __future__ import annotations
 
 from pathlib import Path

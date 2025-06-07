@@ -1,3 +1,5 @@
+"""Evaluator for passage-based question answering datasets."""
+
 from __future__ import annotations
 
 from pathlib import Path

@@ -1,3 +1,5 @@
+"""Evaluator for natural language inference datasets."""
+
 from __future__ import annotations
 
 from pathlib import Path

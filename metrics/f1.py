@@ -1,3 +1,5 @@
+"""Token-level F1 score implementation."""
+
 from collections import Counter
 
 
@@ -14,5 +16,6 @@ def _f1(pred: str, label: str) -> float:
 
 
 def compute(preds, labels):
+    """Return mean token F1 over ``preds`` and ``labels``."""
     scores = [_f1(p, l) for p, l in zip(preds, labels)]
     return sum(scores) / len(scores) if scores else 0.0

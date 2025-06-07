@@ -1,3 +1,5 @@
+"""Evaluator for tasks that require free-form text generation."""
+
 from __future__ import annotations
 
 from pathlib import Path

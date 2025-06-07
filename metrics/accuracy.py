@@ -1,3 +1,6 @@
+"""Accuracy metric (fraction of exact matches)."""
+
+
 def compute(preds, labels):
     """Simple accuracy.
 

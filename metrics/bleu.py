@@ -1,3 +1,11 @@
+"""Token-based BLEU score implementation.
+
+This module implements a lightweight version of BLEU used to
+evaluate translation and text generation quality. The :func:`compute`
+function returns the corpus-level BLEU score over a sequence of
+predictions and reference texts.
+"""
+
 from collections import Counter
 from math import exp, log
 
@@ -28,5 +36,6 @@ def _bleu(pred: str, label: str, max_n: int = 4) -> float:
 
 
 def compute(preds, labels):
+    """Return the corpus-level BLEU score for *preds* and *labels*."""
     scores = [_bleu(str(p), str(l)) for p, l in zip(preds, labels)]
     return sum(scores) / len(scores) if scores else 0.0
