@@ -141,6 +141,9 @@ Then, open your browser and navigate to:
 http://localhost:8501
 ```
 The sidebar includes an **LLM Judge** page where you can explore scores from judge evaluations.
+Navigation uses a sidebar radio widget with page icons, making it easy to switch between the
+Leaderboard, Dataset view and Judge pages. Tables use the same red→yellow→green gradient as the
+leaderboard so category comparisons share the color scheme.
 
 Numeric columns in tables use a red→yellow→green gradient. The top three
 ``Average`` values are highlighted with gold, silver and bronze, and the
