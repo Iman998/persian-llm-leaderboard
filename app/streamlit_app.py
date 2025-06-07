@@ -247,3 +247,37 @@ elif page == "LLM Judge":
         df_table.to_csv(index=False).encode(),
         file_name=f"{ds_sel}_judge_scores.csv",
     )
+
+    # ------------------- Optional per-category breakdown -------------------- #
+    cat_names = sorted({k[2] for k in cat_map if k[0] == ds_sel and k[1] in models})
+    if cat_names:
+        st.subheader("Category breakdown")
+        cat_sel = st.selectbox("Category column", cat_names)
+
+        frames = []
+        for m in models:
+            p = cat_map.get((ds_sel, m, cat_sel))
+            if not p:
+                continue
+            df_c = load_csv(p)
+            if cat_sel not in df_c.columns:
+                st.warning(f"{cat_sel} column missing in {p.name}; skipped.")
+                continue
+            metric_cols = [c for c in df_c.columns if c != cat_sel]
+            metric_col = metric_cols[0] if metric_cols else None
+            if metric_col is None:
+                continue
+            df_c = df_c.rename(columns={metric_col: m}).set_index(cat_sel)
+            frames.append(df_c)
+
+        if frames:
+            comp_df = pd.concat(frames, axis=1)
+            st.dataframe(comp_df, use_container_width=True)
+            st.bar_chart(comp_df)
+            st.download_button(
+                "Download category comparison",
+                comp_df.reset_index().to_csv(index=False).encode(),
+                file_name=f"{ds_sel}_{cat_sel}_judge_compare.csv",
+            )
+        else:
+            st.warning("Category CSVs not found for selected models.")
