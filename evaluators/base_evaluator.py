@@ -29,7 +29,7 @@ class BaseEvaluator:
         max_retries: int = 3,
     ) -> None:
         # OpenAI client ------------------------------------------------------
-        api_key = model_cfg.get("api_key") or load_api_key()
+        api_key = model_cfg.get("api_key") or load_api_key(model_cfg.get("model"))
         if not api_key:
             raise RuntimeError(
                 "OpenAI API key missing. Set OPENAI_API_KEY or use secrets.toml"
