@@ -5,6 +5,8 @@ from __future__ import annotations
 import importlib
 import importlib.util
 from pathlib import Path
+import os
+import tomllib
 
 
 def _load_module(path: str):
@@ -28,4 +30,29 @@ def _load_module(path: str):
     spec.loader.exec_module(mod)  # type: ignore[attr-defined]
     return mod
 
-__all__ = ["_load_module"]
+def load_api_key() -> str | None:
+    """Return the OpenAI API key from environment or ``secrets.toml``.
+
+    The function checks the ``OPENAI_API_KEY`` environment variable first. If
+    not present, it looks for ``secrets.toml`` in the repository root and
+    returns ``[openai].api_key`` or ``api_key`` from the TOML file.
+    """
+
+    key = os.getenv("OPENAI_API_KEY")
+    if key:
+        return key
+
+    secrets_file = Path(__file__).resolve().parents[1] / "secrets.toml"
+    if secrets_file.exists():
+        data = tomllib.loads(secrets_file.read_text())
+        if isinstance(data, dict):
+            if "api_key" in data:
+                return data["api_key"]
+            openai_section = data.get("openai")
+            if isinstance(openai_section, dict) and "api_key" in openai_section:
+                return openai_section["api_key"]
+
+    return None
+
+
+__all__ = ["_load_module", "load_api_key"]

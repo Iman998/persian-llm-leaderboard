@@ -58,9 +58,12 @@ htmlcov/
 pytest_cache/
 
 ##############################
-#  Streamlit
+#  Secrets
 ##############################
-.streamlit/*.toml   # e.g., secrets.toml
+# Root API key file
+secrets.toml
+# Streamlit configuration
+.streamlit/*.toml
 
 ##############################
 #  Project-specific folders

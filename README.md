@@ -98,11 +98,25 @@ python scripts/run_eval.py --model JUDGE_MODEL \
     --out results/summarization_quality/JUDGE_MODEL/JUDGE_MODEL.csv
 ```
 
-Model configuration files in `models/` must specify the API key and base URL for the judge model, e.g.
+Model configuration files in `models/` specify only the model name and base URL.
+The OpenAI API key is provided at runtime via the `OPENAI_API_KEY` environment
+variable or a `secrets.toml` file in the project root. Example `secrets.toml`:
+
+```toml
+[openai]
+api_key = "sk-your-key"
+```
+
+Be sure to add `secrets.toml` to `.gitignore` so the key is not committed:
+
+```bash
+echo 'secrets.toml' >> .gitignore
+```
+
+The model YAML files remain minimal:
 
 ```yaml
 name: gpt-4.1-nano-2025-04-14
-api_key: "YOUR_API_KEY"
 base_url: "https://api.example.com/v1"
 model: "gpt-4.1-nano-2025-04-14"
 ```

@@ -109,7 +109,14 @@ python scripts/run_eval.py --model JUDGE_MODEL \
     --out results/translation_quality/JUDGE_MODEL/JUDGE_MODEL.csv
 ```
 
-The judge model's YAML file must specify `api_key` and `base_url` so the evaluator can contact the API.
+The judge model's YAML file only defines the model name and `base_url`.
+Provide the OpenAI API key via the `OPENAI_API_KEY` environment variable or in
+`secrets.toml` at the project root so the evaluator can contact the API. Example:
+
+```toml
+[openai]
+api_key = "sk-your-key"
+```
 
 ---
 
