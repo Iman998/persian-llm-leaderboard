@@ -142,6 +142,10 @@ http://localhost:8501
 ```
 The sidebar includes an **LLM Judge** page where you can explore scores from judge evaluations.
 
+Numeric columns in tables use a red→yellow→green gradient. The top three
+``Average`` values are highlighted with gold, silver and bronze, and the
+corresponding model names are coloured to match.
+
 ---
 
 ## 📐 Judge Metrics Explained
