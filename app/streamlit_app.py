@@ -109,6 +109,7 @@ if page == "Leaderboard":
 elif page == "Dataset view":
     ds_sel = st.sidebar.selectbox("📂 Dataset", datasets)
     meta = load_meta(ds_sel)
+    choice_cols = meta.get("choice_cols", [])
     models_in_ds = sorted({k[1] for k in main_map if k[0] == ds_sel})
     models_sel   = st.sidebar.multiselect("🧠 Models", models_in_ds, default=models_in_ds[:1])
 
@@ -164,7 +165,7 @@ elif page == "Dataset view":
                 st.warning(f"Columns missing in {raw_file.name}; skipped.")
                 continue
 
-            keep_cols = [q_present, g_present, "pred"]
+            keep_cols = [q_present, g_present] + choice_cols + ["pred"]
             if show_raw and "raw" in df.columns:
                 keep_cols.append("raw")
             df = df[keep_cols].rename(columns={
@@ -174,7 +175,7 @@ elif page == "Dataset view":
                 "raw": f"{m}‑raw" if show_raw else "raw",
             })
             merged = df if merged is None else merged.merge(
-                df.drop(columns=["Question", "Gold" if "Gold" in df.columns else g_present]),
+                df.drop(columns=["Question", "Gold"] + choice_cols),
                 left_index=True,
                 right_index=True,
             )
