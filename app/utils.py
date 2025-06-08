@@ -86,30 +86,34 @@ def gradient(df: pd.DataFrame):
         else:
             medal_cols = ["" for _ in range(len(df))]
 
-        def _avg_style(_: pd.Series) -> List[str]:
-            return [f"background-color: {c}" if c else "" for c in medal_cols]
-
         if avgs.empty:
-            model_styles = ["" for _ in range(len(df))]
+            row_styles = ["" for _ in range(len(df))]
         else:
             vmin, vmax = float(avgs.min()), float(avgs.max())
             denom = vmax - vmin if vmax != vmin else 1.0
             cmap = cm.get_cmap("RdYlGn")
 
-            def _style(v: float) -> str:
+            def _style(v: float, medal: str) -> str:
                 if np.isnan(v):
                     return ""
-                frac = (v - vmin) / denom
-                rgb = cmap(frac)[:3]
-                bg = mcolors.rgb2hex(rgb)
+                if medal:
+                    bg = medal
+                    rgb = mcolors.to_rgb(bg)
+                else:
+                    frac = (v - vmin) / denom
+                    rgb = cmap(frac)[:3]
+                    bg = mcolors.rgb2hex(rgb)
                 brightness = 0.2126 * rgb[0] + 0.7152 * rgb[1] + 0.0722 * rgb[2]
                 text = "#000000" if brightness > 0.5 else "#FFFFFF"
                 return f"background-color: {bg}; color: {text}"
 
-            model_styles = [_style(v) for v in avgs]
+            row_styles = [_style(v, m) for v, m in zip(avgs, medal_cols)]
+
+        def _avg_style(_: pd.Series) -> List[str]:
+            return row_styles
 
         def _model_style(_: pd.Series) -> List[str]:
-            return model_styles
+            return row_styles
 
         styler = df.style.background_gradient(
             axis=0, cmap="RdYlGn", subset=numeric_cols(df)
