@@ -68,7 +68,15 @@ if page == "Leaderboard":
     with st.expander("📊 Quick chart"):
         metric = st.selectbox("Metric", numeric_cols(board_df), 0)
         max_models = len(board_df)
-        page_size = st.slider("Models per view", 1, max_models, min(10, max_models))
+        if max_models > 1:
+            page_size = st.slider(
+                "Models per view",
+                1,
+                max_models,
+                min(10, max_models),
+            )
+        else:
+            page_size = 1
         start = st.slider("Start index", 0, max_models - page_size, 0)
         chart_df = board_df.iloc[start:start + page_size]
         chart = (
