@@ -7,7 +7,8 @@ Add‑ons (2025‑06‑03)
   output column (``raw``) in the row‑comparison table.
 * **Category filters** – when a dataset defines ``category_cols`` in its
   ``meta.yaml`` you can interactively filter the row table by any combination
-  of category values.
+  of category values. These filters now also apply to the **Category scores**
+  tab so breakdowns reflect the selected subset.
 """
 from __future__ import annotations
 
@@ -18,6 +19,7 @@ from pathlib import Path
 import pandas as pd
 import streamlit as st
 import altair as alt
+from leaderboard_lib.data_utils import _norm
 
 from utils import (
     DASHBOARD_CSV,
@@ -205,13 +207,38 @@ elif page == "Dataset view":
         cat_sel = st.selectbox("Category column", cats)
         frames = []
         for m in models_sel:
-            p = cat_map.get((ds_sel, m, cat_sel))
-            if p:
-                df_c = load_csv(p)
-                if cat_sel not in df_c.columns:
-                    st.warning(f"{cat_sel} column missing in {p.name}; skipped.")
+            df_c = None
+            if cat_filters:
+                raw_file = raw_map.get((ds_sel, m))
+                if not raw_file:
+                    st.warning(f"No raw file for {m}; cannot apply filters.")
                     continue
-                df_c = df_c.rename(columns={"Accuracy": m}).set_index(cat_sel)
+                df = load_csv(raw_file)
+                for col, allowed in cat_filters.items():
+                    if col in df.columns:
+                        df = df[df[col].isin(allowed)]
+                if cat_sel not in df.columns or meta["answer_col"] not in df.columns:
+                    st.warning(f"Columns missing in {raw_file.name}; skipped.")
+                    continue
+                def _acc(g: pd.DataFrame) -> float:
+                    return (
+                        g["pred"].map(_norm) == g[meta["answer_col"]].map(_norm)
+                    ).mean() * 100
+                df_c = (
+                    df.groupby(cat_sel, dropna=False)
+                    .apply(_acc)
+                    .reset_index(name=m)
+                    .set_index(cat_sel)
+                )
+            else:
+                p = cat_map.get((ds_sel, m, cat_sel))
+                if p:
+                    df_c = load_csv(p)
+                    if cat_sel not in df_c.columns:
+                        st.warning(f"{cat_sel} column missing in {p.name}; skipped.")
+                        continue
+                    df_c = df_c.rename(columns={"Accuracy": m}).set_index(cat_sel)
+            if df_c is not None:
                 frames.append(df_c)
 
         if frames:
