@@ -77,7 +77,11 @@ if page == "Leaderboard":
             )
         else:
             page_size = 1
-        start = st.slider("Start index", 0, max_models - page_size, 0)
+
+        if max_models > page_size:
+            start = st.slider("Start index", 0, max_models - page_size, 0)
+        else:
+            start = 0
         chart_df = board_df.iloc[start:start + page_size]
         mark_opts = {"color": "green"} if max_models == 1 else {}
         chart = (
