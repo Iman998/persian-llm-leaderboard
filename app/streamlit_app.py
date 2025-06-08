@@ -19,6 +19,12 @@ from pathlib import Path
 import pandas as pd
 import streamlit as st
 import altair as alt
+
+# Ensure the repository root is on ``sys.path`` before importing ``leaderboard_lib``.
+ROOT_DIR = Path(__file__).resolve().parents[1]
+if str(ROOT_DIR) not in sys.path:
+    sys.path.append(str(ROOT_DIR))
+
 from leaderboard_lib.data_utils import _norm
 
 from utils import (
