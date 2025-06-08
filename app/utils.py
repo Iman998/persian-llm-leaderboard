@@ -77,12 +77,18 @@ def gradient(df: pd.DataFrame):
         import matplotlib
         from matplotlib import cm, colors as mcolors
 
-        medal_cols = medal_colors(df.get("Average", pd.Series(dtype=float)))
+        avg_present = "Average" in df.columns
+        model_present = "Model" in df.columns
+
+        avgs = df["Average"].astype(float) if avg_present else pd.Series(dtype=float)
+        if avg_present:
+            medal_cols = medal_colors(avgs)
+        else:
+            medal_cols = ["" for _ in range(len(df))]
 
         def _avg_style(_: pd.Series) -> List[str]:
             return [f"background-color: {c}" if c else "" for c in medal_cols]
 
-        avgs = df.get("Average", pd.Series(dtype=float)).astype(float)
         if avgs.empty:
             model_styles = ["" for _ in range(len(df))]
         else:
@@ -105,13 +111,13 @@ def gradient(df: pd.DataFrame):
         def _model_style(_: pd.Series) -> List[str]:
             return model_styles
 
-        styler = (
-            df.style.background_gradient(
-                axis=0, cmap="RdYlGn", subset=numeric_cols(df)
-            )
-            .apply(_avg_style, subset=["Average"], axis=0)
-            .apply(_model_style, subset=["Model"], axis=0)
+        styler = df.style.background_gradient(
+            axis=0, cmap="RdYlGn", subset=numeric_cols(df)
         )
+        if avg_present:
+            styler = styler.apply(_avg_style, subset=["Average"], axis=0)
+        if model_present:
+            styler = styler.apply(_model_style, subset=["Model"], axis=0)
         return styler
     except ImportError:  # pragma: no cover - optional dependency
         return df
