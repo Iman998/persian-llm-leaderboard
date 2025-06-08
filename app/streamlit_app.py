@@ -262,7 +262,23 @@ elif page == "Dataset view":
             st.dataframe(
                 gradient(comp.iloc[start:end]), use_container_width=True, height=400
             )
-            st.bar_chart(comp, use_container_width=True)
+            # Build interactive grouped bar chart for potentially many categories
+            chart_df = comp.reset_index().rename(columns={comp.index.name or 'index': cat_sel})
+            melt_df = chart_df.melt(id_vars=cat_sel, var_name="Model", value_name="Score")
+            width = max(600, 40 * len(chart_df))
+            chart = (
+                alt.Chart(melt_df)
+                .mark_bar()
+                .encode(
+                    x=alt.X(f"{cat_sel}:N", sort=None),
+                    y="Score:Q",
+                    color=alt.Color("Model:N", legend=alt.Legend(orient="top-right")),
+                    xOffset="Model:N",
+                )
+                .properties(width=width)
+                .interactive(bind_y=False)
+            )
+            st.altair_chart(chart, use_container_width=True)
             st.download_button(
                 "Download category comparison",
                 comp.reset_index().to_csv(index=False).encode(),
@@ -370,7 +386,22 @@ elif page == "LLM Judge":
             st.dataframe(
                 gradient(comp_df.iloc[start:end]), use_container_width=True, height=400
             )
-            st.bar_chart(comp_df, use_container_width=True)
+            chart_df = comp_df.reset_index().rename(columns={comp_df.index.name or 'index': cat_sel})
+            melt_df = chart_df.melt(id_vars=cat_sel, var_name="Model", value_name="Score")
+            width = max(600, 40 * len(chart_df))
+            chart = (
+                alt.Chart(melt_df)
+                .mark_bar()
+                .encode(
+                    x=alt.X(f"{cat_sel}:N", sort=None),
+                    y="Score:Q",
+                    color=alt.Color("Model:N", legend=alt.Legend(orient="top-right")),
+                    xOffset="Model:N",
+                )
+                .properties(width=width)
+                .interactive(bind_y=False)
+            )
+            st.altair_chart(chart, use_container_width=True)
             st.download_button(
                 "Download category comparison",
                 comp_df.reset_index().to_csv(index=False).encode(),
