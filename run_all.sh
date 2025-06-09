@@ -124,7 +124,7 @@ PY
     if [[ -n "$N_ROWS" ]]; then
       cp "$out" "results/${ds}/${model}/${model}.csv"
       for f in "${out%.csv}"_*.csv; do
-        [[ -f "$f" ]] && cp "$f" "results/${ds}/${model}${f#${out%.csv}}"
+        [[ -f "$f" ]] && cp "$f" "results/${ds}/${model}/${model}${f#${out%.csv}}"
       done
     fi
 
