@@ -6,13 +6,12 @@ choice_cols:
   - "choice3"
   - "choice4"
 
-answer_col: "answer"
+answer_col: "correct_answer"
 
 # list one or more columns whose values define categories
 category_cols:
-  - "Subject"          # subjects of question
-  - "Category"          # categories of question
-  - "SubCategory"        # sub categories of question
+  - "category_name"          # categories of question
+  - "difficulty"        # sub categories of question
 task: multiple_choice
 metrics: [accuracy]
 evaluator: evaluators/mcq_evaluator.py
