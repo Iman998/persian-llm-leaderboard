@@ -32,7 +32,7 @@ N_ROWS=20
 SHOTS=3
 
 # Maximum number of Python worker threads (affects evaluator concurrency)
-WORKERS=128
+WORKERS=2
 # ───────────────────────────────────────────────────────────────────── #
 
 #
