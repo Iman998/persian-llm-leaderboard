@@ -1,3 +1,6 @@
 name: Qwen/Qwen3-30B-A3B
 base_url: "http://37.228.138.184:6790/v1"
 model: "Qwen30"
+parameters: "30B"
+organization: "Qwen"
+license: "Apache-2.0"
