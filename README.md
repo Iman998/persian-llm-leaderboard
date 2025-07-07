@@ -88,6 +88,7 @@ bash run_all.sh --n_rows 250
 > **Note:** The `--n_rows` option is useful for quick benchmarking or debugging with a smaller sample of data.
 
 `run_all.sh` automatically rebuilds the leaderboard. If you run evaluations manually with `scripts/run_eval.py`, call `scripts/build_leaderboard.py` afterward to update `dashboard/leaderboard.csv`.
+The script also writes `leaderboard_fa.csv` and `leaderboard_en.csv` filtered by the dataset language.
 The Streamlit dashboard will also attempt to build the leaderboard automatically when results are present but the CSV is missing.
 
 ## 🤖 LLM Judge Evaluation

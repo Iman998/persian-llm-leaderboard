@@ -80,6 +80,12 @@ def main() -> None:
     parser.add_argument(
         "--models_dir", default="models", help="Directory containing <model>.yaml files."
     )
+    parser.add_argument(
+        "--lang",
+        default="all",
+        choices=["all", "fa", "en"],
+        help="Filter datasets by language (meta.yaml::language)",
+    )
     args = parser.parse_args()
 
     model_names = sorted(
@@ -131,17 +137,18 @@ def main() -> None:
 
         # Locate meta.yaml to get answer_col -----------------------------------
         meta_file = Path(args.datasets_dir) / dataset / "meta.yaml"
-        answer_col = "Key"  # fallback
-        if meta_file.exists():
-            meta_cfg = yaml.safe_load(meta_file.read_text())
-            answer_col = meta_cfg.get("answer_col", "Key")
+        meta_cfg = yaml.safe_load(meta_file.read_text()) if meta_file.exists() else {}
+
+        lang = meta_cfg.get("language")
+        if args.lang != "all" and lang and lang != args.lang:
+            continue
+
+        answer_col = meta_cfg.get("answer_col", "Key")
         if answer_col not in df.columns:
             continue  # skip if answer column absent
 
         # Metric selection -----------------------------------------------------
-        metrics = ["accuracy"]
-        if meta_file.exists():
-            metrics = meta_cfg.get("metrics", ["accuracy"])
+        metrics = meta_cfg.get("metrics", ["accuracy"])
 
         for metric_name in metrics:
             metric_fn = load_metric(metric_name)

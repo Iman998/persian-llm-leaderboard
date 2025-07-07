@@ -7,6 +7,7 @@ choice_cols:
   - "Choice 4"
 
 answer_col: "Key"
+language: fa
 
 # list one or more columns whose values define categories
 category_cols:

@@ -88,6 +88,9 @@ After running `scripts/run_eval.py` you must rebuild the leaderboard:
 
 ```bash
 python scripts/build_leaderboard.py --results_dir results --datasets_dir data --out dashboard/leaderboard.csv
+# Language-specific boards
+python scripts/build_leaderboard.py --results_dir results --datasets_dir data --out dashboard/leaderboard_fa.csv --lang fa
+python scripts/build_leaderboard.py --results_dir results --datasets_dir data --out dashboard/leaderboard_en.csv --lang en
 ```
 
 The paths above are relative to the repository root. If you run the script

@@ -17,18 +17,27 @@ logger = logging.getLogger(__name__)
 
 def rebuild_leaderboard(*, dry_run: bool = False) -> None:
     """Aggregate results into dashboard/leaderboard.csv."""
-    cmd = [
+    base_cmd = [
         sys.executable,
         paths.BUILD_BOARD_SCRIPT,
         "--results_dir",
         paths.RESULTS_DIR,
         "--datasets_dir",
         paths.DATASETS_DIR,
-        "--out",
-        paths.LEADERBOARD_OUT,
     ]
-    if dry_run:
-        print(" ".join(map(str, cmd)))
-    else:
-        subprocess.run([str(c) for c in cmd], check=True)
-        logger.info("DONE Leaderboard updated → %s", paths.LEADERBOARD_OUT)
+
+    boards = [
+        (paths.LEADERBOARD_OUT, "all"),
+        (paths.LEADERBOARD_FA_OUT, "fa"),
+        (paths.LEADERBOARD_EN_OUT, "en"),
+    ]
+
+    for out_path, lang in boards:
+        cmd = base_cmd + ["--out", out_path]
+        if lang != "all":
+            cmd += ["--lang", lang]
+        if dry_run:
+            print(" ".join(map(str, cmd)))
+        else:
+            subprocess.run([str(c) for c in cmd], check=True)
+            logger.info("DONE Leaderboard updated → %s", out_path)

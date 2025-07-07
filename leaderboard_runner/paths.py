@@ -13,6 +13,8 @@ RESULTS_DIR = ROOT / "results"
 MODELS_DIR = ROOT / "models"
 DASHBOARD_DIR = ROOT / "dashboard"
 LEADERBOARD_OUT = DASHBOARD_DIR / "leaderboard.csv"
+LEADERBOARD_FA_OUT = DASHBOARD_DIR / "leaderboard_fa.csv"
+LEADERBOARD_EN_OUT = DASHBOARD_DIR / "leaderboard_en.csv"
 
 RUN_EVAL_SCRIPT = ROOT / "scripts" / "run_eval.py"
 BUILD_BOARD_SCRIPT = ROOT / "scripts" / "build_leaderboard.py"
@@ -23,6 +25,8 @@ __all__ = [
     "RESULTS_DIR",
     "MODELS_DIR",
     "LEADERBOARD_OUT",
+    "LEADERBOARD_FA_OUT",
+    "LEADERBOARD_EN_OUT",
     "RUN_EVAL_SCRIPT",
     "BUILD_BOARD_SCRIPT",
 ]
