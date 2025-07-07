@@ -6,7 +6,7 @@ gradient and highlights the top‑3 `Average` rows with medal colours.
 """
 from __future__ import annotations
 
-from typing import List
+from typing import List, Callable
 
 import numpy as np
 import pandas as pd
@@ -29,28 +29,46 @@ def apply_gradient(df: pd.DataFrame) -> pd.io.formats.style.Styler:
     custom colouring rules for other columns.
     The top‑3 ``Average`` rows receive medal backgrounds.
     """
-    styler = df.style.background_gradient(
-        axis=0, cmap="RdYlGn", subset=numeric_cols(df)
-    )
+    numeric = numeric_cols(df)
+    rdylgn = cm.get_cmap("RdYlGn")
+    styler = df.style
 
-    # Parameters column – remove 'B' and shade with Blues cmap
-    if "Parameters" in df.columns:
-        params = pd.to_numeric(df["Parameters"].astype(str).str.replace("B", "", regex=False), errors="coerce")
-        vmin, vmax = params.min(), params.max()
+    def _score_style(val: str) -> str:
+        num = pd.to_numeric(val, errors="coerce")
+        if np.isnan(num):
+            return ""
+        num = max(0.0, min(100.0, float(num)))
+        colour = mcolors.to_hex(rdylgn(num / 100.0))
+        return (
+            f"background:linear-gradient(90deg,{colour} {num}%,transparent {num}%);"
+        )
+
+    if numeric:
+        styler = styler.applymap(_score_style, subset=numeric)
+
+    def _param_column_style(series: pd.Series) -> mcolors.Normalize:
+        vals = pd.to_numeric(series.astype(str).str.replace("B", "", regex=False), errors="coerce")
+        vmin, vmax = vals.min(), vals.max()
         if np.isnan(vmin) or np.isnan(vmax) or vmin == vmax:
-            norm = mcolors.Normalize(0, 1)
-        else:
-            norm = mcolors.Normalize(vmin=vmin, vmax=vmax)
-        blues = cm.Blues
+            return mcolors.Normalize(0, 1)
+        return mcolors.Normalize(vmin=vmin, vmax=vmax)
 
-        def _param_style(val: str) -> str:
+    blues = cm.Blues
+
+    def _param_style(norm: mcolors.Normalize) -> Callable[[str], str]:
+        def _style(val: str) -> str:
             num = pd.to_numeric(str(val).replace("B", ""), errors="coerce")
             ratio = 1.0 if np.isnan(num) else norm(num)
-            colour = mcolors.to_hex(blues(ratio))
+            ratio = 0.0 if np.isnan(ratio) else ratio
+            # lighten max colour by scaling ratio
+            colour = mcolors.to_hex(blues(0.2 + 0.6 * ratio))
             return f"background-color:{colour}"
+        return _style
 
-        df["Parameters"] = df["Parameters"].astype(str).str.replace("B", "", regex=False)
-        styler = styler.applymap(_param_style, subset=["Parameters"])
+    for col in [c for c in ["Parameters", "Active Parameters"] if c in df.columns]:
+        norm = _param_column_style(df[col])
+        df[col] = df[col].astype(str).str.replace("B", "", regex=False)
+        styler = styler.applymap(_param_style(norm), subset=[col])
 
     # License column colours
     if "License" in df.columns:

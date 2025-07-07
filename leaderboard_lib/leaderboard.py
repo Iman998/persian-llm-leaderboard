@@ -19,8 +19,10 @@ from .utils import _load_module
 # Desired column order in the final leaderboard (extend as needed)
 COL_ORDER: List[str] = [
     "Model Type",
+    "Train Type",
     "Model",
     "Parameters",
+    "Active Parameters",
     "Organization",
     "License",
     "Average",
@@ -116,9 +118,11 @@ def main() -> None:
         if not model_yaml.exists():
             continue  # Skip unknown model
         model_cfg = yaml.safe_load(model_yaml.read_text())
-        model_type = model_cfg.get("type", "Instruct")
+        model_type = model_cfg.get("model_type", model_cfg.get("type", "Instruct"))
+        train_type = model_cfg.get("train_type", "")
         model_name = model_cfg.get("display_name", model_stub)
         parameters = model_cfg.get("parameters", "")
+        active_parameters = model_cfg.get("active_parameters", "")
         organization = model_cfg.get("organization", "")
         license_name = model_cfg.get("license", "")
 
@@ -149,7 +153,9 @@ def main() -> None:
                     "metric_label": _pretty_metric(metric_name),
                     "model": model_name,
                     "model_type": model_type,
+                    "train_type": train_type,
                     "parameters": parameters,
+                    "active_parameters": active_parameters,
                     "organization": organization,
                     "license": license_name,
                     "value": value,
@@ -164,7 +170,15 @@ def main() -> None:
     long = pd.DataFrame(rows)
     wide = (
         long.pivot_table(
-            index=["model_type", "model", "parameters", "organization", "license"],
+            index=[
+                "model_type",
+                "train_type",
+                "model",
+                "parameters",
+                "active_parameters",
+                "organization",
+                "license",
+            ],
             columns=["dataset", "metric_label"],
             values="value",
             aggfunc="mean",
@@ -182,8 +196,10 @@ def main() -> None:
     }
     rename_map.update({
         ("model_type", ""): "Model Type",
+        ("train_type", ""): "Train Type",
         ("model", ""): "Model",
         ("parameters", ""): "Parameters",
+        ("active_parameters", ""): "Active Parameters",
         ("organization", ""): "Organization",
         ("license", ""): "License",
     })
