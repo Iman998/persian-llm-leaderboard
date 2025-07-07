@@ -111,7 +111,11 @@ def show() -> None:
     rank_col = [medals.get(r, str(r)) for r in ranks]
     board_df.insert(0, "Rank", rank_col)
 
-    st.dataframe(apply_gradient(board_df), use_container_width=True, height=600)
+    st.dataframe(
+        apply_gradient(board_df),
+        use_container_width=True,
+        height=600,
+    )
     _render_quick_chart(board_df)
 
     st.download_button(

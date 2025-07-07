@@ -30,21 +30,12 @@ def apply_gradient(df: pd.DataFrame) -> pd.io.formats.style.Styler:
     The top‑3 ``Average`` rows receive medal backgrounds.
     """
     numeric = numeric_cols(df)
-    rdylgn = cm.get_cmap("RdYlGn")
-    styler = df.style
-
-    def _score_style(val: str) -> str:
-        num = pd.to_numeric(val, errors="coerce")
-        if np.isnan(num):
-            return ""
-        num = max(0.0, min(100.0, float(num)))
-        colour = mcolors.to_hex(rdylgn(num / 100.0))
-        return (
-            f"background:linear-gradient(90deg,{colour} {num}%,transparent {num}%);"
-        )
-
     if numeric:
-        styler = styler.applymap(_score_style, subset=numeric)
+        styler = df.style.background_gradient(
+            axis=0, cmap="RdYlGn", subset=numeric
+        )
+    else:
+        styler = df.style
 
     def _param_column_style(series: pd.Series) -> mcolors.Normalize:
         vals = pd.to_numeric(series.astype(str).str.replace("B", "", regex=False), errors="coerce")
@@ -107,4 +98,7 @@ def apply_gradient(df: pd.DataFrame) -> pd.io.formats.style.Styler:
             styler = styler.apply(_rowstyles, subset=["Rank"], axis=0)
 
     return styler
+
+
+
 

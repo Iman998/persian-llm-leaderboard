@@ -109,7 +109,11 @@ def show() -> None:
         return
 
     st.title(f"{ds_sel} – Judge scores")
-    st.dataframe(apply_gradient(table_df), use_container_width=True, height=500)
+    st.dataframe(
+        apply_gradient(table_df),
+        use_container_width=True,
+        height=500,
+    )
     st.download_button(
         "Download CSV",
         table_df.to_csv(index=False).encode(),
