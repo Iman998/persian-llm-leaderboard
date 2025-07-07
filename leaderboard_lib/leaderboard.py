@@ -114,6 +114,8 @@ def main() -> None:
         if not m:
             continue
 
+        model_stub, suffix = m.group("model", "suffix")
+
         try:
             dataset = csv_path.relative_to(args.results_dir).parts[0]
         except ValueError:
