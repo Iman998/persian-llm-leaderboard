@@ -11,6 +11,8 @@ import re
 from pathlib import Path
 from typing import Any, Callable, Dict, List
 
+ROOT_DIR = Path(__file__).resolve().parents[1]
+
 import pandas as pd
 import yaml
 
@@ -73,23 +75,30 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--results_dir",
-        default="results",
+        default=ROOT_DIR / "results",
+        type=Path,
         help="Directory containing results/<dataset>/<model>/<model>.csv files.",
     )
     parser.add_argument(
-        "--out", required=True, help="Output path for the leaderboard CSV."
+        "--out", required=True, type=Path, help="Output path for the leaderboard CSV."
     )
     parser.add_argument(
-        "--datasets_dir", default="data", help="Root folder where each dataset has a meta.yaml."
+        "--datasets_dir",
+        default=ROOT_DIR / "data",
+        type=Path,
+        help="Root folder where each dataset has a meta.yaml.",
     )
     parser.add_argument(
-        "--models_dir", default="models", help="Directory containing <model>.yaml files."
+        "--models_dir",
+        default=ROOT_DIR / "models",
+        type=Path,
+        help="Directory containing <model>.yaml files.",
     )
     args = parser.parse_args()
 
     # Pre‑compile regex to match any model stub found under --models_dir
     model_names = sorted(
-        [p.stem for p in Path(args.models_dir).glob("*.yaml")], key=len, reverse=True
+        [p.stem for p in args.models_dir.glob("*.yaml")], key=len, reverse=True
     )
     models_alt = "|".join(map(re.escape, model_names))
     file_re = re.compile(rf"^(?P<model>{models_alt})(?:_(?P<suffix>.+?))?\\.csv$")
@@ -109,7 +118,7 @@ def main() -> None:
         return mapping.get(name, name)
 
     # ───────────────────── iterate result CSVs and build "long" format
-    for csv_path in Path(args.results_dir).rglob("*.csv"):
+    for csv_path in args.results_dir.rglob("*.csv"):
         m = file_re.match(csv_path.name)
         model_stub, suffix = m.group("model", "suffix") if m else (None, None)
         if not m:
@@ -123,7 +132,7 @@ def main() -> None:
             dataset = csv_path.parent.parent.name
 
         # ────────── build list of helper suffixes per‑dataset ──────────── #
-        meta_file = Path(args.datasets_dir) / dataset / "meta.yaml"
+        meta_file = args.datasets_dir / dataset / "meta.yaml"
         dynamic_helpers = []
         if meta_file.exists():
             meta_cfg = yaml.safe_load(meta_file.read_text())
@@ -136,7 +145,7 @@ def main() -> None:
             continue
 
         # ──────────────── load model metadata
-        model_yaml = Path(args.models_dir) / f"{model_stub}.yaml"
+        model_yaml = args.models_dir / f"{model_stub}.yaml"
         if not model_yaml.exists():
             continue  # unknown model → ignore
         model_cfg = yaml.safe_load(model_yaml.read_text())
@@ -147,7 +156,7 @@ def main() -> None:
         df = pd.read_csv(csv_path)
 
         # ──────────────── locate dataset meta.yaml
-        meta_file = Path(args.datasets_dir) / dataset / "meta.yaml"
+        meta_file = args.datasets_dir / dataset / "meta.yaml"
         answer_col = "Key"  # sensible default
         if meta_file.exists():
             meta_cfg = yaml.safe_load(meta_file.read_text())
@@ -220,7 +229,7 @@ def main() -> None:
     wide = wide[_build_column_order(wide)]
 
     # ────────────────────────── write CSV
-    out_path = Path(args.out)
+    out_path = args.out
     out_path.parent.mkdir(parents=True, exist_ok=True)
     wide.to_csv(out_path, index=False)
     print(f"🏆  Leaderboard written → {out_path}")
