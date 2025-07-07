@@ -63,12 +63,11 @@ class MCQEvaluator(BaseEvaluator):
     # --------------------------------------------------------------------- #
     # Internal helpers                                                      #
     # --------------------------------------------------------------------- #
-    def _extract(self, text: str) -> str | None:
-        """
-        Find ****n****, tolerate Persian digits & decimals.
-        Return normalized index as ASCII string ("1","2",…)
-        or None if parsing fails.
-        """
+    def _extract(self, text: str | None) -> str | None:
+        """Return the chosen option number from ``text`` if present."""
+        if not text:
+            return None
+
         m = ANSWER_REGEX.search(text)
         if not m:
             return None
