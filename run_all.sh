@@ -21,7 +21,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 MODELS=( "gpt-4.1-nano-2025-04-14" )
 
 # Space-separated list of dataset folder names inside data/
-DATASETS=( "mmlu" )
+DATASETS=( "mmlu-pro" )
 
 # Sample size per dataset:
 #   * Empty string  → evaluate full CSV (default)
@@ -52,3 +52,5 @@ python3 "${SCRIPT_DIR}/scripts/main.py" \
   -s "${SHOTS}" \
   -w "${WORKERS}" \
   "$@"
+
+python

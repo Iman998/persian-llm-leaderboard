@@ -68,6 +68,7 @@ def run_single_combo(
         meta_path=meta_file,
         prompt_template=prompt_template,
         evaluator=evaluator,
+        n_rows=n_rows,
         shots=shots,
         workers=workers,
         out_csv=out_csv,

@@ -22,6 +22,7 @@ def build_run_eval_cmd(
     evaluator: str,
     shots: int,
     workers: int,
+    n_rows: int | None,
     out_csv: Path,
 ) -> List[str | Path]:
     """
@@ -46,4 +47,7 @@ def build_run_eval_cmd(
         str(workers),
         "--out",
         out_csv,
+       # Forward sampling so evaluation can replicate the canonical filename
+        # for leaderboard consumption.
+        *([] if n_rows is None else ["--n_rows", str(n_rows)]),
     ]

@@ -60,6 +60,7 @@ def _collect_row_tables(
         raw_file = RAW_MAP.get((ds, m))
         if not raw_file:
             warnings.append(f"No raw CSV for model **{m}**")
+            warnings.append(f"Raw CSV not found for **{m}** – hiding raw column.")
             continue
 
         df = load_csv(raw_file)
@@ -168,13 +169,22 @@ def show() -> None:
         return
 
     # ───── Sidebar controls ───────────────────────────────────────────
-    ds_sel = st.sidebar.selectbox("📂 Dataset", DATASETS)
+    ds_sel = st.sidebar.selectbox("📂 Dataset", DATASETS, key="dataset_sel")
     meta = load_meta(ds_sel)
 
     models_in_dataset = sorted({mdl for (ds, mdl) in MAIN_MAP if ds == ds_sel})
+    # A dataset-specific key guarantees independent widget state
     models_sel = st.sidebar.multiselect(
-        "🧠 Models", models_in_dataset, default=models_in_dataset[:1]
+        "🧠 Models",
+        options=models_in_dataset,
+        default=models_in_dataset[:1],
+        key=f"models_{ds_sel}",
     )
+    
+    # Auto-select first model if user switched dataset and nothing is ticked
+    if not models_sel and models_in_dataset:
+        st.session_state[f"models_{ds_sel}"] = [models_in_dataset[0]]
+        models_sel = st.session_state[f"models_{ds_sel}"]
 
     st.title(f"{ds_sel} – Detailed view")
 
@@ -193,12 +203,18 @@ def show() -> None:
             for col in meta["category_cols"]:
                 if sample_df is not None and col in sample_df.columns:
                     vals = sorted(sample_df[col].dropna().unique())
-                    sel = st.multiselect(col, vals)
+                    sel = st.multiselect(
+                    col,
+                    sorted(vals),
+                    key=f"{col}_{ds_sel}",   # ← unique key per dataset
+                )
                     if sel:
                         cat_filters[col] = set(sel)
 
     # Raw output toggle
-    show_raw = st.sidebar.checkbox("Show raw model output", value=False)
+    show_raw = st.sidebar.checkbox(
+    "Show raw model output", value=False, key=f"show_raw_{ds_sel}"
+    )
 
     # Build UI tabs
     row_tab, cat_tab = st.tabs(["📄 Row outputs", "📊 Category scores"])
@@ -210,6 +226,8 @@ def show() -> None:
         merged_df, warnings = _collect_row_tables(
             ds_sel, models_sel, meta, cat_filters, show_raw
         )
+        if show_raw and all((ds_sel, m) not in RAW_MAP for m in models_sel):
+            st.info("Raw outputs are not available for the selected model(s).")
         for w in warnings:
             st.warning(w)
 
