@@ -11,7 +11,7 @@ This guide provides comprehensive instructions on setting up, running, and contr
 Clone the repository and navigate into the project directory:
 
 ```bash
-git clone https://github.com/yourusername/persian-llm-leaderboard.git
+git clone https://github.com/iman998/persian-llm-leaderboard.git
 cd persian-llm-leaderboard
 ```
 
