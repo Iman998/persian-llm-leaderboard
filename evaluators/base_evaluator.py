@@ -86,7 +86,10 @@ class BaseEvaluator:
             return idx, None, ""
 
         with ThreadPoolExecutor(max_workers=max_workers) as pool:
-            future_map = {pool.submit(_worker, i, r): i for i, r in df.iterrows()}
+            future_map = {
+                pool.submit(_worker, idx, row): idx
+                for idx, (_, row) in enumerate(df.iterrows())
+            }
             for fut in tqdm(
                 as_completed(future_map),
                 total=len(future_map),
