@@ -90,6 +90,11 @@ After running `scripts/run_eval.py` you must rebuild the leaderboard:
 python scripts/build_leaderboard.py --results_dir results --datasets_dir data --out dashboard/leaderboard.csv
 ```
 
+The paths above are relative to the repository root. If you run the script
+from a different working directory you can omit the ``--results_dir``,
+``--datasets_dir`` and ``--models_dir`` options. Their defaults now resolve
+to the repository's ``results``, ``data`` and ``models`` folders.
+
 When you sample rows with `run_all.sh --n_rows N` or pass `--n_rows` to
 `scripts/run_eval.py`, each run writes `results/<dataset>/<model>/<model>_N.csv`
 and also copies it to `results/<dataset>/<model>/<model>.csv` so the leaderboard
