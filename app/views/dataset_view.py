@@ -20,7 +20,7 @@ from leaderboard_lib.data_utils import _norm  # external helper for normalisatio
 
 from core.io import load_csv, load_meta
 from core.parser import scan_result_maps
-from core.style import apply_gradient
+from core.style import apply_gradient, render_styler
 
 # ──────────────────────────────────────────────────────────────
 # Cached result maps – shared across pages in the same session
@@ -242,11 +242,7 @@ def show() -> None:
             )
             start, end = (page_num - 1) * page_size, page_num * page_size
 
-            st.dataframe(
-                apply_gradient(merged_df.iloc[start:end]),
-                use_container_width=True,
-                height=400,
-            )
+            render_styler(apply_gradient(merged_df.iloc[start:end]))
             st.download_button(
                 "Download CSV",
                 merged_df.to_csv(index=False).encode(),
@@ -288,11 +284,7 @@ def show() -> None:
         )
         start, end = (page_num - 1) * page_size, page_num * page_size
 
-        st.dataframe(
-            apply_gradient(comp_df.iloc[start:end]),
-            use_container_width=True,
-            height=400,
-        )
+        render_styler(apply_gradient(comp_df.iloc[start:end]))
 
         # Interactive grouped‑bar chart
         chart_df = (

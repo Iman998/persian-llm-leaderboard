@@ -23,7 +23,7 @@ from core.paths import (
     RESULTS_DIR,
 )
 from core.io import load_csv, numeric_cols
-from core.style import apply_gradient
+from core.style import apply_gradient, render_styler
 
 
 def _build_leaderboard_if_missing(board_path: Path, lang: str) -> None:
@@ -111,7 +111,7 @@ def show() -> None:
     rank_col = [medals.get(r, str(r)) for r in ranks]
     board_df.insert(0, "Rank", rank_col)
 
-    st.dataframe(apply_gradient(board_df), use_container_width=True, height=600)
+    render_styler(apply_gradient(board_df))
     _render_quick_chart(board_df)
 
     st.download_button(

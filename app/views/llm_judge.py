@@ -16,7 +16,7 @@ import streamlit as st
 
 from core.io import load_csv
 from core.parser import scan_result_maps
-from core.style import apply_gradient
+from core.style import apply_gradient, render_styler
 
 # -------------------------------------------------------------
 # Build result maps once (shared across pages)
@@ -109,7 +109,7 @@ def show() -> None:
         return
 
     st.title(f"{ds_sel} – Judge scores")
-    st.dataframe(apply_gradient(table_df), use_container_width=True, height=500)
+    render_styler(apply_gradient(table_df))
     st.download_button(
         "Download CSV",
         table_df.to_csv(index=False).encode(),
@@ -138,11 +138,7 @@ def show() -> None:
         )
         start, end = (page_num - 1) * page_size, page_num * page_size
 
-        st.dataframe(
-            apply_gradient(comp_df.iloc[start:end]),
-            use_container_width=True,
-            height=400,
-        )
+        render_styler(apply_gradient(comp_df.iloc[start:end]))
 
         # Grouped bar chart
         chart_df = (

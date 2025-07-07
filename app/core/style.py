@@ -14,7 +14,9 @@ from matplotlib import cm, colors as mcolors
 
 from .io import numeric_cols
 
-__all__ = ["apply_gradient"]
+import streamlit as st
+
+__all__ = ["apply_gradient", "render_styler"]
 
 
 def _medal_colors(avgs: pd.Series) -> List[str]:
@@ -107,4 +109,10 @@ def apply_gradient(df: pd.DataFrame) -> pd.io.formats.style.Styler:
             styler = styler.apply(_rowstyles, subset=["Rank"], axis=0)
 
     return styler
+
+
+def render_styler(styler: pd.io.formats.style.Styler) -> None:
+    """Display a styled DataFrame in Streamlit reliably."""
+    html = styler.to_html()
+    st.markdown(html, unsafe_allow_html=True)
 
