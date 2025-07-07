@@ -80,8 +80,10 @@ def load_configs(args: argparse.Namespace) -> tuple[type, dict[str, Any], dict[s
 def sample_dataset(df: pd.DataFrame, n_rows: int | None, verbose: bool) -> pd.DataFrame:
     """Optionally sample ``n_rows`` from ``df``."""
     if n_rows:
-        df = df.sample(n=min(n_rows, len(df)), random_state=42)
-        logging.info("Sampling %d rows → dataframe now has %d rows", n_rows, len(df))
+        df = df.sample(n=min(n_rows, len(df)), random_state=42).reset_index(drop=True)
+        logging.info(
+            "Sampling %d rows → dataframe now has %d rows", n_rows, len(df)
+        )
     return df
 
 
