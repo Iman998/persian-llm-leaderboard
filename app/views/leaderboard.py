@@ -90,7 +90,7 @@ def show() -> None:
 
     ranks = list(range(1, len(board_df) + 1))
     medals = {1: "\U0001F947", 2: "\U0001F948", 3: "\U0001F949"}
-    rank_col = [f"{medals.get(r, '')} {r}".strip() for r in ranks]
+    rank_col = [medals.get(r, str(r)) for r in ranks]
     board_df.insert(0, "Rank", rank_col)
 
     st.dataframe(apply_gradient(board_df), use_container_width=True, height=600)

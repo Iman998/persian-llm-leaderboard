@@ -25,12 +25,53 @@ def _medal_colors(avgs: pd.Series) -> List[str]:
 
 def apply_gradient(df: pd.DataFrame) -> pd.io.formats.style.Styler:
     """
-    Colour all numeric columns with RdYlGn gradient.
-    If an “Average” column exists the top‑3 rows get medals.
+    Colour numeric columns with a RdYlGn gradient and apply
+    custom colouring rules for other columns.
+    The top‑3 ``Average`` rows receive medal backgrounds.
     """
     styler = df.style.background_gradient(
         axis=0, cmap="RdYlGn", subset=numeric_cols(df)
     )
+
+    # Parameters column – remove 'B' and shade with Blues cmap
+    if "Parameters" in df.columns:
+        params = pd.to_numeric(df["Parameters"].astype(str).str.replace("B", "", regex=False), errors="coerce")
+        vmin, vmax = params.min(), params.max()
+        if np.isnan(vmin) or np.isnan(vmax) or vmin == vmax:
+            norm = mcolors.Normalize(0, 1)
+        else:
+            norm = mcolors.Normalize(vmin=vmin, vmax=vmax)
+        blues = cm.Blues
+
+        def _param_style(val: str) -> str:
+            num = pd.to_numeric(str(val).replace("B", ""), errors="coerce")
+            ratio = 1.0 if np.isnan(num) else norm(num)
+            colour = mcolors.to_hex(blues(ratio))
+            return f"background-color:{colour}"
+
+        df["Parameters"] = df["Parameters"].astype(str).str.replace("B", "", regex=False)
+        styler = styler.applymap(_param_style, subset=["Parameters"])
+
+    # License column colours
+    if "License" in df.columns:
+        def _license_style(val: str) -> str:
+            v = str(val).strip().lower()
+            if v == "proprietary":
+                colour = "#ff4d4d"  # red
+            elif v == "mit":
+                colour = "#008000"  # dark green
+            else:
+                colour = "#90ee90"  # light green
+            return f"background-color:{colour}"
+
+        styler = styler.applymap(_license_style, subset=["License"])
+
+    # Highlight specific organization
+    if "Organization" in df.columns:
+        def _org_style(val: str) -> str:
+            return "background-color:#00ff00" if str(val).strip() == "ZharfaTech" else ""
+
+        styler = styler.applymap(_org_style, subset=["Organization"])
 
     if "Average" in df.columns:
         avgs = df["Average"].astype(float)
