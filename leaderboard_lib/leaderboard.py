@@ -1,8 +1,7 @@
 """Build the leaderboard CSV from individual evaluation results.
 
 The functions here are used by :mod:`scripts.build_leaderboard` to aggregate
-per-dataset evaluation CSV files into a single leaderboard.
-"""
+per-dataset evaluation CSV files into a single leaderboard."""
 
 from __future__ import annotations
 
@@ -11,20 +10,33 @@ import re
 from pathlib import Path
 from typing import Any, Callable, Dict, List
 
-ROOT_DIR = Path(__file__).resolve().parents[1]
-
 import pandas as pd
 import yaml
 
 from .data_utils import _norm
 from .utils import _load_module
 
+# Desired column order in the final leaderboard (extend as needed)
+COL_ORDER: List[str] = [
+    "Model Type",
+    "Model",
+    "Average",
+    "mmlu (Accuracy)",
+    "mmlu-pro (Accuracy)",
+    "bbh (Accuracy)",
+    "khayyam_challenge (Accuracy)",
+    "parsinlu_mc (Accuracy)",
+    "parsinlu_nli (Accuracy)",
+    "parsinlu_qqp (Accuracy)",
+    "persian_ARC (Accuracy)",
+    "pquad (f1)",
+]
+
+
 # ────────────────────────────── metric helpers ────────────────────────────── #
 
-
 def accuracy(df: pd.DataFrame, answer_col: str) -> float:
-    """Exact‑match accuracy (0‑100)."""
-
+    """Exact-match accuracy (0-100)."""
     return (df["pred"].map(_norm) == df[answer_col].map(_norm)).mean() * 100.0
 
 
@@ -45,69 +57,36 @@ def load_metric(name: str) -> Callable[[pd.Series, pd.Series], float]:
     return getattr(mod, "compute")
 
 
-# ──────────────────────────── dynamic columns ─────────────────────────────── #
-
-
-def _build_column_order(wide: pd.DataFrame) -> List[str]:
-    """Return the final column order derived from *wide*.
-
-    The order rules are:
-    1. Always start with the standard trio → ``Model Type``, ``Model``, ``Average``.
-    2. List every *Accuracy* metric column next (alphabetically) so users can
-       easily relate them to the ``Average`` column.
-    3. Append any remaining metric columns alphabetically.
-    """
-
-    base_cols = ["Model Type", "Model", "Average"]
-
-    metric_cols = [c for c in wide.columns if c not in base_cols]
-
-    acc_cols = sorted([c for c in metric_cols if c.endswith("(Accuracy)")])
-    other_cols = sorted([c for c in metric_cols if c not in acc_cols])
-
-    return base_cols + acc_cols + other_cols
-
-
-# ─────────────────────────── leaderboard builder ──────────────────────────── #
-
+# ─────────────────────────── leaderboard builder ─────────────────────────── #
 
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--results_dir",
-        default=ROOT_DIR / "results",
-        type=Path,
+        default="results",
         help="Directory containing results/<dataset>/<model>/<model>.csv files.",
     )
     parser.add_argument(
-        "--out", required=True, type=Path, help="Output path for the leaderboard CSV."
+        "--out", required=True, help="Output path for the leaderboard CSV."
     )
     parser.add_argument(
-        "--datasets_dir",
-        default=ROOT_DIR / "data",
-        type=Path,
-        help="Root folder where each dataset has a meta.yaml.",
+        "--datasets_dir", default="data", help="Root folder where each dataset has a meta.yaml."
     )
     parser.add_argument(
-        "--models_dir",
-        default=ROOT_DIR / "models",
-        type=Path,
-        help="Directory containing <model>.yaml files.",
+        "--models_dir", default="models", help="Directory containing <model>.yaml files."
     )
     args = parser.parse_args()
 
-    # Pre‑compile regex to match any model stub found under --models_dir
     model_names = sorted(
-        [p.stem for p in args.models_dir.glob("*.yaml")], key=len, reverse=True
+        [p.stem for p in Path(args.models_dir).glob("*.yaml")], key=len, reverse=True
     )
     models_alt = "|".join(map(re.escape, model_names))
-    file_re = re.compile(rf"^(?P<model>{models_alt})(?:_(?P<suffix>.+?))?\\.csv$")
+    file_re = re.compile(rf"^(?P<model>{models_alt})(?:_(?P<suffix>.+?))?\.csv$")
 
     rows: List[Dict[str, Any]] = []
 
     def _pretty_metric(name: str) -> str:
-        """Return a display‑friendly metric label."""
-
+        """Return a display-friendly metric label."""
         mapping = {
             "accuracy": "Accuracy",
             "exact_match": "Exact Match",
@@ -117,54 +96,39 @@ def main() -> None:
         }
         return mapping.get(name, name)
 
-    # ───────────────────── iterate result CSVs and build "long" format
-    for csv_path in args.results_dir.rglob("*.csv"):
+    for csv_path in Path(args.results_dir).rglob("*.csv"):
         m = file_re.match(csv_path.name)
-        model_stub, suffix = m.group("model", "suffix") if m else (None, None)
         if not m:
             continue
-
-        model_stub, suffix = m.group("model", "suffix")
-
         try:
             dataset = csv_path.relative_to(args.results_dir).parts[0]
         except ValueError:
             dataset = csv_path.parent.parent.name
-
-        # ────────── build list of helper suffixes per‑dataset ──────────── #
-        meta_file = args.datasets_dir / dataset / "meta.yaml"
-        dynamic_helpers = []
-        if meta_file.exists():
-            meta_cfg = yaml.safe_load(meta_file.read_text())
-            dynamic_helpers = [c.lower() for c in meta_cfg.get("category_cols", [])]
-
-        helper_suffixes = ["raw", *dynamic_helpers]
-
-        if suffix and any(suffix.lower().endswith(s) for s in helper_suffixes):
-            # Skip CSVs that correspond to raw outputs or per‑category breakdowns
+        model_stub, suffix = m.group("model", "suffix")
+        if suffix or dataset.endswith(("raw", "Level")):
             continue
 
-        # ──────────────── load model metadata
-        model_yaml = args.models_dir / f"{model_stub}.yaml"
+        # Load model metadata --------------------------------------------------
+        model_yaml = Path(args.models_dir) / f"{model_stub}.yaml"
         if not model_yaml.exists():
-            continue  # unknown model → ignore
+            continue  # Skip unknown model
         model_cfg = yaml.safe_load(model_yaml.read_text())
         model_type = model_cfg.get("type", "Instruct")
         model_name = model_cfg.get("display_name", model_stub)
 
-        # ──────────────── load evaluation CSV
+        # Load evaluation CSV --------------------------------------------------
         df = pd.read_csv(csv_path)
 
-        # ──────────────── locate dataset meta.yaml
-        meta_file = args.datasets_dir / dataset / "meta.yaml"
-        answer_col = "Key"  # sensible default
+        # Locate meta.yaml to get answer_col -----------------------------------
+        meta_file = Path(args.datasets_dir) / dataset / "meta.yaml"
+        answer_col = "Key"  # fallback
         if meta_file.exists():
             meta_cfg = yaml.safe_load(meta_file.read_text())
             answer_col = meta_cfg.get("answer_col", "Key")
         if answer_col not in df.columns:
-            continue  # malformed CSV
+            continue  # skip if answer column absent
 
-        # ──────────────── metric selection
+        # Metric selection -----------------------------------------------------
         metrics = ["accuracy"]
         if meta_file.exists():
             metrics = meta_cfg.get("metrics", ["accuracy"])
@@ -187,7 +151,7 @@ def main() -> None:
         print("No result CSVs found; nothing to build.")
         return
 
-    # ────────────────────────── long → wide pivot
+    # Long → wide pivot (average duplicates) ----------------------------------
     long = pd.DataFrame(rows)
     wide = (
         long.pivot_table(
@@ -200,7 +164,7 @@ def main() -> None:
     )
     wide.columns.name = None
 
-    # ────────────────────────── rename multi‑index columns
+    # Rename dataset columns with metric label --------------------------------
     rename_map = {
         (ds, lbl): f"{ds} ({lbl})"
         for ds, lbl in long[["dataset", "metric_label"]]
@@ -209,7 +173,7 @@ def main() -> None:
     }
     rename_map.update({("model_type", ""): "Model Type", ("model", ""): "Model"})
 
-    new_cols: List[str] = []
+    new_cols = []
     for c in wide.columns:
         if isinstance(c, tuple):
             new_cols.append(
@@ -219,20 +183,24 @@ def main() -> None:
             new_cols.append(rename_map.get((c, ""), c))
     wide.columns = new_cols
 
-    # ────────────────────────── compute Average over Accuracy metrics
+    # Ensure expected columns exist -------------------------------------------
+    for col in COL_ORDER:
+        if col not in wide.columns:
+            wide[col] = ""
+
+    # Compute Average over accuracy columns -----------------------------------
     acc_cols = [c for c in wide.columns if c.endswith("(Accuracy)")]
     acc_vals = wide[acc_cols].apply(pd.to_numeric, errors="coerce")
     counts = acc_vals.notna().sum(axis=1)
     wide["Average"] = (acc_vals.sum(axis=1) / counts).round(5).where(counts > 0, "")
 
-    # ────────────────────────── final column order
-    wide = wide[_build_column_order(wide)]
+    # Re-order columns ---------------------------------------------------------
+    wide = wide[[c for c in COL_ORDER if c in wide.columns]]
 
-    # ────────────────────────── write CSV
-    out_path = args.out
+    out_path = Path(args.out)
     out_path.parent.mkdir(parents=True, exist_ok=True)
     wide.to_csv(out_path, index=False)
-    print(f"🏆  Leaderboard written → {out_path}")
+    print(f"\U0001F3C6  Leaderboard written → {out_path}")
 
 
 if __name__ == "__main__":
