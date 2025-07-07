@@ -1,8 +1,4 @@
-"""
-cli.py
-~~~~~~
-Argument parsing and top-level loop that coordinates the helpers above.
-"""
+"""Command-line interface for running all model/dataset combinations."""
 
 from __future__ import annotations
 
