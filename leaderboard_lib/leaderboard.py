@@ -111,6 +111,7 @@ def main() -> None:
     # ───────────────────── iterate result CSVs and build "long" format
     for csv_path in Path(args.results_dir).rglob("*.csv"):
         m = file_re.match(csv_path.name)
+        model_stub, suffix = m.group("model", "suffix") if m else (None, None)
         if not m:
             continue
 
