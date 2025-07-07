@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #------------------------------------------------------------------------------
-# run_all.sh  —  Thin wrapper that delegates heavy lifting to scripts/run_all.py
+# run_all.sh  —  Thin wrapper that delegates heavy lifting to scripts/main.py
 #
 # HOW TO USE
 # ----------
@@ -53,4 +53,3 @@ python3 "${SCRIPT_DIR}/scripts/main.py" \
   -w "${WORKERS}" \
   "$@"
 
-python
