@@ -20,6 +20,9 @@ from .utils import _load_module
 COL_ORDER: List[str] = [
     "Model Type",
     "Model",
+    "Parameters",
+    "Organization",
+    "License",
     "Average",
     "mmlu (Accuracy)",
     "mmlu-pro (Accuracy)",
@@ -115,6 +118,9 @@ def main() -> None:
         model_cfg = yaml.safe_load(model_yaml.read_text())
         model_type = model_cfg.get("type", "Instruct")
         model_name = model_cfg.get("display_name", model_stub)
+        parameters = model_cfg.get("parameters", "")
+        organization = model_cfg.get("organization", "")
+        license_name = model_cfg.get("license", "")
 
         # Load evaluation CSV --------------------------------------------------
         df = pd.read_csv(csv_path)
@@ -143,6 +149,9 @@ def main() -> None:
                     "metric_label": _pretty_metric(metric_name),
                     "model": model_name,
                     "model_type": model_type,
+                    "parameters": parameters,
+                    "organization": organization,
+                    "license": license_name,
                     "value": value,
                 }
             )
@@ -155,7 +164,7 @@ def main() -> None:
     long = pd.DataFrame(rows)
     wide = (
         long.pivot_table(
-            index=["model_type", "model"],
+            index=["model_type", "model", "parameters", "organization", "license"],
             columns=["dataset", "metric_label"],
             values="value",
             aggfunc="mean",
@@ -171,7 +180,13 @@ def main() -> None:
         .drop_duplicates()
         .itertuples(index=False)
     }
-    rename_map.update({("model_type", ""): "Model Type", ("model", ""): "Model"})
+    rename_map.update({
+        ("model_type", ""): "Model Type",
+        ("model", ""): "Model",
+        ("parameters", ""): "Parameters",
+        ("organization", ""): "Organization",
+        ("license", ""): "License",
+    })
 
     new_cols = []
     for c in wide.columns:

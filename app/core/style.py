@@ -44,6 +44,8 @@ def apply_gradient(df: pd.DataFrame) -> pd.io.formats.style.Styler:
         styler = styler.apply(_rowstyles, subset=["Average"], axis=0)
         if "Model" in df.columns:
             styler = styler.apply(_rowstyles, subset=["Model"], axis=0)
+        if "Rank" in df.columns:
+            styler = styler.apply(_rowstyles, subset=["Rank"], axis=0)
 
     return styler
 
