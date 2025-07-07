@@ -13,6 +13,7 @@ choice_cols:
   - "choice10"
 
 answer_col: "answer_index"
+language: en
 
 # list one or more columns whose values define categories
 category_cols:

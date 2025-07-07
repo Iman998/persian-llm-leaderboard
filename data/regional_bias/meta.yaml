@@ -1,5 +1,6 @@
 question_col: "text"
 answer_col: "label"
+language: en
 category_cols:
   - "region"
 task: classification

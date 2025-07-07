@@ -5,3 +5,4 @@ task: text_generation
 metrics: [bleu]
 evaluator: evaluators/judge_evaluator.py
 prompt_template: prompts/judge_translation.jinja2
+language: en

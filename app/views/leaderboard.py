@@ -14,12 +14,19 @@ from pathlib import Path
 import altair as alt
 import streamlit as st
 
-from core.paths import DASHBOARD_CSV, DATASETS_DIR, MODELS_DIR, RESULTS_DIR
+from core.paths import (
+    DASHBOARD_CSV,
+    DASHBOARD_FA_CSV,
+    DASHBOARD_EN_CSV,
+    DATASETS_DIR,
+    MODELS_DIR,
+    RESULTS_DIR,
+)
 from core.io import load_csv, numeric_cols
 from core.style import apply_gradient
 
 
-def _build_leaderboard_if_missing() -> None:
+def _build_leaderboard_if_missing(board_path: Path, lang: str) -> None:
     """
     (Re)generate `dashboard/leaderboard.csv` if it is absent.
 
@@ -27,7 +34,7 @@ def _build_leaderboard_if_missing() -> None:
     that any heavy imports inside the script will not slow
     down the Streamlit runtime.
     """
-    if DASHBOARD_CSV.exists():
+    if board_path.exists():
         return
 
     with st.spinner("Building leaderboard…"):
@@ -43,7 +50,8 @@ def _build_leaderboard_if_missing() -> None:
                 "--models_dir",
                 str(MODELS_DIR),
                 "--out",
-                str(DASHBOARD_CSV),
+                str(board_path),
+                *( ["--lang", lang] if lang != "all" else [] ),
             ],
             capture_output=True,
             text=True,
@@ -85,8 +93,18 @@ def show() -> None:
     """Streamlit entry‑point for the page (called by bootstrap)."""
     st.title("🏆 Persian‑LLM Leaderboard")
 
-    _build_leaderboard_if_missing()
-    board_df = load_csv(DASHBOARD_CSV).sort_values("Average", ascending=False)
+    board_choice = st.sidebar.radio(
+        "Language", ["All", "Persian", "English"], key="board_lang"
+    )
+    board_map = {
+        "All": (DASHBOARD_CSV, "all"),
+        "Persian": (DASHBOARD_FA_CSV, "fa"),
+        "English": (DASHBOARD_EN_CSV, "en"),
+    }
+    board_path, lang = board_map[board_choice]
+
+    _build_leaderboard_if_missing(board_path, lang)
+    board_df = load_csv(board_path).sort_values("Average", ascending=False)
 
     ranks = list(range(1, len(board_df) + 1))
     medals = {1: "\U0001F947", 2: "\U0001F948", 3: "\U0001F949"}
@@ -97,5 +115,5 @@ def show() -> None:
     _render_quick_chart(board_df)
 
     st.download_button(
-        "Download CSV", DASHBOARD_CSV.read_bytes(), file_name="leaderboard.csv"
+        "Download CSV", board_path.read_bytes(), file_name=board_path.name
     )
