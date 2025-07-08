@@ -25,6 +25,13 @@ def _medal_colors(avgs: pd.Series) -> List[str]:
     return [{1: "#FFD700", 2: "#C0C0C0", 3: "#CD7F32"}.get(r, "") for r in ranks]
 
 
+def _contrast_color(hex_color: str) -> str:
+    """Return black or white depending on the brightness of ``hex_color``."""
+    r, g, b = mcolors.to_rgb(hex_color)
+    luminance = 0.2126 * r + 0.7152 * g + 0.0722 * b
+    return "#000" if luminance > 0.5 else "#fff"
+
+
 def apply_gradient(df: pd.DataFrame) -> pd.io.formats.style.Styler:
     """
     Colour numeric columns with a RdYlGn gradient and apply
@@ -34,7 +41,28 @@ def apply_gradient(df: pd.DataFrame) -> pd.io.formats.style.Styler:
     numeric = numeric_cols(df)
     styler = df.style
     if numeric:
-        styler = styler.background_gradient(axis=0, cmap="RdYlGn", subset=numeric)
+        cmap = cm.get_cmap("RdYlGn")
+        norms = {}
+        for col in numeric:
+            vals = pd.to_numeric(df[col], errors="coerce")
+            vmin, vmax = vals.min(), vals.max()
+            if np.isnan(vmin) or np.isnan(vmax) or vmin == vmax:
+                norms[col] = mcolors.Normalize(0, 1)
+            else:
+                norms[col] = mcolors.Normalize(vmin=vmin, vmax=vmax)
+
+        def _num_style(val: str, norm: mcolors.Normalize) -> str:
+            num = pd.to_numeric(val, errors="coerce")
+            if np.isnan(num):
+                return ""
+            ratio = norm(num)
+            colour = mcolors.to_hex(cmap(ratio))
+            text = _contrast_color(colour)
+            return f"background-color:{colour};color:{text}"
+
+        for col in numeric:
+            norm = norms[col]
+            styler = styler.applymap(lambda v, n=norm: _num_style(v, n), subset=[col])
 
     def _param_column_style(series: pd.Series) -> mcolors.Normalize:
         vals = pd.to_numeric(series.astype(str).str.replace("B", "", regex=False), errors="coerce")
@@ -49,7 +77,8 @@ def apply_gradient(df: pd.DataFrame) -> pd.io.formats.style.Styler:
         num = pd.to_numeric(str(val).replace("B", ""), errors="coerce")
         ratio = 1.0 if np.isnan(num) else norm(num)
         colour = mcolors.to_hex(blues(ratio))
-        return f"background-color:{colour}"
+        text = _contrast_color(colour)
+        return f"background-color:{colour};color:{text}"
 
     for col in [c for c in ["Parameters", "Active Parameters"] if c in df.columns]:
         norm = _param_column_style(df[col])
@@ -66,14 +95,19 @@ def apply_gradient(df: pd.DataFrame) -> pd.io.formats.style.Styler:
                 colour = "#008000"  # dark green
             else:
                 colour = "#90ee90"  # light green
-            return f"background-color:{colour}"
+            text = _contrast_color(colour)
+            return f"background-color:{colour};color:{text}"
 
         styler = styler.applymap(_license_style, subset=["License"])
 
     # Highlight specific organization
     if "Organization" in df.columns:
         def _org_style(val: str) -> str:
-            return "background-color:#00ff00" if str(val).strip() == "ZharfaTech" else ""
+            if str(val).strip() == "ZharfaTech":
+                colour = "#00ff00"
+                text = _contrast_color(colour)
+                return f"background-color:{colour};color:{text}"
+            return ""
 
         styler = styler.applymap(_org_style, subset=["Organization"])
 
@@ -83,7 +117,8 @@ def apply_gradient(df: pd.DataFrame) -> pd.io.formats.style.Styler:
 
         def _rowstyles(_: pd.Series) -> List[str]:
             return [
-                f"background-color:{m};color:#000" if m else "" for m in medals
+                f"background-color:{m};color:{_contrast_color(m)}" if m else ""
+                for m in medals
             ]
 
         styler = styler.apply(_rowstyles, subset=["Average"], axis=0)
