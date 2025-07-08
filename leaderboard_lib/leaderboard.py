@@ -231,10 +231,13 @@ def main() -> None:
             new_cols.append(rename_map.get((c, ""), c))
     wide.columns = new_cols
 
-    # Ensure expected columns exist -------------------------------------------
-    for col in col_order:
-        if col not in wide.columns:
-            wide[col] = ""
+    # Ensure expected columns exist only for the full leaderboard.
+    # Language-specific boards skip placeholder columns so that
+    # foreign-language datasets are hidden entirely.
+    if args.lang == "all":
+        for col in col_order:
+            if col not in wide.columns:
+                wide[col] = ""
 
     # Compute Average over accuracy columns -----------------------------------
     acc_cols = [c for c in wide.columns if c.endswith("(Accuracy)")]
@@ -264,7 +267,8 @@ def main() -> None:
         wide["Language Average"] = lang_avg.round(5).where(lang_avg.notna(), "")
 
     # Re-order columns ---------------------------------------------------------
-    wide = wide[[c for c in col_order if c in wide.columns]]
+    extra_cols = [c for c in wide.columns if c not in col_order]
+    wide = wide[[c for c in col_order if c in wide.columns] + extra_cols]
 
     out_path = Path(args.out)
     out_path.parent.mkdir(parents=True, exist_ok=True)
