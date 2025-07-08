@@ -17,3 +17,4 @@ task: multiple_choice
 metrics: [accuracy]
 evaluator: evaluators/mcq_evaluator.py
 prompt_template: prompts/mcq_fewshot.jinja2
+description: "Trivia questions from the Quiz of Kings game"

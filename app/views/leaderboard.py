@@ -23,7 +23,7 @@ from core.paths import (
     MODELS_DIR,
     RESULTS_DIR,
 )
-from core.io import load_csv, numeric_cols
+from core.io import load_csv, load_meta, numeric_cols
 from core.style import apply_gradient, render_styler
 
 
@@ -112,16 +112,29 @@ def show() -> None:
     rank_col = [medals.get(r, str(r)) for r in ranks]
     board_df.insert(0, "Rank", rank_col)
 
-    col_cfg = None
+    col_cfg: dict[str, st.column_config.Column] = {}
     if "Language Average" in board_df.columns:
-        col_cfg = {
-            "Language Average": st.column_config.NumberColumn(
-                "Language Average",
-                help="(English Average × 2/3) + (Persian Average × 1/3)",
-            )
-        }
+        col_cfg["Language Average"] = st.column_config.NumberColumn(
+            "Language Average",
+            help="(English Average × 2/3) + (Persian Average × 1/3)",
+        )
 
-    render_styler(apply_gradient(board_df), column_config=col_cfg)
+    desc_map = {}
+    for p in DATASETS_DIR.iterdir():
+        if p.is_dir():
+            meta = load_meta(p.name)
+            desc = meta.get("description")
+            if desc:
+                desc_map[p.name] = desc
+
+    for col in board_df.columns:
+        if " (" in col and col.endswith(")"):
+            ds = col.split(" (", 1)[0]
+            desc = desc_map.get(ds)
+            if desc:
+                col_cfg[col] = st.column_config.NumberColumn(col, help=desc)
+
+    render_styler(apply_gradient(board_df), column_config=col_cfg or None)
     _render_quick_chart(board_df)
 
     st.download_button(

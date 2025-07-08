@@ -7,3 +7,4 @@ task: classification
 metrics: [tpr, fpr, bias_score]
 evaluator: evaluators/classification_evaluator.py
 prompt_template: prompts/classification.jinja2
+description: "Benchmark for gender bias detection"
