@@ -31,10 +31,12 @@ from app.views import leaderboard, dataset_view, llm_judge  # noqa: E402
 st.set_page_config(page_title="Persian-LLM Leaderboard", layout="wide")
 
 PAGE_MAP = {
-    "🏆 Leaderboard":  leaderboard.show,
+    "🏆 Leaderboard": leaderboard.show,
+    "🤖 LLM Judge": llm_judge.show,
     "📂 Dataset view": dataset_view.show,
-    "🤖 LLM Judge":    llm_judge.show,
 }
 
-choice = st.sidebar.radio("📑 Page", list(PAGE_MAP))
-PAGE_MAP[choice]()
+page_tabs = st.tabs(list(PAGE_MAP))
+for tab, (name, callback) in zip(page_tabs, PAGE_MAP.items()):
+    with tab:
+        callback()
