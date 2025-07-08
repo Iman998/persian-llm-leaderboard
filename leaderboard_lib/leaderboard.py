@@ -26,6 +26,7 @@ COL_ORDER: List[str] = [
     "Organization",
     "License",
     "Average",
+    "Language Average",
     "mmlu (Accuracy)",
     "mmlu-pro (Accuracy)",
     "bbh (Accuracy)",
@@ -95,6 +96,7 @@ def main() -> None:
     file_re = re.compile(rf"^(?P<model>{models_alt})(?:_(?P<suffix>.+?))?\.csv$")
 
     rows: List[Dict[str, Any]] = []
+    dataset_lang: Dict[str, str | None] = {}
 
     def _pretty_metric(name: str) -> str:
         """Return a display-friendly metric label."""
@@ -140,6 +142,7 @@ def main() -> None:
         meta_cfg = yaml.safe_load(meta_file.read_text()) if meta_file.exists() else {}
 
         lang = meta_cfg.get("language")
+        dataset_lang[dataset] = lang
         if args.lang != "all" and lang and lang != args.lang:
             continue
 
@@ -231,6 +234,27 @@ def main() -> None:
     acc_vals = wide[acc_cols].apply(pd.to_numeric, errors="coerce")
     counts = acc_vals.notna().sum(axis=1)
     wide["Average"] = (acc_vals.sum(axis=1) / counts).round(5).where(counts > 0, "")
+
+    if args.lang == "all":
+        en_cols = [
+            rename_map[(ds, "Accuracy")]
+            for ds, lang in dataset_lang.items()
+            if lang == "en" and (ds, "Accuracy") in rename_map
+        ]
+        fa_cols = [
+            rename_map[(ds, "Accuracy")]
+            for ds, lang in dataset_lang.items()
+            if lang == "fa" and (ds, "Accuracy") in rename_map
+        ]
+        en_vals = wide[en_cols].apply(pd.to_numeric, errors="coerce") if en_cols else pd.DataFrame(index=wide.index)
+        fa_vals = wide[fa_cols].apply(pd.to_numeric, errors="coerce") if fa_cols else pd.DataFrame(index=wide.index)
+        en_counts = en_vals.notna().sum(axis=1)
+        fa_counts = fa_vals.notna().sum(axis=1)
+        en_avg = en_vals.sum(axis=1) / en_counts.replace(0, pd.NA)
+        fa_avg = fa_vals.sum(axis=1) / fa_counts.replace(0, pd.NA)
+        lang_avg = ((en_avg.fillna(0) * 2 / 3) + (fa_avg.fillna(0) / 3))
+        lang_avg[(en_counts == 0) & (fa_counts == 0)] = pd.NA
+        wide["Language Average"] = lang_avg.round(5).where(lang_avg.notna(), "")
 
     # Re-order columns ---------------------------------------------------------
     wide = wide[[c for c in COL_ORDER if c in wide.columns]]
