@@ -15,6 +15,7 @@ This project provides an intuitive interface for comparing and benchmarking vari
 * **User-friendly Interface:** Built with Streamlit for an intuitive, hassle-free experience.
 * **Interactive Quick Chart:** Use sliders to pick the metric, adjust the page size, and set the start index.
 * **Paginated Category Tables:** Category comparisons now support page controls just like row outputs.
+* **Keyword Search:** Filter row outputs by text in the question column.
 * **Refreshed Look:** Sidebar navigation with page icons and a red→yellow→green gradient highlights numeric columns.
 
 ## 📁 Project Structure
