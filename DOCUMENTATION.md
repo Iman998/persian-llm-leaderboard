@@ -157,7 +157,9 @@ Numeric columns in tables use a red→yellow→green gradient. The top three
 ``Average`` values are highlighted with gold, silver and bronze, and the
 corresponding model names are coloured to match.
 The overall leaderboard also shows a **Language Average** column representing
-`English Average × 2/3 + Persian Average × 1/3`.
+`English Average × 2/3 + Persian Average × 1/3`. This column is omitted from
+the Persian‑ and English‑specific boards, which only include columns for their
+respective datasets.
 
 ---
 
