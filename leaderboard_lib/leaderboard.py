@@ -89,6 +89,11 @@ def main() -> None:
     )
     args = parser.parse_args()
 
+    # Language-specific boards should not include the cross-lingual average
+    col_order = COL_ORDER.copy()
+    if args.lang != "all" and "Language Average" in col_order:
+        col_order.remove("Language Average")
+
     model_names = sorted(
         [p.stem for p in Path(args.models_dir).glob("*.yaml")], key=len, reverse=True
     )
@@ -225,7 +230,7 @@ def main() -> None:
     wide.columns = new_cols
 
     # Ensure expected columns exist -------------------------------------------
-    for col in COL_ORDER:
+    for col in col_order:
         if col not in wide.columns:
             wide[col] = ""
 
@@ -257,7 +262,7 @@ def main() -> None:
         wide["Language Average"] = lang_avg.round(5).where(lang_avg.notna(), "")
 
     # Re-order columns ---------------------------------------------------------
-    wide = wide[[c for c in COL_ORDER if c in wide.columns]]
+    wide = wide[[c for c in col_order if c in wide.columns]]
 
     out_path = Path(args.out)
     out_path.parent.mkdir(parents=True, exist_ok=True)
