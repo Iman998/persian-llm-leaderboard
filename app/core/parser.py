@@ -62,22 +62,49 @@ def parse_file(p: Path) -> Tuple[str, str, str] | None:
 
 def scan_result_maps():
     """
-    Walk `results/` and build four look‑up dictionaries:
+    Walk ``results/`` and build three look‑up dictionaries aware of
+    few‑shot suffixes.
 
-    * `datasets` – all dataset names that have **main** CSVs  
-    * `main_map[(ds, mdl)]       -> Path`
-    * `raw_map[(ds, mdl)]        -> Path`
-    * `cat_map[(ds, mdl, cat)]   -> Path`
+    * ``datasets`` – all dataset names that have **main** CSVs
+    * ``main_map[(ds, mdl, shots)]       -> Path``
+    * ``raw_map[(ds, mdl, shots)]        -> Path``
+    * ``cat_map[(ds, mdl, shots, cat)]   -> Path``
     """
-    main_map: Dict[Tuple[str, str], Path] = {}
-    raw_map: Dict[Tuple[str, str], Path] = {}
-    cat_map: Dict[Tuple[str, str, str], Path] = {}
+
+    main_map: Dict[Tuple[str, str, int], Path] = {}
+    raw_map: Dict[Tuple[str, str, int], Path] = {}
+    cat_map: Dict[Tuple[str, str, int, str], Path] = {}
+
+    shot_re = re.compile(r"^s(\d+)(?:_(.+))?$")
 
     for p in RESULTS_DIR.rglob("*.csv"):
         parsed = parse_file(p)
         if not parsed:
             continue
         ds, mdl, suf = parsed
+
+        is_raw = False
+        if suf.endswith("_raw"):
+            is_raw = True
+            suf = suf[:-4]
+
+        shots = 0
+        cat = ""
+        if suf:
+            m = shot_re.match(suf)
+            if m:
+                shots = int(m.group(1))
+                cat = m.group(2) or ""
+            else:
+                cat = suf
+
+        if is_raw:
+            raw_map[(ds, mdl, shots)] = p
+        elif cat:
+            cat_map[(ds, mdl, shots, cat)] = p
+        else:
+            main_map[(ds, mdl, shots)] = p
+            
         if suf in {"raw"} or suf.endswith("_raw"):
             raw_map[(ds, mdl)] = p
         elif suf and _SHOT_RE.fullmatch(suf):
