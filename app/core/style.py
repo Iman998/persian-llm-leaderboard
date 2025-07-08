@@ -96,7 +96,6 @@ def apply_gradient(df: pd.DataFrame) -> pd.io.formats.style.Styler:
 
 
 def render_styler(styler: pd.io.formats.style.Styler) -> None:
-    """Display a styled DataFrame in Streamlit reliably."""
-    html = styler.to_html()
-    st.markdown(html, unsafe_allow_html=True)
+    """Display a styled DataFrame in Streamlit with interactive features."""
+    st.dataframe(styler, use_container_width=True, hide_index=True)
 
