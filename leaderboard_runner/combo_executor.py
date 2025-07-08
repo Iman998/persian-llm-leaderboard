@@ -57,6 +57,7 @@ def run_single_combo(
     out_dir = paths.RESULTS_DIR / dataset / model
     out_dir.mkdir(parents=True, exist_ok=True)
     out_csv = out_dir / f"{model}{suffix}.csv"
+    final_out = out_csv.with_name(f"{out_csv.stem}_s{shots}{out_csv.suffix}")
 
     # Meta fields ------------------------------------------------------------ #
     prompt_template, evaluator = load_meta_fields(meta_file)
@@ -77,14 +78,17 @@ def run_single_combo(
     if dry_run:
         print(" ".join(map(str, cmd)))
     else:
-        logger.info("RUN %s × %s → %s", model, dataset, out_csv.name)
+        logger.info("RUN %s × %s → %s", model, dataset, final_out.name)
         subprocess.run([str(c) for c in cmd], check=True)
 
         # If sampling, also copy canonical filename
         if n_rows:
-            shutil.copy2(out_csv, out_dir / f"{model}.csv")
-            for f in out_dir.glob(f"{model}{suffix}_*.csv"):
-                shutil.copy2(f, out_dir / f"{model}{f.name[len(model + suffix):]}")
+            shutil.copy2(final_out, out_dir / f"{model}_s{shots}.csv")
+            for f in out_dir.glob(f"{model}{suffix}_s{shots}_*.csv"):
+                shutil.copy2(
+                    f,
+                    out_dir / f"{model}_s{shots}{f.name[len(model + suffix + '_s' + str(shots)):]}",
+                )
 
     # Cleanup temporary files ------------------------------------------------ #
     for t in tmp_files:

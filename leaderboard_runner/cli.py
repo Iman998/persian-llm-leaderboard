@@ -39,9 +39,8 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument(
         "-s",
         "--shots",
-        type=int,
-        default=3,
-        help="few-shot examples per prompt",
+        default="3",
+        help="comma-separated few-shot counts",
     )
     p.add_argument(
         "-w",
@@ -63,23 +62,25 @@ def main(argv: List[str] | None = None) -> None:
 
     models = parse_csv_or_file(args.models)
     datasets = parse_csv_or_file(args.datasets)
+    shots = [int(s) for s in parse_csv_or_file(str(args.shots))]
 
     logging.info(
-        "workers=%d  shots=%d  sample=%s",
+        "workers=%d  shots=%s  sample=%s",
         args.workers,
-        args.shots,
+        ",".join(map(str, shots)),
         "full" if args.n_rows is None else args.n_rows,
     )
 
     for model in models:
         for ds in datasets:
-            run_single_combo(
-                model=model,
-                dataset=ds,
-                n_rows=args.n_rows,
-                shots=args.shots,
-                workers=args.workers,
-                dry_run=args.dry,
-            )
+            for s in shots:
+                run_single_combo(
+                    model=model,
+                    dataset=ds,
+                    n_rows=args.n_rows,
+                    shots=s,
+                    workers=args.workers,
+                    dry_run=args.dry,
+                )
 
     rebuild_leaderboard(dry_run=args.dry)
