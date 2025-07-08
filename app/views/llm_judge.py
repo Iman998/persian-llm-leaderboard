@@ -92,8 +92,8 @@ def _collect_category_breakdown(ds: str, models: List[str], cat_sel: str) -> pd.
     return pd.concat(frames, axis=1) if frames else None
 
 
-def show() -> None:
-    """Render the LLM‑Judge page."""
+def _show_leaderboard() -> None:
+    """Render the judge score leaderboard."""
     judge_datasets = _discover_judge_datasets()
     if not judge_datasets:
         st.info("No LLM‑Judge datasets available.")
@@ -166,3 +166,19 @@ def show() -> None:
             comp_df.reset_index().to_csv(index=False).encode(),
             file_name=f"{ds_sel}_{cat_sel}_judge_compare.csv",
         )
+
+
+def _show_battle() -> None:
+    """Placeholder for model battle view."""
+    st.info("Battle mode coming soon.")
+
+
+def show() -> None:
+    """Render the LLM‑Judge page with subtabs."""
+    leaderboard_tab, battle_tab = st.tabs(["Leaderboard", "Battle"])
+
+    with leaderboard_tab:
+        _show_leaderboard()
+
+    with battle_tab:
+        _show_battle()
