@@ -16,7 +16,7 @@ import streamlit as st
 
 from core.io import load_csv
 from core.parser import scan_result_maps
-from core.style import apply_gradient, render_styler
+from core.style import apply_gradient, render_styler, inject_css
 
 # -------------------------------------------------------------
 # Build result maps once (shared across pages)
@@ -214,6 +214,7 @@ def _show_battle() -> None:
 
 def show() -> None:
     """Render the LLM‑Judge page with subtabs."""
+    inject_css()
     leaderboard_tab, battle_tab = st.tabs(["Leaderboard", "Battle"])
 
     with leaderboard_tab:
@@ -221,3 +222,4 @@ def show() -> None:
 
     with battle_tab:
         _show_battle()
+

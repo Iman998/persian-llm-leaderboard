@@ -24,7 +24,7 @@ from core.paths import (
     RESULTS_DIR,
 )
 from core.io import load_csv, load_meta, numeric_cols
-from core.style import apply_gradient, render_styler
+from core.style import apply_gradient, render_styler, inject_css
 
 
 def _build_leaderboard_if_missing(board_path: Path, lang: str) -> None:
@@ -90,19 +90,9 @@ def _render_quick_chart(df: pd.DataFrame) -> None:
         )
 
 
-def show() -> None:
-    """Streamlit entry‑point for the page (called by bootstrap)."""
-    st.title("🏆 Persian‑LLM Leaderboard")
-
-    board_choice = st.sidebar.radio(
-        "Language", ["All", "Persian", "English"], key="board_lang"
-    )
-    board_map = {
-        "All": (DASHBOARD_CSV, "all"),
-        "Persian": (DASHBOARD_FA_CSV, "fa"),
-        "English": (DASHBOARD_EN_CSV, "en"),
-    }
-    board_path, lang = board_map[board_choice]
+def _render_leaderboard(board_path: Path, lang: str, title: str) -> None:
+    """Helper to display a single leaderboard."""
+    st.title(f"🏆 {title}")
 
     _build_leaderboard_if_missing(board_path, lang)
     board_df = load_csv(board_path).sort_values("Average", ascending=False)
@@ -151,3 +141,20 @@ def show() -> None:
     st.download_button(
         "Download CSV", board_path.read_bytes(), file_name=board_path.name
     )
+
+
+def show() -> None:
+    """Streamlit entry‑point for the page (called by bootstrap)."""
+    inject_css()
+
+    tab_map = {
+        "All": (DASHBOARD_CSV, "all", "LLM Leaderboard"),
+        "Persian": (DASHBOARD_FA_CSV, "fa", "Persian LLM Leaderboard"),
+        "English": (DASHBOARD_EN_CSV, "en", "English LLM Leaderboard"),
+    }
+
+    tabs = st.tabs(list(tab_map))
+    for tab, (path, lang, title) in zip(tabs, tab_map.values()):
+        with tab:
+            _render_leaderboard(path, lang, title)
+
