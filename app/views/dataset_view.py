@@ -49,6 +49,7 @@ def _collect_row_tables(
     meta: Dict[str, object],
     cat_filters: Dict[str, Set[str]],
     show_raw: bool,
+    shots: int,
     query: str = "",
 ) -> Tuple[pd.DataFrame | None, List[str]]:
     """
@@ -63,7 +64,7 @@ def _collect_row_tables(
     choice_cols: List[str] = meta["choice_cols"]
 
     for m in models:
-        raw_file = RAW_MAP.get((ds, m))
+        raw_file = RAW_MAP.get((ds, m, shots))
         if not raw_file:
             warnings.append(f"No raw CSV for model **{m}**")
             warnings.append(f"Raw CSV not found for **{m}** – hiding raw column.")
@@ -124,6 +125,7 @@ def _collect_category_tables(
     meta: Dict[str, object],
     cat_filters: Dict[str, Set[str]],
     cat_sel: str,
+    shots: int,
 ) -> Tuple[pd.DataFrame | None, List[str]]:
     """
     Assemble per‑category accuracy tables for each selected model.
@@ -135,7 +137,7 @@ def _collect_category_tables(
 
         if cat_filters:
             # Need to recompute on filtered rows
-            raw_file = RAW_MAP.get((ds, m))
+            raw_file = RAW_MAP.get((ds, m, shots))
             if not raw_file:
                 warnings.append(f"No raw CSV for model **{m}**")
                 continue
@@ -154,7 +156,7 @@ def _collect_category_tables(
             )
         else:
             # Load cached per‑category CSV if available
-            p = CAT_MAP.get((ds, m, cat_sel))
+            p = CAT_MAP.get((ds, m, shots, cat_sel))
             if p and cat_sel in load_csv(p).columns:
                 df_c = load_csv(p).rename(columns={"Accuracy": m}).set_index(cat_sel)
             else:
@@ -181,7 +183,12 @@ def show() -> None:
     ds_sel = st.sidebar.selectbox("📂 Dataset", DATASETS, key="dataset_sel")
     meta = load_meta(ds_sel)
 
-    models_in_dataset = sorted({mdl for (ds, mdl) in MAIN_MAP if ds == ds_sel})
+    shot_opts = sorted({s for (d, _m, s) in MAIN_MAP if d == ds_sel}) or [0]
+    shots_sel = st.sidebar.selectbox(
+        "🎯 Shots", shot_opts, format_func=lambda s: f"{s}-shot"
+    )
+
+    models_in_dataset = sorted({mdl for (ds, mdl, s) in MAIN_MAP if ds == ds_sel and s == shots_sel})
     # A dataset-specific key guarantees independent widget state
     models_sel = st.sidebar.multiselect(
         "🧠 Models",
@@ -202,7 +209,7 @@ def show() -> None:
         st.session_state[f"models_{ds_sel}"] = [models_in_dataset[0]]
         models_sel = st.session_state[f"models_{ds_sel}"]
 
-    st.title(f"{ds_sel} – Detailed view")
+    st.title(f"{ds_sel} – {shots_sel}-shot view")
 
     if not models_sel:
         st.info("Select at least one model to continue.")
@@ -213,7 +220,7 @@ def show() -> None:
     if meta["category_cols"]:
         with st.sidebar.expander("🔍 Category filters", expanded=False):
             # Pick a sample raw file just to enumerate possible values
-            sample_file = RAW_MAP.get((ds_sel, models_sel[0]))
+            sample_file = RAW_MAP.get((ds_sel, models_sel[0], shots_sel))
             sample_df = load_csv(sample_file) if sample_file else None
 
             for col in meta["category_cols"]:
@@ -245,9 +252,10 @@ def show() -> None:
             meta,
             cat_filters,
             show_raw,
+            shots_sel,
             search_query,
         )
-        if show_raw and all((ds_sel, m) not in RAW_MAP for m in models_sel):
+        if show_raw and all((ds_sel, m, shots_sel) not in RAW_MAP for m in models_sel):
             st.info("Raw outputs are not available for the selected model(s).")
         for w in warnings:
             st.warning(w)
@@ -263,11 +271,12 @@ def show() -> None:
             )
             start, end = (page_num - 1) * page_size, page_num * page_size
 
+            st.caption(f"{shots_sel}-shot results")
             render_styler(apply_gradient(merged_df.iloc[start:end]))
             st.download_button(
                 "Download CSV",
                 merged_df.to_csv(index=False).encode(),
-                file_name=f"{ds_sel}_rows_compare.csv",
+                file_name=f"{ds_sel}_{shots_sel}shot_rows_compare.csv",
             )
 
     # ---------------------------------------------------------------- #
@@ -275,7 +284,7 @@ def show() -> None:
     # ---------------------------------------------------------------- #
     with cat_tab:
         cat_names = sorted(
-            {k[2] for k in CAT_MAP if k[0] == ds_sel and k[1] in models_sel}
+            {k[3] for k in CAT_MAP if k[0] == ds_sel and k[1] in models_sel and k[2] == shots_sel}
         )
         if not cat_names and not meta["category_cols"]:
             st.info("No per‑category CSVs available for this dataset.")
@@ -287,7 +296,7 @@ def show() -> None:
         )
 
         comp_df, warnings = _collect_category_tables(
-            ds_sel, models_sel, meta, cat_filters, cat_sel
+            ds_sel, models_sel, meta, cat_filters, cat_sel, shots_sel
         )
         for w in warnings:
             st.warning(w)
@@ -305,6 +314,7 @@ def show() -> None:
         )
         start, end = (page_num - 1) * page_size, page_num * page_size
 
+        st.caption(f"{shots_sel}-shot results")
         render_styler(apply_gradient(comp_df.iloc[start:end]))
 
         # Interactive grouped‑bar chart
@@ -331,5 +341,5 @@ def show() -> None:
         st.download_button(
             "Download CSV",
             comp_df.reset_index().to_csv(index=False).encode(),
-            file_name=f"{ds_sel}_{cat_sel}_compare.csv",
+            file_name=f"{ds_sel}_{cat_sel}_{shots_sel}shot_compare.csv",
         )
