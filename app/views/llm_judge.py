@@ -42,7 +42,11 @@ def _collect_judge_table(ds: str) -> Tuple[pd.DataFrame, List[str]]:
     rows = []
     metric_names = set()
 
-    models = sorted({mdl for (d, mdl, s) in MAIN_MAP if d == ds and s == 0})
+    models = sorted({
+        k[1]
+        for k in MAIN_MAP
+        if len(k) == 3 and k[0] == ds and k[2] == 0
+    })
     for m in models:
         p = MAIN_MAP.get((ds, m, 0))
         if not p:
@@ -148,7 +152,11 @@ def _show_leaderboard() -> None:
                 render_styler(apply_gradient(battle_df))
 
     # Optional per‑category breakdown
-    cat_names = sorted({k[3] for k in CAT_MAP if k[0] == ds_sel and k[2] == 0})
+    cat_names = sorted({
+        k[3]
+        for k in CAT_MAP
+        if len(k) == 4 and k[0] == ds_sel and k[2] == 0
+    })
     if cat_names:
         st.subheader("Category breakdown")
         cat_sel = st.selectbox("Category column", cat_names)
