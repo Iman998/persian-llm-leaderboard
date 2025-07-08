@@ -148,7 +148,9 @@ def main() -> None:
 
         lang = meta_cfg.get("language")
         dataset_lang[dataset] = lang
-        if args.lang != "all" and lang and lang != args.lang:
+        # Skip datasets whose language doesn't match the requested board
+        # "lang" may be None when a dataset lacks this field
+        if args.lang != "all" and lang != args.lang:
             continue
 
         answer_col = meta_cfg.get("answer_col", "Key")
