@@ -28,7 +28,6 @@ if str(ROOT_DIR) not in sys.path:
 from leaderboard_lib.data_utils import _norm
 
 from utils import (
-    DASHBOARD_CSV,
     DATASETS_DIR,
     MODELS_DIR,
     RESULTS_DIR,
@@ -41,18 +40,32 @@ from utils import (
 
 st.set_page_config(page_title="Persian‑LLM Leaderboard", layout="wide")
 
+lang = st.sidebar.selectbox("🌐 Language", ["fa", "en"], index=0)
+dashboard_csv = ROOT_DIR / "dashboard" / f"leaderboard_{lang}.csv"
+
 datasets, main_map, raw_map, cat_map = scan_result_maps()
 if not datasets:
     st.error("No result CSVs in ./results – run evaluations first.")
     st.stop()
 
-if not DASHBOARD_CSV.exists():
+if not dashboard_csv.exists():
     with st.spinner("Building leaderboard…"):
         script = Path(__file__).resolve().parents[1] / "scripts" / "build_leaderboard.py"
         proc = subprocess.run(
-            [sys.executable, str(script), "--results_dir", str(RESULTS_DIR),
-             "--datasets_dir", str(DATASETS_DIR), "--models_dir", str(MODELS_DIR),
-             "--out", str(DASHBOARD_CSV)],
+            [
+                sys.executable,
+                str(script),
+                "--results_dir",
+                str(RESULTS_DIR),
+                "--datasets_dir",
+                str(DATASETS_DIR),
+                "--models_dir",
+                str(MODELS_DIR),
+                "--language",
+                lang,
+                "--out",
+                str(dashboard_csv),
+            ],
             capture_output=True, text=True,
         )
     if proc.returncode != 0:
@@ -66,11 +79,11 @@ page = st.sidebar.radio("📑 Page", ["Leaderboard", "Dataset view", "LLM Judge"
 # ───────────── Leaderboard page ─────────────────────────────────────── #
 if page == "Leaderboard":
     st.title("🏆 Persian‑LLM Leaderboard")
-    if not DASHBOARD_CSV.exists():
+    if not dashboard_csv.exists():
         st.warning("Leaderboard CSV not found – build it first.")
         st.stop()
 
-    board_df = load_csv(DASHBOARD_CSV).sort_values("Average", ascending=False)
+    board_df = load_csv(dashboard_csv).sort_values("Average", ascending=False)
     st.dataframe(gradient(board_df), use_container_width=True, height=600)
 
     with st.expander("📊 Quick chart"):
@@ -102,7 +115,11 @@ if page == "Leaderboard":
         )
         st.altair_chart(chart, use_container_width=True)
 
-    st.download_button("Download CSV", DASHBOARD_CSV.read_bytes(), "leaderboard.csv")
+    st.download_button(
+        "Download CSV",
+        dashboard_csv.read_bytes(),
+        f"leaderboard_{lang}.csv",
+    )
     st.stop()
 
 # ───────────── Dataset view page ────────────────────────────────────── #

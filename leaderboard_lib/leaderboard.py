@@ -10,6 +10,21 @@ import re
 from pathlib import Path
 from typing import Any, Callable, Dict, List
 
+# Datasets grouped by language
+FA_DATASETS = [
+    "khayyam_challenge",
+    "parsinlu_mc",
+    "parsinlu_nli",
+    "parsinlu_qqp",
+    "persian_ARC",
+    "pquad",
+]
+EN_DATASETS = [
+    "mmlu",
+    "mmlu-pro",
+    "bbh",
+]
+
 import pandas as pd
 import yaml
 
@@ -59,7 +74,7 @@ def load_metric(name: str) -> Callable[[pd.Series, pd.Series], float]:
 
 # ─────────────────────────── leaderboard builder ──────────────────────────── #
 
-def main() -> None:
+def main(argv: List[str] | None = None) -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--results_dir",
@@ -75,7 +90,15 @@ def main() -> None:
     parser.add_argument(
         "--models_dir", default="models", help="Directory containing <model>.yaml files."
     )
-    args = parser.parse_args()
+    parser.add_argument(
+        "--language",
+        choices=["fa", "en"],
+        default="fa",
+        help="Aggregate only datasets in the given language",
+    )
+    args = parser.parse_args(argv)
+
+    allowed = FA_DATASETS if args.language == "fa" else EN_DATASETS
 
     model_names = sorted(
         [p.stem for p in Path(args.models_dir).glob("*.yaml")], key=len, reverse=True
@@ -104,6 +127,8 @@ def main() -> None:
             dataset = csv_path.relative_to(args.results_dir).parts[0]
         except ValueError:
             dataset = csv_path.parent.parent.name
+        if dataset not in allowed:
+            continue
         model_stub, suffix = m.group("model", "suffix")
         if suffix or dataset.endswith(("raw", "Level")):
             continue
@@ -188,11 +213,11 @@ def main() -> None:
         if col not in wide.columns:
             wide[col] = ""
 
-    # Compute Average over accuracy columns -----------------------------------
-    acc_cols = [c for c in wide.columns if c.endswith("(Accuracy)")]
-    acc_vals = wide[acc_cols].apply(pd.to_numeric, errors="coerce")
-    counts = acc_vals.notna().sum(axis=1)
-    wide["Average"] = (acc_vals.sum(axis=1) / counts).round(5).where(counts > 0, "")
+    # Compute Average over remaining dataset columns ---------------------------
+    num_cols = [c for c in wide.columns if c not in {"Model Type", "Model"}]
+    num_vals = wide[num_cols].apply(pd.to_numeric, errors="coerce")
+    counts = num_vals.notna().sum(axis=1)
+    wide["Average"] = (num_vals.sum(axis=1) / counts).round(5).where(counts > 0, "")
 
     # Re-order columns ---------------------------------------------------------
     wide = wide[[c for c in COL_ORDER if c in wide.columns]]

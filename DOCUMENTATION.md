@@ -87,7 +87,8 @@ Evaluation results are saved under `results/<dataset>/<model>/<model>.csv`.
 After running `scripts/run_eval.py` you must rebuild the leaderboard:
 
 ```bash
-python scripts/build_leaderboard.py --results_dir results --datasets_dir data --out dashboard/leaderboard.csv
+python scripts/build_leaderboard.py --language fa --results_dir results --datasets_dir data --out dashboard/leaderboard_fa.csv
+python scripts/build_leaderboard.py --language en --results_dir results --datasets_dir data --out dashboard/leaderboard_en.csv
 ```
 
 When you sample rows with `run_all.sh --n_rows N` or pass `--n_rows` to

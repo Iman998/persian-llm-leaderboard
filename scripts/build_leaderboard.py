@@ -2,7 +2,9 @@
 
 """CLI entry point for building the aggregated leaderboard.
 
-All heavy lifting is performed by :func:`leaderboard_lib.leaderboard.main`."""
+All heavy lifting is performed by :func:`leaderboard_lib.leaderboard.main`.
+This wrapper simply forwards command line arguments such as ``--language``.
+"""
 
 import sys
 from pathlib import Path
@@ -17,4 +19,4 @@ from leaderboard_lib.leaderboard import main
 if __name__ == "__main__":
     if sys.version_info < (3, 10):
         sys.exit("Python ≥ 3.10 required")
-    main()
+    main(sys.argv[1:])
