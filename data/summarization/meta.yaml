@@ -6,3 +6,4 @@ metrics: [rouge]
 evaluator: evaluators/judge_evaluator.py
 prompt_template: prompts/judge.jinja2
 language: fa
+description: "Document summarization dataset in Persian"

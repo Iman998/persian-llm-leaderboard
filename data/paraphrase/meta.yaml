@@ -5,3 +5,4 @@ prompt_template: prompts/classification.jinja2
 question_col: text
 answer_col: label
 language: fa
+description: "Persian paraphrase identification dataset"
