@@ -69,6 +69,19 @@ bash run_all.sh --n_rows 250
 
 This is useful for quick testing or partial evaluation when working with large datasets.
 
+### Evaluating Multiple Shot Counts
+
+You can benchmark several prompt sizes in one go using the `--shots` option:
+
+```bash
+bash run_all.sh --shots 1,3,7
+```
+
+Each model‑dataset pair is evaluated separately for every listed shot value and
+the results are saved as `model_s1.csv`, `model_s3.csv`, and so on. The
+leaderboard aggregates these files and reports per‑shot averages alongside the
+overall mean.
+
 ### Manually Run Individual Evaluations
 
 You can also run evaluations manually using:

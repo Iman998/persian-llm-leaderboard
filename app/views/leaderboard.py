@@ -118,6 +118,17 @@ def show() -> None:
             "Language Average",
             help="(English Average × 2/3) + (Persian Average × 1/3)",
         )
+    if "Shots" in board_df.columns:
+        col_cfg["Shots"] = st.column_config.TextColumn(
+            "Shots",
+            help="Prompt examples used for each evaluation",
+        )
+    for c in board_df.columns:
+        if c.startswith("Shot Average"):
+            col_cfg[c] = st.column_config.NumberColumn(
+                c,
+                help="Mean accuracy across datasets for this shot value",
+            )
 
     desc_map = {}
     for p in DATASETS_DIR.iterdir():
