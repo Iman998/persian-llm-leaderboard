@@ -183,12 +183,18 @@ def show() -> None:
     ds_sel = st.sidebar.selectbox("📂 Dataset", DATASETS, key="dataset_sel")
     meta = load_meta(ds_sel)
 
-    shot_opts = sorted({s for (d, _m, s) in MAIN_MAP if d == ds_sel}) or [0]
+    shot_opts = (
+        sorted({k[2] for k in MAIN_MAP if len(k) == 3 and k[0] == ds_sel}) or [0]
+    )
     shots_sel = st.sidebar.selectbox(
         "🎯 Shots", shot_opts, format_func=lambda s: f"{s}-shot"
     )
 
-    models_in_dataset = sorted({mdl for (ds, mdl, s) in MAIN_MAP if ds == ds_sel and s == shots_sel})
+    models_in_dataset = sorted({
+        k[1]
+        for k in MAIN_MAP
+        if len(k) == 3 and k[0] == ds_sel and k[2] == shots_sel
+    })
     # A dataset-specific key guarantees independent widget state
     models_sel = st.sidebar.multiselect(
         "🧠 Models",
@@ -283,9 +289,11 @@ def show() -> None:
     # Category scores tab
     # ---------------------------------------------------------------- #
     with cat_tab:
-        cat_names = sorted(
-            {k[3] for k in CAT_MAP if k[0] == ds_sel and k[1] in models_sel and k[2] == shots_sel}
-        )
+        cat_names = sorted({
+            k[3]
+            for k in CAT_MAP
+            if len(k) == 4 and k[0] == ds_sel and k[1] in models_sel and k[2] == shots_sel
+        })
         if not cat_names and not meta["category_cols"]:
             st.info("No per‑category CSVs available for this dataset.")
             return
