@@ -64,19 +64,31 @@ def _build_leaderboard_if_missing(board_path: Path, lang: str) -> None:
         st.stop()
 
 
-def _render_quick_chart(df: pd.DataFrame) -> None:
+def _render_quick_chart(df: pd.DataFrame, key_prefix: str = "") -> None:
     with st.expander("📊 Quick chart"):
         metric = st.selectbox("Metric", numeric_cols(df), 0)
         max_n  = len(df)
 
         # ⬇︎ guard: only show slider when >1 model
         if max_n > 1:
-            page_size = st.slider("Models per view", 1, max_n, min(10, max_n))
+            page_size = st.slider(
+                "Models per view",
+                1,
+                max_n,
+                min(10, max_n),
+                key=f"{key_prefix}models_per_view",
+            )
         else:
             page_size = 1
 
         if max_n > page_size:
-            start = st.slider("Start index", 0, max_n - page_size, 0)
+            start = st.slider(
+                "Start index",
+                0,
+                max_n - page_size,
+                0,
+                key=f"{key_prefix}start_index",
+            )
         else:
             start = 0
 
@@ -136,7 +148,7 @@ def _render_leaderboard(board_path: Path, lang: str, title: str) -> None:
                 col_cfg[col] = st.column_config.NumberColumn(col, help=desc)
 
     render_styler(apply_gradient(board_df), column_config=col_cfg or None)
-    _render_quick_chart(board_df)
+    _render_quick_chart(board_df, key_prefix=f"{lang}_")
 
     st.download_button(
         "Download CSV", board_path.read_bytes(), file_name=board_path.name
