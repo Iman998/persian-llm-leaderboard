@@ -153,3 +153,27 @@ def render_styler(
         column_config=column_config or {},
     )
 
+
+def inject_css() -> None:
+    """Inject global CSS tweaks for font sizes and tab alignment."""
+    st.markdown(
+        """
+        <style>
+            h1 {
+                font-size: 60%;
+            }
+            [data-testid="stTabs"] button {
+                font-size: 200%;
+            }
+            [data-testid="stTabs"] div[role="tablist"] {
+                justify-content: flex-end;
+            }
+            [data-testid="stSidebar"] label,
+            [data-testid="stSidebar"] span {
+                font-size: 150%;
+            }
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
+

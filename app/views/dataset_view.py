@@ -21,7 +21,7 @@ from leaderboard_lib.data_utils import _norm  # external helper for normalisatio
 
 from core.io import load_csv, load_meta
 from core.parser import scan_result_maps
-from core.style import apply_gradient, render_styler
+from core.style import apply_gradient, render_styler, inject_css
 
 # ──────────────────────────────────────────────────────────────
 # Cached result maps – shared across pages in the same session
@@ -175,6 +175,7 @@ def _collect_category_tables(
 # ------------------------------------------------------------------ #
 def show() -> None:
     """Entry‑point for the Dataset‑view page."""
+    inject_css()
     if not DATASETS:
         st.error("⚠️ No result CSVs found in `results/` – run evaluations first.")
         return
@@ -351,3 +352,4 @@ def show() -> None:
             comp_df.reset_index().to_csv(index=False).encode(),
             file_name=f"{ds_sel}_{cat_sel}_{shots_sel}shot_compare.csv",
         )
+
