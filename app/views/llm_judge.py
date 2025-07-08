@@ -116,6 +116,37 @@ def show() -> None:
         file_name=f"{ds_sel}_judge_scores.csv",
     )
 
+    # Pairwise model comparison
+    with st.expander("\u2694\ufe0f Battle"):
+        model_opts = table_df["Model"].tolist()
+        if len(model_opts) < 2:
+            st.info("Need at least two models for a battle.")
+        else:
+            m1 = st.selectbox("Model A", model_opts, 0, key="battle_m1")
+            m2 = st.selectbox(
+                "Model B",
+                model_opts,
+                1 if len(model_opts) > 1 else 0,
+                key="battle_m2",
+            )
+            if m1 == m2:
+                st.info("Select two different models to compare.")
+            else:
+                row1 = table_df[table_df["Model"] == m1].iloc[0]
+                row2 = table_df[table_df["Model"] == m2].iloc[0]
+                metrics = [c for c in table_df.columns if c != "Model"]
+                diff = (row1[metrics] - row2[metrics]).rename("Difference")
+                battle_df = pd.DataFrame({
+                    "Metric": metrics,
+                    m1: row1[metrics].values,
+                    m2: row2[metrics].values,
+                    "Difference": diff.values,
+                })
+                st.markdown(
+                    f"Score differences are computed as **{m1} - {m2}** across each metric."
+                )
+                render_styler(apply_gradient(battle_df))
+
     # Optional per‑category breakdown
     cat_names = sorted({k[2] for k in CAT_MAP if k[0] == ds_sel})
     if cat_names:
