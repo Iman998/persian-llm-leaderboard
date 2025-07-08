@@ -12,6 +12,7 @@ import sys
 from pathlib import Path
 
 import altair as alt
+import pandas as pd
 import streamlit as st
 
 from core.paths import (
@@ -111,7 +112,16 @@ def show() -> None:
     rank_col = [medals.get(r, str(r)) for r in ranks]
     board_df.insert(0, "Rank", rank_col)
 
-    render_styler(apply_gradient(board_df))
+    col_cfg = None
+    if "Language Average" in board_df.columns:
+        col_cfg = {
+            "Language Average": st.column_config.NumberColumn(
+                "Language Average",
+                help="(English Average × 2/3) + (Persian Average × 1/3)",
+            )
+        }
+
+    render_styler(apply_gradient(board_df), column_config=col_cfg)
     _render_quick_chart(board_df)
 
     st.download_button(

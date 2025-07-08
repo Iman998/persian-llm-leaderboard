@@ -130,7 +130,15 @@ def apply_gradient(df: pd.DataFrame) -> pd.io.formats.style.Styler:
     return styler
 
 
-def render_styler(styler: pd.io.formats.style.Styler) -> None:
+def render_styler(
+    styler: pd.io.formats.style.Styler,
+    column_config: dict | None = None,
+) -> None:
     """Display a styled DataFrame in Streamlit with interactive features."""
-    st.dataframe(styler, use_container_width=True, hide_index=True)
+    st.dataframe(
+        styler,
+        use_container_width=True,
+        hide_index=True,
+        column_config=column_config or {},
+    )
 
