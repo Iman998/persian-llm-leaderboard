@@ -99,6 +99,7 @@ def main() -> None:
     )
     models_alt = "|".join(map(re.escape, model_names))
     file_re = re.compile(rf"^(?P<model>{models_alt})(?:_(?P<suffix>.+?))?\.csv$")
+    shot_re = re.compile(r"s(?P<shot>\d+)$")
 
     rows: List[Dict[str, Any]] = []
     dataset_lang: Dict[str, str | None] = {}
@@ -123,8 +124,12 @@ def main() -> None:
         except ValueError:
             dataset = csv_path.parent.parent.name
         model_stub, suffix = m.group("model", "suffix")
-        if suffix or dataset.endswith(("raw", "Level")):
+        if dataset.endswith(("raw", "Level")):
             continue
+        shot_m = shot_re.fullmatch(suffix or "")
+        if suffix and not shot_m:
+            continue
+        shot = int(shot_m.group("shot")) if shot_m else 0
 
         # Load model metadata --------------------------------------------------
         model_yaml = Path(args.models_dir) / f"{model_stub}.yaml"
@@ -175,6 +180,7 @@ def main() -> None:
                     "active_parameters": active_parameters,
                     "organization": organization,
                     "license": license_name,
+                    "shot": shot,
                     "value": value,
                 }
             )
@@ -183,19 +189,21 @@ def main() -> None:
         print("No result CSVs found; nothing to build.")
         return
 
-    # Long → wide pivot (average duplicates) ----------------------------------
     long = pd.DataFrame(rows)
+
+    model_cols = [
+        "model_type",
+        "train_type",
+        "model",
+        "parameters",
+        "active_parameters",
+        "organization",
+        "license",
+    ]
+
     wide = (
         long.pivot_table(
-            index=[
-                "model_type",
-                "train_type",
-                "model",
-                "parameters",
-                "active_parameters",
-                "organization",
-                "license",
-            ],
+            index=model_cols,
             columns=["dataset", "metric_label"],
             values="value",
             aggfunc="mean",
@@ -231,6 +239,22 @@ def main() -> None:
             new_cols.append(rename_map.get((c, ""), c))
     wide.columns = new_cols
 
+    shots = sorted(long["shot"].unique())
+    shot_map = (
+        long.groupby(model_cols)["shot"].apply(lambda s: ",".join(map(str, sorted(set(s))))).reset_index(name="Shots")
+    )
+    acc_per_shot = (
+        long[long["metric_label"] == "Accuracy"]
+        .groupby(model_cols + ["shot"])["value"].mean()
+        .unstack("shot")
+        .reset_index()
+    )
+    acc_per_shot.columns = list(acc_per_shot.columns[: len(model_cols)]) + [f"Shot Average {s}" for s in shots]
+    avg_cols = [c for c in acc_per_shot.columns if c.startswith("Shot Average")]
+    acc_per_shot["Average"] = acc_per_shot[avg_cols].mean(axis=1).round(5)
+
+    wide = wide.merge(shot_map, on=model_cols).merge(acc_per_shot, on=model_cols)
+
     # Ensure expected columns exist only for the full leaderboard.
     # Language-specific boards skip placeholder columns so that
     # foreign-language datasets are hidden entirely.
@@ -238,12 +262,6 @@ def main() -> None:
         for col in col_order:
             if col not in wide.columns:
                 wide[col] = ""
-
-    # Compute Average over accuracy columns -----------------------------------
-    acc_cols = [c for c in wide.columns if c.endswith("(Accuracy)")]
-    acc_vals = wide[acc_cols].apply(pd.to_numeric, errors="coerce")
-    counts = acc_vals.notna().sum(axis=1)
-    wide["Average"] = (acc_vals.sum(axis=1) / counts).round(5).where(counts > 0, "")
 
     if args.lang == "all":
         en_cols = [

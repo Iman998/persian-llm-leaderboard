@@ -28,6 +28,7 @@ def build_run_eval_cmd(
     """
     Return a fully-populated argv list for invoking ``scripts/run_eval.py``.
     """
+    out_csv = out_csv.with_name(f"{out_csv.stem}_s{shots}{out_csv.suffix}")
     return [
         sys.executable,
         RUN_EVAL_SCRIPT,

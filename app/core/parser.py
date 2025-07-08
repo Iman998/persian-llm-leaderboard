@@ -24,6 +24,7 @@ model_names = sorted(
 models_alt = "|".join(map(re.escape, model_names))
 
 _RE_NEW = re.compile(rf"^(?P<model>{models_alt})(?:_(?P<suffix>.+?))?\.csv$")
+_SHOT_RE = re.compile(r"s\d+$")
 _RE_LEGACY = re.compile(
     rf"^(?P<dataset>.+?)_(?P<model>{models_alt})(?:_(?P<suffix>.+?))?\.csv$"
 )
@@ -103,6 +104,15 @@ def scan_result_maps():
             cat_map[(ds, mdl, shots, cat)] = p
         else:
             main_map[(ds, mdl, shots)] = p
+            
+        if suf in {"raw"} or suf.endswith("_raw"):
+            raw_map[(ds, mdl)] = p
+        elif suf and _SHOT_RE.fullmatch(suf):
+            main_map[(ds, mdl)] = p
+        elif suf and not suf.split("_", 1)[0].isdigit():
+            cat_map[(ds, mdl, suf)] = p
+        else:  # empty suffix → main result
+            main_map[(ds, mdl)] = p
 
     datasets = sorted({k[0] for k in main_map})
     return datasets, main_map, raw_map, cat_map
