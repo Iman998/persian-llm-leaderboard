@@ -5,6 +5,7 @@ Allows users to:
 * pick one dataset
 * select one or more models
 * optionally filter rows by category columns
+* search rows by keywords in the question text
 * toggle raw model outputs
 * view accuracy breakdowns per category
 """
@@ -43,7 +44,12 @@ def _filter_by_categories(df: pd.DataFrame, filters: Dict[str, Set[str]]) -> pd.
 # Row‑table helpers
 # ------------------------------------------------------------------ #
 def _collect_row_tables(
-    ds: str, models: List[str], meta: Dict[str, object], cat_filters: Dict[str, Set[str]], show_raw: bool
+    ds: str,
+    models: List[str],
+    meta: Dict[str, object],
+    cat_filters: Dict[str, Set[str]],
+    show_raw: bool,
+    query: str = "",
 ) -> Tuple[pd.DataFrame | None, List[str]]:
     """
     Build a merged DataFrame where each model contributes a column
@@ -73,6 +79,9 @@ def _collect_row_tables(
         if q_col is None or a_col is None or "pred" not in df.columns:
             warnings.append(f"Columns missing in *{raw_file.name}* – skipped.")
             continue
+
+        if query:
+            df = df[df[q_col].astype(str).str.contains(query, case=False, na=False)]
 
         keep_cols = [q_col, a_col] + choice_cols + ["pred"]
         if show_raw and "raw" in df.columns:
@@ -180,6 +189,13 @@ def show() -> None:
         default=models_in_dataset[:1],
         key=f"models_{ds_sel}",
     )
+
+    search_query = st.sidebar.text_input(
+        "🔎 Search question text",
+        value="",
+        key=f"search_{ds_sel}",
+        help="Filter rows by keywords (case-insensitive)",
+    )
     
     # Auto-select first model if user switched dataset and nothing is ticked
     if not models_sel and models_in_dataset:
@@ -224,7 +240,12 @@ def show() -> None:
     # ---------------------------------------------------------------- #
     with row_tab:
         merged_df, warnings = _collect_row_tables(
-            ds_sel, models_sel, meta, cat_filters, show_raw
+            ds_sel,
+            models_sel,
+            meta,
+            cat_filters,
+            show_raw,
+            search_query,
         )
         if show_raw and all((ds_sel, m) not in RAW_MAP for m in models_sel):
             st.info("Raw outputs are not available for the selected model(s).")
