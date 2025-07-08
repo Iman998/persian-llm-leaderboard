@@ -135,6 +135,17 @@ def render_styler(
     column_config: dict | None = None,
 ) -> None:
     """Display a styled DataFrame in Streamlit with interactive features."""
+    st.markdown(
+        """
+        <style>
+            [data-testid="stDataFrame"] table {
+                font-size: 18px;
+            }
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
+
     st.dataframe(
         styler,
         use_container_width=True,
