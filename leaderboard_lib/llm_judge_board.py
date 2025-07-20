@@ -103,17 +103,19 @@ def main() -> None:
 
         df = pd.read_csv(csv_path)
 
-        meta_file = Path(args.datasets_dir) / dataset / "meta.yaml"
-        answer_col = "Key"
+        meta_dataset = dataset[:-6] if dataset.endswith("_judge") else dataset
+        meta_file = Path(args.datasets_dir) / meta_dataset / "meta.yaml"
+        meta_cfg = {}
         if meta_file.exists():
             meta_cfg = yaml.safe_load(meta_file.read_text())
-            answer_col = meta_cfg.get("answer_col", "Key")
+        else:
+            print(f"Warning: {meta_file} not found; using defaults.")
+
+        answer_col = meta_cfg.get("answer_col", "Key")
         if answer_col not in df.columns:
             continue
 
-        metrics = ["accuracy"]
-        if meta_file.exists():
-            metrics = meta_cfg.get("metrics", ["accuracy"])
+        metrics = meta_cfg.get("metrics", ["accuracy"])
 
         for metric_name in metrics:
             metric_fn = load_metric(metric_name)
