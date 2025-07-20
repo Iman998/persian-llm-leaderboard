@@ -1,9 +1,8 @@
 question_col: "document"
 answer_col: "summary"
-candidate_col: "candidate"
 task: text_generation
 metrics: [rouge]
-evaluator: evaluators/judge_evaluator.py
-prompt_template: prompts/judge.jinja2
+evaluator: evaluators/text_generation_evaluator.py
+prompt_template: prompts/text_generation.jinja2
 language: fa
 description: "Example dataset for Persian summarization"
