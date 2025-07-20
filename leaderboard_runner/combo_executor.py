@@ -10,8 +10,12 @@ from __future__ import annotations
 import logging
 import shutil
 import subprocess
+import tempfile
 from pathlib import Path
 from typing import List
+
+import pandas as pd
+import yaml
 
 from . import paths
 from .cmd_utils import build_run_eval_cmd
@@ -21,6 +25,59 @@ from .meta_utils import load_meta_fields
 logger = logging.getLogger(__name__)
 
 
+def _run_judge_evaluation(
+    *,
+    model: str,
+    dataset: str,
+    meta_file: Path,
+    result_csv: Path,
+    shots: int,
+    workers: int,
+    n_rows: int | None,
+    dry_run: bool,
+) -> None:
+    """Run ``judge_evaluator.py`` on ``result_csv`` predictions."""
+
+    df = pd.read_csv(result_csv)
+    cand_col = "candidate"
+    if cand_col not in df.columns:
+        df[cand_col] = df["pred"]
+    else:
+        df[cand_col] = df["pred"]
+
+    tmp_path = Path(tempfile.NamedTemporaryFile(suffix=".csv", delete=False).name)
+    df.to_csv(tmp_path, index=False)
+
+    out_dir = paths.RESULTS_DIR / f"{dataset}_judge" / model
+    out_dir.mkdir(parents=True, exist_ok=True)
+    suffix = f"_{n_rows}" if n_rows else ""
+    judge_csv = out_dir / f"{model}{suffix}.csv"
+
+    cmd = build_run_eval_cmd(
+        model_stub=model,
+        dataset_path=tmp_path,
+        meta_path=meta_file,
+        prompt_template="prompts/judge.jinja2",
+        evaluator="evaluators/judge_evaluator.py",
+        n_rows=n_rows,
+        shots=shots,
+        workers=workers,
+        out_csv=judge_csv,
+    )
+
+    if dry_run:
+        print(" ".join(map(str, cmd)))
+    else:
+        logger.info("RUN %s × %s → judge %s", model, dataset, judge_csv.name)
+        subprocess.run([str(c) for c in cmd], check=True)
+
+        if n_rows:
+            shutil.copy2(judge_csv, out_dir / f"{model}.csv")
+            for f in out_dir.glob(f"{model}{suffix}_*.csv"):
+                shutil.copy2(f, out_dir / f"{model}{f.name[len(model + suffix):]}")
+
+    tmp_path.unlink(missing_ok=True)
+
 def run_single_combo(
     *,
     model: str,
@@ -28,9 +85,16 @@ def run_single_combo(
     n_rows: int | None,
     shots: int,
     workers: int,
+    judge: bool = False,
     dry_run: bool = False,
 ) -> None:
-    """Evaluate *model* on *dataset* and write results into ``results/``."""
+    """Evaluate *model* on *dataset* and write results into ``results/``.
+
+    If ``judge`` is ``True`` and the dataset is a ``text_generation`` task,
+    a second pass is executed using :mod:`evaluators.judge_evaluator` on the
+    predictions from the first run.  Judge scores are written under
+    ``results/<dataset>_judge/<model>/``.
+    """
     csv_file = paths.DATASETS_DIR / dataset / "test.csv"
     meta_file = paths.DATASETS_DIR / dataset / "meta.yaml"
     model_yaml = paths.MODELS_DIR / f"{model}.yaml"
@@ -85,6 +149,21 @@ def run_single_combo(
             shutil.copy2(out_csv, out_dir / f"{model}.csv")
             for f in out_dir.glob(f"{model}{suffix}_*.csv"):
                 shutil.copy2(f, out_dir / f"{model}{f.name[len(model + suffix):]}")
+
+        # Optional LLM-judge evaluation ------------------------------------- #
+        with meta_file.open("r", encoding="utf-8") as fh:
+            meta_cfg = yaml.safe_load(fh)
+        if judge and meta_cfg.get("task") == "text_generation":
+            _run_judge_evaluation(
+                model=model,
+                dataset=dataset,
+                meta_file=meta_file,
+                result_csv=out_csv,
+                shots=shots,
+                workers=workers,
+                n_rows=n_rows,
+                dry_run=dry_run,
+            )
 
     # Cleanup temporary files ------------------------------------------------ #
     for t in tmp_files:

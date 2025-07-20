@@ -41,3 +41,20 @@ def rebuild_leaderboard(*, dry_run: bool = False) -> None:
         else:
             subprocess.run([str(c) for c in cmd], check=True)
             logger.info("DONE Leaderboard updated → %s", out_path)
+
+    # Build LLM-judge board ----------------------------------------------- #
+    judge_cmd = [
+        sys.executable,
+        paths.BUILD_JUDGE_BOARD_SCRIPT,
+        "--results_dir",
+        paths.RESULTS_DIR,
+        "--datasets_dir",
+        paths.DATASETS_DIR,
+        "--out",
+        paths.LEADERBOARD_JUDGE_OUT,
+    ]
+    if dry_run:
+        print(" ".join(map(str, judge_cmd)))
+    else:
+        subprocess.run([str(c) for c in judge_cmd], check=True)
+        logger.info("DONE LLM-judge board updated → %s", paths.LEADERBOARD_JUDGE_OUT)

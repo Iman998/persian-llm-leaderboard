@@ -50,6 +50,11 @@ def build_parser() -> argparse.ArgumentParser:
         default=100,
         help="Python worker threads",
     )
+    p.add_argument(
+        "--judge",
+        action="store_true",
+        help="run LLM-judge evaluation for text-generation tasks",
+    )
     p.add_argument("--dry", action="store_true", help="print commands only")
     p.add_argument("--debug", action="store_true", help="verbose logging")
     return p
@@ -79,6 +84,7 @@ def main(argv: List[str] | None = None) -> None:
                 n_rows=args.n_rows,
                 shots=args.shots,
                 workers=args.workers,
+                judge=args.judge,
                 dry_run=args.dry,
             )
 
