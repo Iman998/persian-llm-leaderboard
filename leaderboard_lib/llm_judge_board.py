@@ -19,8 +19,8 @@ COL_ORDER: List[str] = [
     "Model Type",
     "Model",
     "Average",
-    "summarization (ROUGE-L)",
-    "translation (BLEU)",
+    "summarization_quality (Score)",
+    "translation_quality (Score)",
 ]
 
 
@@ -79,6 +79,7 @@ def main() -> None:
             "f1": "F1",
             "bleu": "BLEU",
             "rouge": "ROUGE-L",
+            "llm_judge_score": "Score",
         }
         return mapping.get(name, name)
 
@@ -122,7 +123,7 @@ def main() -> None:
             value = metric_fn(df["pred"], df[answer_col])
             rows.append(
                 {
-                    "dataset": dataset,
+                    "dataset": meta_dataset,
                     "metric_label": _pretty_metric(metric_name),
                     "model": model_name,
                     "model_type": model_type,
@@ -171,7 +172,8 @@ def main() -> None:
     counts = num_vals.notna().sum(axis=1)
     wide["Average"] = (num_vals.sum(axis=1) / counts).round(5).where(counts > 0, "")
 
-    wide = wide[[c for c in COL_ORDER if c in wide.columns]]
+    extra_cols = [c for c in wide.columns if c not in COL_ORDER]
+    wide = wide[[c for c in COL_ORDER if c in wide.columns] + extra_cols]
 
     out_path = Path(args.out)
     out_path.parent.mkdir(parents=True, exist_ok=True)
