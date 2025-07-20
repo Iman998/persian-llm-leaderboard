@@ -1,7 +1,7 @@
 question_col: "document"
 answer_col: "reference"
 task: text_generation
-metrics: [rouge]
+metrics: [llm_judge_score]
 evaluator: evaluators/judge_evaluator.py
 prompt_template: prompts/judge_summarization_noref.jinja2
 use_reference: false
