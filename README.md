@@ -33,6 +33,7 @@ This project provides an intuitive interface for comparing and benchmarking vari
 │   # metrics: list of metric names to compute
 │   # evaluator: path to the evaluator class
 │   # prompt_template: default prompt for the dataset
+│   # use_reference: pass reference text to judge prompts (default true)
 ├── scripts
 │   └── run_eval.py               # Evaluation script
 ├── evaluators
@@ -100,7 +101,7 @@ desired judge datasets in `run_all.sh`'s `DATASET_LIST` or call `scripts/run_eva
 python scripts/run_eval.py --model JUDGE_MODEL \
     --dataset data/summarization_quality/test.csv \
     --evaluator evaluators/judge_evaluator.py \
-    --prompt prompts/judge_summarization.jinja2 \
+    --prompt prompts/judge_summarization_noref.jinja2 \
     --out results/summarization_quality/JUDGE_MODEL/JUDGE_MODEL.csv
 ```
 

@@ -113,7 +113,7 @@ judge datasets in `run_all.sh` or invoke `scripts/run_eval.py` manually. Example
 python scripts/run_eval.py --model JUDGE_MODEL \
     --dataset data/translation_quality/test.csv \
     --evaluator evaluators/judge_evaluator.py \
-    --prompt prompts/judge_translation.jinja2 \
+    --prompt prompts/judge_translation_noref.jinja2 \
     --out results/translation_quality/JUDGE_MODEL/JUDGE_MODEL.csv
 ```
 
@@ -192,6 +192,7 @@ To expand the leaderboard:
     - `metrics`: list of metric modules to compute
     - `evaluator`: path to the evaluator class
     - `prompt_template`: default prompt template
+    - `use_reference`: pass reference text to judge prompts (default `true`)
   * Ensure `scripts/run_eval.py` supports your dataset's format.
 
 * **Models:**

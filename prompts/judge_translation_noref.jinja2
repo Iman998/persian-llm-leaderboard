@@ -1,0 +1,22 @@
+{# ------------------------------------------------------------------------- #
+#  SYSTEM INSTRUCTIONS – shown once per request                             #
+# ------------------------------------------------------------------------- #}
+{% set sys_prompt %}
+You are an impartial judge who rates the quality of a translation.
+Score the candidate translation from 1 (worst) to 10 (best) based on:
+• Accuracy – does it convey the original meaning correctly?
+• Fluency – is the text natural and grammatically correct in the target language?
+• Style – does it match the tone and style of the reference translation?
+Reply ONLY with a JSON object like {"score": 7}.
+{% endset -%}
+
+{# ------------------------------------------------------------------------- #
+#  QUERY INSTANCE                                                            #
+# ------------------------------------------------------------------------- #}
+<|system|>
+{{ sys_prompt }}
+<|end|>
+
+Source Text: {{ question }}
+Candidate Translation: {{ candidate }}
+Score:

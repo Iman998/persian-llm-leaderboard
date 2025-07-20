@@ -27,6 +27,7 @@ class JudgeEvaluator(BaseEvaluator):
         shots: int = 0,
         shot_seed: int = 42,
         max_retries: int = 3,
+        use_reference: bool | None = None,
     ) -> None:
         super().__init__(
             model_cfg=model_cfg,
@@ -37,11 +38,19 @@ class JudgeEvaluator(BaseEvaluator):
             max_retries=max_retries,
         )
         self.cand_col: str = self.meta.get("candidate_col", "candidate")
+        self.use_reference: bool = (
+            use_reference
+            if use_reference is not None
+            else self.meta.get("use_reference", True)
+        )
 
     def _build_prompt(self, df: pd.DataFrame, row: pd.Series) -> str:
+        ref = str(row[self.acol]) if self.acol else ""
+        if not self.use_reference:
+            ref = ""
         query = {
             "question": row[self.qcol],
-            "reference": str(row[self.acol]) if self.acol else "",
+            "reference": ref,
             "candidate": str(row[self.cand_col]),
         }
         return self.template.render(**query)
