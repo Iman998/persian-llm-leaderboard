@@ -4,6 +4,7 @@ candidate_col: "candidate"
 task: text_generation
 metrics: [rouge]
 evaluator: evaluators/judge_evaluator.py
-prompt_template: prompts/judge_summarization.jinja2
+prompt_template: prompts/judge_summarization_noref.jinja2
+use_reference: false
 language: fa
 description: "LLM-judged quality of Persian summaries"
