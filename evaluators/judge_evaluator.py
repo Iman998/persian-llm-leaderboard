@@ -6,6 +6,9 @@ from pathlib import Path
 import json
 import re
 import pandas as pd
+from openai import APIConnectionError, APITimeoutError, BadRequestError
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from tqdm import tqdm
 
 from .base_evaluator import BaseEvaluator
 
@@ -55,28 +58,74 @@ class JudgeEvaluator(BaseEvaluator):
         }
         return self.template.render(**query)
 
-    def _extract(self, text: str) -> str | None:
-        """Return the first numeric score from ``text``.
+    def _extract(self, text: str) -> tuple[str | None, str]:
+        """Return ``(score, reason)`` parsed from ``text``.
 
-        The model is expected to output a JSON object like ``{"score": 7}``. If
-        JSON parsing fails, fall back to extracting the first number found in the
-        text (Persian or ASCII digits).
+        The preferred format is ``****<score>: <reason>****`` but JSON objects
+        like ``{"score": 7, "reason": "..."}`` are also supported.  If neither
+        pattern matches, only the numeric part (if any) is returned.
         """
 
         text = text.strip()
         if not text:
-            return None
+            return None, ""
 
         # Attempt JSON parsing first -----------------------------------------
         try:
             data = json.loads(text)
             if isinstance(data, dict) and "score" in data:
-                return str(data["score"]).translate(PERS_TO_ASCII).strip()
+                score = str(data["score"]).translate(PERS_TO_ASCII).strip()
+                reason = str(data.get("reason", "")).strip()
+                return score, reason
         except json.JSONDecodeError:
             pass
 
-        # Fallback to regex extraction ---------------------------------------
-        m = SCORE_REGEX.search(text)
+        clean = text.strip("*").strip()
+        m = SCORE_REGEX.search(clean)
         if not m:
-            return None
-        return m.group(1).translate(PERS_TO_ASCII).strip()
+            return None, clean
+
+        score = m.group(1).translate(PERS_TO_ASCII).strip()
+        reason = clean[m.end():].lstrip(" :-\u061f\u060c\u061b\u0020")
+        return score, reason.strip()
+
+    def evaluate_df(self, df: pd.DataFrame, *, max_workers: int = 4) -> pd.DataFrame:
+        """Return a copy of *df* with ``pred``, ``reason`` and ``raw`` columns."""
+        preds: list[str | None] = [None] * len(df)
+        reasons: list[str] = [""] * len(df)
+        raws: list[str] = [""] * len(df)
+
+        def _worker(idx: int, row: pd.Series):
+            prompt = self._build_prompt(df, row)
+            for attempt in range(1, self.max_retries + 1):
+                try:
+                    text = self._query_model(prompt)
+                    score, reason = self._extract(text)
+                    return idx, score, reason, text
+                except (APIConnectionError, APITimeoutError, BadRequestError) as e:
+                    self.logger.warning(
+                        "row %d retry %d/%d: %s", idx, attempt, self.max_retries, e
+                    )
+            return idx, None, "", ""
+
+        with ThreadPoolExecutor(max_workers=max_workers) as pool:
+            future_map = {
+                pool.submit(_worker, idx, row): idx
+                for idx, (_, row) in enumerate(df.iterrows())
+            }
+            for fut in tqdm(
+                as_completed(future_map),
+                total=len(future_map),
+                desc="LLM requests",
+                leave=False,
+            ):
+                i, pred, reason, raw = fut.result()
+                preds[i] = pred
+                reasons[i] = reason
+                raws[i] = raw
+
+        out = df.copy()
+        out["pred"] = preds
+        out["reason"] = reasons
+        out["raw"] = raws
+        return out
