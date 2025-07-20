@@ -1,6 +1,5 @@
 question_col: "source"
 answer_col: "reference"
-candidate_col: "candidate"
 task: text_generation
 metrics: [bleu]
 evaluator: evaluators/judge_evaluator.py

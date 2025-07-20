@@ -53,5 +53,6 @@ python3 "${SCRIPT_DIR}/scripts/main.py" \
   ${N_ROWS:+-n "${N_ROWS}"} \
   -s "${SHOTS}" \
   -w "${WORKERS}" \
+  --judge \
   "$@"
 
