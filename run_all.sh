@@ -18,21 +18,23 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # ────────────────────────── CONFIGURATION ──────────────────────────── #
 # Space-separated list of model stubs located in models/<name>.yaml
-MODELS=( "gpt-4.1-nano-2025-04-14" )
+MODELS=( "Qwen3-32B-no-thinking" )
 
 # Space-separated list of dataset folder names inside data/
-DATASETS=( "mmlu-pro" )
+DATASETS=( "mmlu","mmlu-pro","arc","persian-arc","khayyam-challenge","quiz-of-kings", "permmlu(mcinext)")
+# DATASETS=( "permmlu(mcinext)")
+
 
 # Sample size per dataset:
 #   * Empty string  → evaluate full CSV (default)
 #   * Positive int  → sample exactly N rows (header preserved)
-N_ROWS=20
+N_ROWS=""
 
 # Number of few-shot examples to include in each prompt
 SHOTS=3
 
 # Maximum number of Python worker threads (affects evaluator concurrency)
-WORKERS=2
+WORKERS=128
 # ───────────────────────────────────────────────────────────────────── #
 
 #

@@ -28,14 +28,7 @@ COL_ORDER: List[str] = [
     "Average",
     "Language Average",
     "mmlu (Accuracy)",
-    "mmlu-pro (Accuracy)",
-    "bbh (Accuracy)",
-    "khayyam_challenge (Accuracy)",
-    "parsinlu_mc (Accuracy)",
-    "parsinlu_nli (Accuracy)",
-    "parsinlu_qqp (Accuracy)",
-    "persian_ARC (Accuracy)",
-    "pquad (f1)",
+    "mmlu-pro (Accuracy)"
 ]
 
 

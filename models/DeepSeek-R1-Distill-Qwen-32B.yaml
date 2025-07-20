@@ -1,0 +1,6 @@
+name: DeepSeek-R1-Distill-Qwen-32B
+base_url: "http://192.168.1.204:8888/v1"
+model: "DeepSeek-R1-Distill-Qwen-32B"
+parameters: "32B"
+organization: "DeepSeek"
+license: "MIT"

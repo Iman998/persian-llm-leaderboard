@@ -1,0 +1,6 @@
+name: Qwen3-32B-thinking
+base_url: "http://192.168.1.204:8887/v1"
+model: "Qwen3-32B-thinking"
+parameters: "32B"
+organization: "Alibaba"
+license: "Apache-2.0"

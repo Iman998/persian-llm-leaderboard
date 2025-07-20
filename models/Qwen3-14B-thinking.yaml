@@ -1,0 +1,6 @@
+name: Qwen3-14B-thinking
+base_url: "http://192.168.1.204:8003/v1"
+model: "Qwen3-14B-thinking"
+parameters: "14B"
+organization: "Alibaba"
+license: "Apache-2.0"

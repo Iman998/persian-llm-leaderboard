@@ -1,0 +1,20 @@
+question_col: "question"
+
+choice_cols:
+  - "option1"
+  - "option2"
+  - "option3"
+  - "option4"
+
+answer_col: "answer"
+language: fa
+
+# list one or more columns whose values define categories
+category_cols:
+  - "category"          # category of question
+
+task: multiple_choice
+metrics: [accuracy]
+evaluator: evaluators/mcq_evaluator.py
+prompt_template: prompts/Persian_mcq_fewshot.jinja2
+description: "parsinlu multiple choice benchmark"

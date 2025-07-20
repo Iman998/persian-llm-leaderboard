@@ -1,0 +1,6 @@
+name: Qwen2.5-72B-Instruct
+base_url: "http://192.168.1.204:8003/v1"
+model: "Qwen2.5-72B-Instruct"
+parameters: "72.7B"
+organization: "Alibaba"
+license: "Apache-2.0"
