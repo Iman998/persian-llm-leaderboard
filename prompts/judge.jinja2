@@ -3,8 +3,9 @@
 # ------------------------------------------------------------------------- #}
 {% set sys_prompt %}
 You are an impartial judge. Compare the candidate answer with the reference
-answer and rate its quality on a scale from 1 to 10. Reply with only the
-number.
+answer and rate its quality on a scale from 1 to 10. Alongside the score,
+briefly explain the reason for your rating. Reply **only** in the format
+``****<score>: <reason>****``.
 {% endset -%}
 
 {# ------------------------------------------------------------------------- #
