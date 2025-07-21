@@ -171,18 +171,14 @@ The repository defines several metrics used during evaluation (see the `metrics/
 * **exact_match** – strict string match of prediction and label.【F:metrics/exact_match.py†L1-L16】
 * **f1** – token-level F1 over shared words.【F:metrics/f1.py†L4-L18】
 * **bleu** – 4‑gram BLEU with brevity penalty for translations.【F:metrics/bleu.py†L1-L27】
-* **rouge** – ROUGE-L based on the longest common subsequence.【F:metrics/rouge.py†L1-L25】
+* **rouge1** – unigram overlap F1.【F:metrics/rouge.py†L1-L28】
+* **rouge2** – bigram overlap F1.【F:metrics/rouge.py†L1-L28】
+* **rougel** – ROUGE-L based on the longest common subsequence.【F:metrics/rougel.py†L1-L28】
 * **llm_judge_score** – mean numeric rating returned by the judge model.【F:metrics/llm_judge_score.py†L1-L4】
 * **precision**, **recall** and **matthews_corrcoef** – common classification metrics.【F:metrics/precision.py†L1-L19】【F:metrics/recall.py†L1-L18】【F:metrics/matthews_corrcoef.py†L1-L22】
 * **tpr** and **fpr** – true and false positive rates.【F:metrics/tpr.py†L1-L12】【F:metrics/fpr.py†L1-L12】
 * **bias_score** – `(1 - TPR) + FPR` to capture bias.【F:metrics/bias_score.py†L1-L15】
 * **toxicity_rate** – fraction of outputs flagged toxic.【F:metrics/toxicity_rate.py†L1-L8】
-
----
-
-## 📊 Adding New Models and Datasets
-
-To expand the leaderboard:
 
 * **Datasets:**
 
@@ -191,6 +187,7 @@ To expand the leaderboard:
     - `task`: task type (e.g. `multiple_choice`, `open_ended`, `text_generation`)
     - `metrics`: list of metric modules to compute
     - `evaluator`: path to the evaluator class
+    - Datasets may include any combination of `rouge1`, `rouge2` and `rougel`.
     - `prompt_template`: default prompt template
     - `use_reference`: pass reference text to judge prompts (default `true`)
   * Ensure `scripts/run_eval.py` supports your dataset's format.

@@ -1,29 +1,28 @@
-"""ROUGE-L metric implementation."""
+"""ROUGE-N metric implementation."""
+
+from collections import Counter
 
 
-def _lcs(x: list[str], y: list[str]) -> int:
-    table = [[0] * (len(y) + 1) for _ in range(len(x) + 1)]
-    for i, cx in enumerate(x, 1):
-        for j, cy in enumerate(y, 1):
-            if cx == cy:
-                table[i][j] = table[i - 1][j - 1] + 1
-            else:
-                table[i][j] = max(table[i - 1][j], table[i][j - 1])
-    return table[-1][-1]
+def _ngram_counts(tokens: list[str], n: int) -> Counter:
+    return Counter(tuple(tokens[i : i + n]) for i in range(len(tokens) - n + 1))
 
 
-def _rouge_l(pred: str, label: str) -> float:
-    p = pred.split()
-    l = label.split()
-    lcs = _lcs(p, l)
-    if lcs == 0:
+def _rouge_n(pred: str, label: str, n: int) -> float:
+    p_tokens = pred.split()
+    l_tokens = label.split()
+    if len(p_tokens) < n or len(l_tokens) < n:
         return 0.0
-    prec = lcs / len(p)
-    rec = lcs / len(l)
+    p_counts = _ngram_counts(p_tokens, n)
+    l_counts = _ngram_counts(l_tokens, n)
+    overlap = sum(min(p_counts[k], l_counts[k]) for k in p_counts)
+    if overlap == 0:
+        return 0.0
+    prec = overlap / sum(p_counts.values())
+    rec = overlap / sum(l_counts.values())
     return 2 * prec * rec / (prec + rec)
 
 
-def compute(preds, labels):
-    """Return the mean ROUGE-L score for ``preds`` and ``labels``."""
-    scores = [_rouge_l(str(p), str(l)) for p, l in zip(preds, labels)]
+def compute_rouge_n(preds, labels, n: int) -> float:
+    """Return mean ROUGE-*n* F1 over ``preds`` and ``labels``."""
+    scores = [_rouge_n(str(p), str(l), n) for p, l in zip(preds, labels)]
     return sum(scores) / len(scores) if scores else 0.0
