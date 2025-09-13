@@ -91,7 +91,7 @@ def run_single_combo(
 ) -> None:
     """Evaluate *model* on *dataset* and write results into ``results/``.
 
-    If ``judge`` is ``True`` and the dataset is a ``text_generation`` task,
+    If ``judge`` is ``True`` and the dataset's ``meta.yaml`` sets ``judge: true``,
     a second pass is executed using :mod:`evaluators.judge_evaluator` on the
     predictions from the first run.  Judge scores are written under
     ``results/<dataset>_judge/<model>/``.
@@ -154,7 +154,7 @@ def run_single_combo(
         # Optional LLM-judge evaluation ------------------------------------- #
         with meta_file.open("r", encoding="utf-8") as fh:
             meta_cfg = yaml.safe_load(fh)
-        if judge and meta_cfg.get("task") == "text_generation":
+        if judge and meta_cfg.get("judge", False):
             _run_judge_evaluation(
                 model=model,
                 dataset=dataset,
