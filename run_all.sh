@@ -11,10 +11,18 @@
 #
 # Any extra CLI flags (e.g. --dry) are forwarded unchanged to the Python
 # orchestrator.  All comments are in English for consistency.
+#
+# Optional environment variables:
+#   RUN_JUDGE=true   → pass the --judge flag to scripts/main.py
 #------------------------------------------------------------------------------
 
 set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+JUDGE_FLAG=""
+if [[ "${RUN_JUDGE:-}" == "true" ]]; then
+  JUDGE_FLAG="--judge"
+fi
 
 # ────────────────────────── CONFIGURATION ──────────────────────────── #
 # Space-separated list of model stubs located in models/<name>.yaml
@@ -56,6 +64,5 @@ python3 "${SCRIPT_DIR}/scripts/main.py" \
   ${N_ROWS:+-n "${N_ROWS}"} \
   -s "${SHOTS}" \
   -w "${WORKERS}" \
-  --judge \
-  "$@"
+  ${JUDGE_FLAG:+$JUDGE_FLAG} "$@"
 
