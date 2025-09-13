@@ -3,6 +3,7 @@ answer_col: "summary"
 task: text_generation
 metrics: [rouge1, rouge2, rougel]
 evaluator: evaluators/text_generation_evaluator.py
+judge: true
 prompt_template: prompts/text_generation.jinja2
 language: fa
 description: "Document summarization dataset in Persian"

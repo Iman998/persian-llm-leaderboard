@@ -3,6 +3,7 @@ answer_col: "reference"
 task: text_generation
 metrics: [llm_judge_score]
 evaluator: evaluators/judge_evaluator.py
+judge: false
 prompt_template: prompts/judge_summarization_noref.jinja2
 use_reference: false
 language: fa
