@@ -35,6 +35,7 @@ This project provides an intuitive interface for comparing and benchmarking vari
 │   # prompt_template: default prompt for the dataset
 │   # judge: set to true if evaluation uses an LLM judge
 │   # use_reference: pass reference text to judge prompts (default true)
+│   # judge: run LLM-judge evaluation after standard scoring
 ├── scripts
 │   └── run_eval.py               # Evaluation script
 ├── evaluators
@@ -108,11 +109,17 @@ python scripts/run_eval.py --dataset data/summarization/test.csv \
 If several ROUGE metrics are provided their scores are averaged.
 ## 🤖 LLM Judge Evaluation
 
-Some datasets use a second model to "judge" the quality of a candidate answer. To run these evaluations include the
-desired judge datasets in `run_all.sh`'s `DATASET_LIST` or call `scripts/run_eval.py` directly:
+Some datasets use a second model to "judge" the quality of a candidate answer. Judge evaluation runs only when
+you pass `--judge` and the dataset's `meta.yaml` includes `judge: true`:
+
+```yaml
+judge: true
+```
+
+Include the desired judge datasets in `run_all.sh`'s `DATASET_LIST` or call `scripts/run_eval.py` directly:
 
 ```bash
-python scripts/run_eval.py --model JUDGE_MODEL \
+python scripts/run_eval.py --model JUDGE_MODEL --judge \
     --dataset data/summarization_quality/test.csv \
     --evaluator evaluators/judge_evaluator.py \
     --prompt prompts/judge_summarization_noref.jinja2 \

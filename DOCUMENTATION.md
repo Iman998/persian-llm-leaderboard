@@ -106,11 +106,17 @@ Each model now has its own subfolder containing the main CSV, raw outputs, and p
 
 ### Running LLM Judge Evaluations
 
-Some datasets use a separate model to score candidate answers. To run these evaluations you can either include the
-judge datasets in `run_all.sh` or invoke `scripts/run_eval.py` manually. Example:
+Some datasets use a separate model to score candidate answers. Judge evaluation runs only when you pass `--judge` and the
+dataset's `meta.yaml` has `judge: true`:
+
+```yaml
+judge: true
+```
+
+Include the judge datasets in `run_all.sh` or invoke `scripts/run_eval.py` manually. Example:
 
 ```bash
-python scripts/run_eval.py --model JUDGE_MODEL \
+python scripts/run_eval.py --model JUDGE_MODEL --judge \
     --dataset data/translation_quality/test.csv \
     --evaluator evaluators/judge_evaluator.py \
     --prompt prompts/judge_translation_noref.jinja2 \
@@ -184,13 +190,17 @@ The repository defines several metrics used during evaluation (see the `metrics/
 
   * Add new CSV files to the `data/` directory.
   * Provide a `meta.yaml` describing the dataset:
-      - `task`: task type (e.g. `multiple_choice`, `open_ended`, `text_generation`)
-      - `metrics`: list of metric modules to compute
-      - `evaluator`: path to the evaluator class
-      - Datasets may include any combination of `rouge1`, `rouge2` and `rougel`.
-      - `prompt_template`: default prompt template
-      - `judge`: set to `true` if evaluation uses an LLM judge
-      - `use_reference`: pass reference text to judge prompts (default `true`)
+    - `task`: task type (e.g. `multiple_choice`, `open_ended`, `text_generation`)
+    - `metrics`: list of metric modules to compute
+    - `evaluator`: path to the evaluator class
+    - Datasets may include any combination of `rouge1`, `rouge2` and `rougel`.
+    - `prompt_template`: default prompt template
+    - `use_reference`: pass reference text to judge prompts (default `true`)
+    - `judge`: run LLM-judge evaluation after standard scoring (requires `--judge`)
+      ```yaml
+      judge: true
+      ```
+      
     * Ensure `scripts/run_eval.py` supports your dataset's format.
 
 * **Models:**
