@@ -48,7 +48,6 @@ def _collect_row_tables(
     meta: Dict[str, object],
     cat_filters: Dict[str, Set[str]],
     show_raw: bool,
-    show_reason: bool,
 ) -> Tuple[pd.DataFrame | None, List[str]]:
     """
     Build a merged DataFrame where each model contributes a column
@@ -80,8 +79,6 @@ def _collect_row_tables(
             continue
 
         keep_cols = [q_col, a_col] + choice_cols + ["pred"]
-        if show_reason and "reason" in df.columns:
-            keep_cols.append("reason")
         if show_raw and "raw" in df.columns:
             keep_cols.append("raw")
 
@@ -90,7 +87,6 @@ def _collect_row_tables(
                 q_col: "Question",
                 a_col: "Gold",
                 "pred": m,
-                "reason": f"{m}-reason" if show_reason else "reason",
                 "raw": f"{m}-raw" if show_raw else "raw",
             }
         )
@@ -223,9 +219,6 @@ def show() -> None:
     show_raw = st.sidebar.checkbox(
         "Show raw model output", value=False, key=f"show_raw_{ds_sel}"
     )
-    show_reason = st.sidebar.checkbox(
-        "Show judge reason", value=False, key=f"show_reason_{ds_sel}"
-    )
 
     # Build UI tabs
     row_tab, cat_tab = st.tabs(["📄 Row outputs", "📊 Category scores"])
@@ -235,7 +228,7 @@ def show() -> None:
     # ---------------------------------------------------------------- #
     with row_tab:
         merged_df, warnings = _collect_row_tables(
-            ds_sel, models_sel, meta, cat_filters, show_raw, show_reason
+            ds_sel, models_sel, meta, cat_filters, show_raw
         )
         if show_raw and all((ds_sel, m) not in RAW_MAP for m in models_sel):
             st.info("Raw outputs are not available for the selected model(s).")
@@ -245,16 +238,6 @@ def show() -> None:
         if merged_df is None or merged_df.empty:
             st.warning("No compatible rows found for the selected settings.")
         else:
-            reason_filter = st.text_input(
-                "Filter judge reason", value="", key="reason_filter"
-            )
-            if reason_filter:
-                rcols = [c for c in merged_df.columns if "reason" in c.lower()]
-                if rcols:
-                    mask = merged_df[rcols].apply(
-                        lambda s: s.str.contains(reason_filter, case=False, na=False)
-                    )
-                    merged_df = merged_df[mask.any(axis=1)]
             page_size = st.selectbox("Rows per page", [50, 100, 200], key="rows_ps")
             total_rows = len(merged_df)
             total_pages = max(1, (total_rows + page_size - 1) // page_size)
