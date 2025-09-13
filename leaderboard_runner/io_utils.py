@@ -27,12 +27,13 @@ def parse_csv_or_file(arg: str) -> List[str]:
     p = Path(arg)
     if p.exists():
         if not p.is_file():
-            raise FileNotFoundError(f"{p} exists but is not a file")
-        content = p.read_text(encoding="utf-8")
-        return [ln.strip() for ln in content.splitlines() if ln.strip()]
-    if "," in arg:
-        return [x.strip() for x in arg.split(",") if x.strip()]
-    raise FileNotFoundError(f"No such file: {p}")
+ FileNotFoundError(f"No such file: {p}")
+            raise FileNotFoundError(f"{p} is not a file")
+        text = p.read_text(encoding="utf-8")
+        return [ln.strip() for ln in text.splitlines() if ln.strip()]
+    if any(sep in arg for sep in ("/", "\\")) or p.suffix:
+        raise FileNotFoundError(p)
+    return [x.strip() for x in arg.split(",") if x.strip()]
 
 
 def sample_csv(src: Path, n_rows: int) -> Path:
