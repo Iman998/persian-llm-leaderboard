@@ -20,8 +20,13 @@ def parse_csv_or_file(arg: str) -> List[str]:
     into a list of non-empty, stripped tokens.
     """
     p = Path(arg)
-    if p.is_file():
-        return [ln.strip() for ln in p.read_text().splitlines() if ln.strip()]
+    if p.exists():
+        if not p.is_file():
+            raise FileNotFoundError(f"{p} is not a file")
+        text = p.read_text(encoding="utf-8")
+        return [ln.strip() for ln in text.splitlines() if ln.strip()]
+    if any(sep in arg for sep in ("/", "\\")) or p.suffix:
+        raise FileNotFoundError(p)
     return [x.strip() for x in arg.split(",") if x.strip()]
 
 
