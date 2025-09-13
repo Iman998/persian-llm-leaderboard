@@ -38,12 +38,19 @@ def _run_judge_evaluation(
 ) -> None:
     """Run ``judge_evaluator.py`` on ``result_csv`` predictions."""
 
+    with meta_file.open("r", encoding="utf-8") as fh:
+        meta_cfg = yaml.safe_load(fh) or {}
+    question_col = meta_cfg.get("question_col", "question")
+
     df = pd.read_csv(result_csv)
     cand_col = "candidate"
     if cand_col not in df.columns:
         df[cand_col] = df["pred"]
     else:
         df[cand_col] = df["pred"]
+
+    if question_col not in df.columns and "Question Body" in df.columns:
+        df.rename(columns={"Question Body": question_col}, inplace=True)
 
     with tempfile.NamedTemporaryFile(delete=False, suffix=".csv") as tmp:
         df.to_csv(tmp.name, index=False)
@@ -154,7 +161,12 @@ def run_single_combo(
         # Optional LLM-judge evaluation ------------------------------------- #
         with meta_file.open("r", encoding="utf-8") as fh:
             meta_cfg = yaml.safe_load(fh)
-        if judge and meta_cfg.get("task") == "text_generation":
+            meta_cfg.get("judge", False)
+        if (
+            judge
+            and meta_cfg.get("task") == "text_generation"
+            and meta_cfg.get("judge", False)
+        ):
             _run_judge_evaluation(
                 model=model,
                 dataset=dataset,

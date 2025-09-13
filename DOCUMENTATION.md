@@ -51,7 +51,7 @@ To evaluate all predefined models and datasets at once, use:
 bash run_all.sh
 ```
 The script automatically uses each dataset's `meta.yaml` to select the
-evaluator, prompt template and metrics.
+evaluator, prompt template, metrics and judge flag.
 
 ### Optional: Sample Random Subset of Rows
 
@@ -200,7 +200,8 @@ The repository defines several metrics used during evaluation (see the `metrics/
       ```yaml
       judge: true
       ```
-  * Ensure `scripts/run_eval.py` supports your dataset's format.
+      
+    * Ensure `scripts/run_eval.py` supports your dataset's format.
 
 * **Models:**
 

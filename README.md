@@ -33,6 +33,7 @@ This project provides an intuitive interface for comparing and benchmarking vari
 │   # metrics: list of metric names to compute
 │   # evaluator: path to the evaluator class
 │   # prompt_template: default prompt for the dataset
+│   # judge: set to true if evaluation uses an LLM judge
 │   # use_reference: pass reference text to judge prompts (default true)
 │   # judge: run LLM-judge evaluation after standard scoring
 ├── scripts
@@ -78,7 +79,7 @@ To evaluate all models:
 bash run_all.sh
 ```
 The script now reads each dataset's `meta.yaml` to determine the
-appropriate evaluator, prompt template and metrics.
+appropriate evaluator, prompt template, metrics and judge flag.
 This includes fairness metrics like TPR, FPR, Bias Score and Toxicity Rate when applicable.
 
 To evaluate on a random subset of `N` rows (e.g. 250 rows per dataset):
