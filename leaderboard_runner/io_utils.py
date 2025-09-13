@@ -27,7 +27,6 @@ def parse_csv_or_file(arg: str) -> List[str]:
     p = Path(arg)
     if p.exists():
         if not p.is_file():
- FileNotFoundError(f"No such file: {p}")
             raise FileNotFoundError(f"{p} is not a file")
         text = p.read_text(encoding="utf-8")
         return [ln.strip() for ln in text.splitlines() if ln.strip()]
