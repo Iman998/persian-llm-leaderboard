@@ -36,6 +36,9 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--shots", type=int, default=0)
     parser.add_argument("--workers", type=int, default=4)
     parser.add_argument("--evaluator")
+    parser.add_argument(
+        "--evaluator_class", help="Class name within the evaluator module."
+    )
     parser.add_argument("--out", required=True)
     parser.add_argument(
         "--n_rows",
@@ -59,7 +62,10 @@ def load_configs(args: argparse.Namespace) -> tuple[type, dict[str, Any], dict[s
     if not args.prompt:
         args.prompt = meta_cfg.get("prompt_template", "prompts/mcq_fewshot.jinja2")
 
-    class_name = "".join(part.title() for part in Path(args.evaluator).stem.split("_"))
+    class_name = (
+        args.evaluator_class
+        or "".join(part.title() for part in Path(args.evaluator).stem.split("_"))
+    )
     module = _load_module(args.evaluator)
     Evaluator = getattr(module, class_name, None)
     if Evaluator is None:
@@ -69,7 +75,8 @@ def load_configs(args: argparse.Namespace) -> tuple[type, dict[str, Any], dict[s
                 break
     if Evaluator is None:
         raise AttributeError(
-            f"Class '{class_name}' not found in {args.evaluator}"
+            f"Evaluator class '{class_name}' not found in '{args.evaluator}'. "
+            "Use --evaluator_class to specify the class explicitly."
         )
 
     model_cfg: dict[str, Any] = yaml.safe_load(Path(args.model).read_text())
