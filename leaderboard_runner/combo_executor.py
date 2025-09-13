@@ -154,7 +154,12 @@ def run_single_combo(
         # Optional LLM-judge evaluation ------------------------------------- #
         with meta_file.open("r", encoding="utf-8") as fh:
             meta_cfg = yaml.safe_load(fh)
-        if judge and meta_cfg.get("task") == "text_generation":
+            meta_cfg.get("judge", False)
+        if (
+            judge
+            and meta_cfg.get("task") == "text_generation"
+            and meta_cfg.get("judge", False)
+        ):
             _run_judge_evaluation(
                 model=model,
                 dataset=dataset,
