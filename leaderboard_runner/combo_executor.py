@@ -45,8 +45,9 @@ def _run_judge_evaluation(
     else:
         df[cand_col] = df["pred"]
 
-    tmp_path = Path(tempfile.NamedTemporaryFile(suffix=".csv", delete=False).name)
-    df.to_csv(tmp_path, index=False)
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".csv") as tmp:
+        df.to_csv(tmp.name, index=False)
+        tmp_path = Path(tmp.name)
 
     out_dir = paths.RESULTS_DIR / f"{dataset}_judge" / model
     out_dir.mkdir(parents=True, exist_ok=True)
