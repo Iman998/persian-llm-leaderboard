@@ -18,11 +18,21 @@ def parse_csv_or_file(arg: str) -> List[str]:
     """
     Expand either a comma-separated string **or** a newline-delimited file
     into a list of non-empty, stripped tokens.
+
+    The argument is first treated as a filesystem path.  If it exists, it must
+    refer to a regular file which will be read as UTF-8.  Otherwise, if the
+    argument contains commas it is split on commas.  In all other cases a
+    :class:`FileNotFoundError` is raised.
     """
     p = Path(arg)
-    if p.is_file():
-        return [ln.strip() for ln in p.read_text().splitlines() if ln.strip()]
-    return [x.strip() for x in arg.split(",") if x.strip()]
+    if p.exists():
+        if not p.is_file():
+            raise FileNotFoundError(f"{p} exists but is not a file")
+        content = p.read_text(encoding="utf-8")
+        return [ln.strip() for ln in content.splitlines() if ln.strip()]
+    if "," in arg:
+        return [x.strip() for x in arg.split(",") if x.strip()]
+    raise FileNotFoundError(f"No such file: {p}")
 
 
 def sample_csv(src: Path, n_rows: int) -> Path:
