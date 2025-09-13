@@ -51,7 +51,7 @@ To evaluate all predefined models and datasets at once, use:
 bash run_all.sh
 ```
 The script automatically uses each dataset's `meta.yaml` to select the
-evaluator, prompt template and metrics.
+evaluator, prompt template, metrics and judge flag.
 
 ### Optional: Sample Random Subset of Rows
 
@@ -184,13 +184,14 @@ The repository defines several metrics used during evaluation (see the `metrics/
 
   * Add new CSV files to the `data/` directory.
   * Provide a `meta.yaml` describing the dataset:
-    - `task`: task type (e.g. `multiple_choice`, `open_ended`, `text_generation`)
-    - `metrics`: list of metric modules to compute
-    - `evaluator`: path to the evaluator class
-    - Datasets may include any combination of `rouge1`, `rouge2` and `rougel`.
-    - `prompt_template`: default prompt template
-    - `use_reference`: pass reference text to judge prompts (default `true`)
-  * Ensure `scripts/run_eval.py` supports your dataset's format.
+      - `task`: task type (e.g. `multiple_choice`, `open_ended`, `text_generation`)
+      - `metrics`: list of metric modules to compute
+      - `evaluator`: path to the evaluator class
+      - Datasets may include any combination of `rouge1`, `rouge2` and `rougel`.
+      - `prompt_template`: default prompt template
+      - `judge`: set to `true` if evaluation uses an LLM judge
+      - `use_reference`: pass reference text to judge prompts (default `true`)
+    * Ensure `scripts/run_eval.py` supports your dataset's format.
 
 * **Models:**
 

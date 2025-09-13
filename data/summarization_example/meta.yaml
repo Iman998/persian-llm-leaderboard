@@ -4,5 +4,6 @@ task: text_generation
 metrics: [rouge1, rouge2, rougel]
 evaluator: evaluators/text_generation_evaluator.py
 prompt_template: prompts/text_generation.jinja2
+judge: true
 language: fa
 description: "Example dataset for Persian summarization"
