@@ -18,10 +18,13 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # ────────────────────────── CONFIGURATION ──────────────────────────── #
 # Space-separated list of model stubs located in models/<name>.yaml
-MODELS=( "Qwen3-32B-no-thinking" )
+MODELS=( "gemma-3-27b-it-books-dpo" )
 
 # Space-separated list of dataset folder names inside data/
-DATASETS=( "mmlu","mmlu-pro","arc","persian-arc","khayyam-challenge","quiz-of-kings", "permmlu(mcinext)")
+DATASETS=("mmlu","mmlu-pro","arc","persian-arc","khayyam-challenge","quiz-of-kings", "permmlu(mcinext)")
+
+# ("bookBench")
+
 # DATASETS=( "permmlu(mcinext)")
 
 
@@ -34,7 +37,7 @@ N_ROWS=""
 SHOTS=3
 
 # Maximum number of Python worker threads (affects evaluator concurrency)
-WORKERS=128
+WORKERS=200
 # ───────────────────────────────────────────────────────────────────── #
 
 #

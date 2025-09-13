@@ -1,0 +1,6 @@
+name: gpt-oss-20b
+base_url: "http://192.168.1.204:5757/v1"
+model: "gpt-oss-20b"
+parameters: "20B"
+organization: "Openai"
+license: "Apache-2.0"

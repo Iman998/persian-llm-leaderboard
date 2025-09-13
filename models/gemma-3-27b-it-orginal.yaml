@@ -1,0 +1,6 @@
+name: gemma-3-27b-it
+base_url: "http://192.168.1.204:8003/v1"
+model: "gemma-3-27b-it"
+parameters: "27B"
+organization: "Google"
+license: "Gemma License"

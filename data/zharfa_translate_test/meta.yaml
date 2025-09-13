@@ -1,0 +1,8 @@
+question_col: "source"
+answer_col: "target"
+task: text_generation
+metrics: [bleu]
+evaluator: evaluators/text_generation_evaluator.py
+prompt_template: prompts/text_generation.jinja2
+language: en
+description: "English to Persian translation pairs"

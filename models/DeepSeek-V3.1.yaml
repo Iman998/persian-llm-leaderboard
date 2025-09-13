@@ -1,0 +1,6 @@
+name: deepseek
+base_url: "http://192.168.1.201:6980/v1"
+model: "deepseek"
+parameters: "685B"
+organization: "DeepSeek"
+license: "MIT"

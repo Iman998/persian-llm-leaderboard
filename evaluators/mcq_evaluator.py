@@ -88,6 +88,7 @@ class MCQEvaluator(BaseEvaluator):
             ],
             temperature=0.01,
             top_p=0.01,
+            max_tokens = 4000,
         )
         return resp.choices[0].message.content
 

@@ -1,0 +1,6 @@
+name: c4ai-command-a-03-2025-zharfa-dpo
+base_url: "http://192.168.1.201:8080/v1"
+model: "c4ai-command-a-03-2025-zharfa-dpo"
+parameters: "111B"
+organization: "ZharfaTech"
+license: "Proprietary"

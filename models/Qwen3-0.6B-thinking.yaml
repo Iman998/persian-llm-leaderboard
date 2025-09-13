@@ -1,0 +1,6 @@
+name: Qwen3-0.6B
+base_url: "http://192.168.1.204:8006/v1"
+model: "Qwen3-0.6B"
+parameters: "0.6B"
+organization: "Alibaba"
+license: "Apache-2.0"

@@ -1,0 +1,6 @@
+name: gpt-oss-120b
+base_url: "http://192.168.1.204:5757/v1"
+model: "gpt-oss-120b"
+parameters: "120B"
+organization: "Openai"
+license: "Apache-2.0"
