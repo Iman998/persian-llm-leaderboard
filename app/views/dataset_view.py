@@ -57,8 +57,10 @@ def _collect_row_tables(
     warnings: List[str] = []
     merged: pd.DataFrame | None = None
 
-    question_aliases = {meta["question_col"], "Question Body", "question"}
-    answer_aliases = {meta["answer_col"], "Gold", "Key", "answer"}
+    q_name = meta.get("question_col", "question")
+    a_name = meta.get("answer_col", "answer")
+    question_aliases = {q_name, "Question Body", "question"}
+    answer_aliases = {a_name, "Gold", "Key", "answer"}
     choice_cols: List[str] = meta["choice_cols"]
 
     for m in models:
@@ -75,8 +77,18 @@ def _collect_row_tables(
         q_col = next((c for c in question_aliases if c in df.columns), None)
         a_col = next((c for c in answer_aliases if c in df.columns), None)
 
-        if q_col is None or a_col is None or "pred" not in df.columns:
-            warnings.append(f"Columns missing in *{raw_file.name}* – skipped.")
+        if q_col is None:
+            st.warning(
+                f"Column '{q_name}' missing in {raw_file.name} – skipping model {m}."
+            )
+            continue
+        if a_col is None:
+            st.warning(
+                f"Column '{a_name}' missing in {raw_file.name} – skipping model {m}."
+            )
+            continue
+        if "pred" not in df.columns:
+            warnings.append(f"Column 'pred' missing in *{raw_file.name}* – skipped.")
             continue
 
         keep_cols = [q_col, a_col] + choice_cols + ["pred"]
