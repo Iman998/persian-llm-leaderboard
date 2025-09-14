@@ -49,7 +49,10 @@ def rebuild_leaderboard(*, dry_run: bool = False) -> None:
         if dry_run:
             print(" ".join(map(str, cmd)))
         else:
-            subprocess.run([str(c) for c in cmd], check=True)
+            proc = subprocess.run([str(c) for c in cmd], capture_output=True, text=True)
+            if proc.returncode != 0:
+                logger.error("build_leaderboard failed: %s", proc.stderr.strip())
+                raise RuntimeError(f"Leaderboard build failed with code {proc.returncode}")
             logger.info("DONE Leaderboard updated → %s", out_path)
 
     # Build LLM-judge board ----------------------------------------------- #
@@ -66,5 +69,8 @@ def rebuild_leaderboard(*, dry_run: bool = False) -> None:
     if dry_run:
         print(" ".join(map(str, judge_cmd)))
     else:
-        subprocess.run([str(c) for c in judge_cmd], check=True)
+        proc = subprocess.run([str(c) for c in judge_cmd], capture_output=True, text=True)
+        if proc.returncode != 0:
+            logger.error("build_leaderboard failed: %s", proc.stderr.strip())
+            raise RuntimeError(f"Leaderboard build failed with code {proc.returncode}")
         logger.info("DONE LLM-judge board updated → %s", paths.LEADERBOARD_JUDGE_OUT)
