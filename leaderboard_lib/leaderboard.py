@@ -117,6 +117,7 @@ def main() -> None:
             "bleu": "BLEU",
             "chrf": "chrF",
             "meteor": "METEOR",
+            "ter": "1 - TER",
             "rouge1": "ROUGE-1",
             "rouge2": "ROUGE-2",
             "rougel": "ROUGE-L",
