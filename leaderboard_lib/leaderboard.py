@@ -6,6 +6,7 @@ per-dataset evaluation CSV files into a single leaderboard."""
 from __future__ import annotations
 
 import argparse
+import logging
 import re
 import sys
 from pathlib import Path
@@ -146,6 +147,11 @@ def main() -> None:
         # Load model metadata --------------------------------------------------
         model_yaml = Path(args.models_dir) / f"{model_stub}.yaml"
         if not model_yaml.exists():
+            logging.warning(
+                "Skipping result '%s' because model YAML not found: %s",
+                csv_path,
+                model_yaml,
+            )
             continue  # Skip unknown model
         model_cfg = yaml.safe_load(model_yaml.read_text())
         model_type = model_cfg.get("model_type", model_cfg.get("type", "Instruct"))
