@@ -63,11 +63,11 @@ def load_configs(args: argparse.Namespace) -> tuple[type, dict[str, Any], dict[s
     if not args.prompt:
         args.prompt = meta_cfg.get("prompt_template", "prompts/mcq_fewshot.jinja2")
 
-    class_name = getattr(
-        args,
-        "evaluator_class",
-        "".join(part.title() for part in Path(args.evaluator).stem.split("_")),
-    )
+    class_name = args.evaluator_class
+    if not class_name:
+        class_name = "".join(
+            part.title() for part in Path(args.evaluator).stem.split("_")
+        )
     module = _load_module(args.evaluator)
     Evaluator = getattr(module, class_name, None)
     if Evaluator is None:
