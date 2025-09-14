@@ -275,7 +275,9 @@ def main() -> None:
         fa_counts = fa_vals.notna().sum(axis=1)
         en_avg = en_vals.sum(axis=1) / en_counts.replace(0, pd.NA)
         fa_avg = fa_vals.sum(axis=1) / fa_counts.replace(0, pd.NA)
-        lang_avg = ((en_avg.fillna(0) * 2 / 3) + (fa_avg.fillna(0) / 3))
+        en_avg_weighted = en_avg.fillna(0) * 2 / 3
+        fa_avg_weighted = fa_avg.fillna(0) / 3
+        lang_avg = en_avg_weighted + fa_avg_weighted
         lang_avg[(en_counts == 0) & (fa_counts == 0)] = pd.NA
         wide["Language Average"] = lang_avg.round(5).where(lang_avg.notna(), "")
 
