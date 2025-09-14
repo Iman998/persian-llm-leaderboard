@@ -78,6 +78,7 @@ def main() -> None:
             "exact_match": "Exact Match",
             "f1": "F1",
             "bleu": "BLEU",
+            "chrf": "chrF",
             "meteor": "METEOR",
             "rouge1": "ROUGE-1",
             "rouge2": "ROUGE-2",
