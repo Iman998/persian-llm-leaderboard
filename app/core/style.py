@@ -21,9 +21,10 @@ __all__ = ["apply_gradient", "render_styler"]
 
 def _medal_colors(avgs: pd.Series) -> List[str]:
     """Return a list of gold/silver/bronze hex colours by rank."""
-    ranks = avgs.rank(method="first", ascending=False)
-    ranks = ranks.fillna(0).astype(int)
-    return [{1: "#FFD700", 2: "#C0C0C0", 3: "#CD7F32"}.get(r, "") for r in ranks]
+    ranks = avgs.rank(method="first", ascending=False, na_option="bottom")
+    ranks = ranks.fillna(len(avgs) + 1).astype(int)
+    medal_map = {1: "#FFD700", 2: "#C0C0C0", 3: "#CD7F32"}
+    return [medal_map.get(r, "") for r in ranks]
 
 
 def _contrast_color(hex_color: str) -> str:
