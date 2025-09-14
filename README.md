@@ -14,6 +14,7 @@ This project provides an intuitive interface for comparing and benchmarking vari
 * **Fairness Benchmarks:** Includes datasets for gender, religious, regional and age-related bias.
 * **User-friendly Interface:** Built with Streamlit for an intuitive, hassle-free experience.
 * **Interactive Quick Chart:** Use sliders to pick the metric, adjust the page size, and set the start index.
+* **Comprehensive Metrics:** Evaluate translations with BLEU, METEOR, chrF and 1‑TER.
 * **Paginated Category Tables:** Category comparisons now support page controls just like row outputs.
 * **Refreshed Look:** Sidebar navigation with page icons and a red→yellow→green gradient highlights numeric columns.
 
