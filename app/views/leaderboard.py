@@ -27,7 +27,13 @@ from core.io import load_csv, load_meta, numeric_cols
 from core.style import apply_gradient, render_styler
 
 
-def _build_leaderboard_if_missing(board_path: Path, lang: str) -> None:
+def _build_leaderboard_if_missing(
+    board_path: Path,
+    lang: str,
+    *,
+    include: list[str] | None = None,
+    exclude: list[str] | None = None,
+) -> None:
     """
     (Re)generate `dashboard/leaderboard.csv` if it is absent.
 
@@ -53,6 +59,8 @@ def _build_leaderboard_if_missing(board_path: Path, lang: str) -> None:
                 "--out",
                 str(board_path),
                 *( ["--lang", lang] if lang != "all" else [] ),
+                *( ["--include", *include] if include else [] ),
+                *( ["--exclude", *exclude] if exclude else [] ),
             ],
             capture_output=True,
             text=True,
@@ -104,7 +112,11 @@ def show() -> None:
     }
     board_path, lang = board_map[board_choice]
 
-    _build_leaderboard_if_missing(board_path, lang)
+    _build_leaderboard_if_missing(
+        board_path,
+        lang,
+        exclude=["translat", "summar", "summary"],
+    )
     board_df = load_csv(board_path).sort_values("Average", ascending=False)
 
     ranks = list(range(1, len(board_df) + 1))

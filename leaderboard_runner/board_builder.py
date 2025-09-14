@@ -27,15 +27,25 @@ def rebuild_leaderboard(*, dry_run: bool = False) -> None:
     ]
 
     boards = [
-        (paths.LEADERBOARD_OUT, "all"),
-        (paths.LEADERBOARD_FA_OUT, "fa"),
-        (paths.LEADERBOARD_EN_OUT, "en"),
+        (paths.LEADERBOARD_OUT, "all", None, ["translat", "summar", "summary"]),
+        (paths.LEADERBOARD_FA_OUT, "fa", None, ["translat", "summar", "summary"]),
+        (paths.LEADERBOARD_EN_OUT, "en", None, ["translat", "summar", "summary"]),
+        (paths.TRANSLATION_OUT, "all", ["translat"], ["translation_quality"]),
+        (paths.TRANSLATION_FA_OUT, "fa", ["translat"], ["translation_quality"]),
+        (paths.TRANSLATION_EN_OUT, "en", ["translat"], ["translation_quality"]),
+        (paths.SUMMARIZATION_OUT, "all", ["summar", "summary"], ["summarization_quality"]),
+        (paths.SUMMARIZATION_FA_OUT, "fa", ["summar", "summary"], ["summarization_quality"]),
+        (paths.SUMMARIZATION_EN_OUT, "en", ["summar", "summary"], ["summarization_quality"]),
     ]
 
-    for out_path, lang in boards:
+    for out_path, lang, include, exclude in boards:
         cmd = base_cmd + ["--out", out_path]
         if lang != "all":
             cmd += ["--lang", lang]
+        if include:
+            cmd += ["--include", *include]
+        if exclude:
+            cmd += ["--exclude", *exclude]
         if dry_run:
             print(" ".join(map(str, cmd)))
         else:
