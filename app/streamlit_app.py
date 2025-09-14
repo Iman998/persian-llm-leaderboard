@@ -26,14 +26,22 @@ if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
 
 # Now regular absolute imports work even when run as a script
-from app.views import leaderboard, dataset_view, llm_judge  # noqa: E402
+from app.views import (
+    leaderboard,
+    dataset_view,
+    llm_judge,
+    translation_board,
+    summarization_board,
+)  # noqa: E402
 
 st.set_page_config(page_title="Persian-LLM Leaderboard", layout="wide")
 
 PAGE_MAP = {
-    "🏆 Leaderboard":  leaderboard.show,
+    "🏆 Leaderboard": leaderboard.show,
+    "🔤 Translation": translation_board.show,
+    "📝 Summarization": summarization_board.show,
     "📂 Dataset view": dataset_view.show,
-    "🤖 LLM Judge":    llm_judge.show,
+    "🤖 LLM Judge": llm_judge.show,
 }
 
 choice = st.sidebar.radio("📑 Page", list(PAGE_MAP))

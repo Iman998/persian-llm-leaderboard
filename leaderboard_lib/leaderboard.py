@@ -80,6 +80,18 @@ def main() -> None:
         choices=["all", "fa", "en"],
         help="Filter datasets by language (meta.yaml::language)",
     )
+    parser.add_argument(
+        "--include",
+        nargs="*",
+        default=None,
+        help="Only include datasets whose name contains any of these substrings",
+    )
+    parser.add_argument(
+        "--exclude",
+        nargs="*",
+        default=None,
+        help="Exclude datasets whose name contains any of these substrings",
+    )
     args = parser.parse_args()
 
     # Language-specific boards should not include the cross-lingual average
@@ -121,6 +133,12 @@ def main() -> None:
         if suffix or dataset.endswith(("raw", "Level")):
             continue
 
+        ds_lower = dataset.lower()
+        if args.include and not any(key.lower() in ds_lower for key in args.include):
+            continue
+        if args.exclude and any(key.lower() in ds_lower for key in args.exclude):
+            continue
+
         # Load model metadata --------------------------------------------------
         model_yaml = Path(args.models_dir) / f"{model_stub}.yaml"
         if not model_yaml.exists():
@@ -142,11 +160,9 @@ def main() -> None:
         meta_cfg = yaml.safe_load(meta_file.read_text()) if meta_file.exists() else {}
 
         lang = meta_cfg.get("language")
-        dataset_lang[dataset] = lang
-        # Skip datasets whose language doesn't match the requested board
-        # "lang" may be None when a dataset lacks this field
         if args.lang != "all" and lang != args.lang:
             continue
+        dataset_lang[dataset] = lang
 
         answer_col = meta_cfg.get("answer_col", "Key")
         if answer_col not in df.columns:
@@ -226,10 +242,9 @@ def main() -> None:
             new_cols.append(rename_map.get((c, ""), c))
     wide.columns = new_cols
 
-    # Ensure expected columns exist only for the full leaderboard.
-    # Language-specific boards skip placeholder columns so that
-    # foreign-language datasets are hidden entirely.
-    if args.lang == "all":
+    # Ensure expected columns exist only for the main (unfiltered) leaderboard.
+    # Filtered boards skip placeholder columns so that unrelated datasets remain hidden.
+    if args.lang == "all" and not args.include and not args.exclude:
         for col in col_order:
             if col not in wide.columns:
                 wide[col] = ""
