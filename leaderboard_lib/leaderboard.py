@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import argparse
 import re
+import sys
 from pathlib import Path
 from typing import Any, Callable, Dict, List
 
@@ -195,7 +196,7 @@ def main() -> None:
 
     if not rows:
         print("No result CSVs found; nothing to build.")
-        return
+        sys.exit(1)
 
     # Long → wide pivot (average duplicates) ----------------------------------
     long = pd.DataFrame(rows)
