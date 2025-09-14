@@ -178,6 +178,7 @@ The repository defines several metrics used during evaluation (see the `metrics/
 * **f1** – token-level F1 over shared words.【F:metrics/f1.py†L4-L18】
 * **bleu** – 4‑gram BLEU with brevity penalty for translations.【F:metrics/bleu.py†L1-L27】
 * **meteor** – precision/recall translation metric `f_mean * (1 - penalty)` penalizing fragmented matches.
+* **chrf** – character n-gram F-score `F_β = (1 + β²) · (P·R) / (β²·P + R)` with default β=2 emphasizing recall; well suited for agglutinative languages. Based on chrF/chrF++ by Popović (2015). [Paper](https://aclanthology.org/W15-3049/)
 * **rouge1** – unigram overlap F1.【F:metrics/rouge.py†L1-L28】
 * **rouge2** – bigram overlap F1.【F:metrics/rouge.py†L1-L28】
 * **rougel** – ROUGE-L based on the longest common subsequence.【F:metrics/rougel.py†L1-L28】
