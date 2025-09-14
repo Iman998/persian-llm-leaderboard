@@ -1,7 +1,7 @@
 question_col: "source"
 answer_col: "target"
 task: text_generation
-metrics: [bleu]
+metrics: [bleu, meteor, chrf]
 evaluator: evaluators/text_generation_evaluator.py
 judge: true
 prompt_template: prompts/text_generation.jinja2
