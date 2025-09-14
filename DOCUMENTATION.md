@@ -177,6 +177,7 @@ The repository defines several metrics used during evaluation (see the `metrics/
 * **exact_match** – strict string match of prediction and label.【F:metrics/exact_match.py†L1-L16】
 * **f1** – token-level F1 over shared words.【F:metrics/f1.py†L4-L18】
 * **bleu** – 4‑gram BLEU with brevity penalty for translations.【F:metrics/bleu.py†L1-L27】
+* **meteor** – precision/recall translation metric `f_mean * (1 - penalty)` penalizing fragmented matches.
 * **rouge1** – unigram overlap F1.【F:metrics/rouge.py†L1-L28】
 * **rouge2** – bigram overlap F1.【F:metrics/rouge.py†L1-L28】
 * **rougel** – ROUGE-L based on the longest common subsequence.【F:metrics/rougel.py†L1-L28】
