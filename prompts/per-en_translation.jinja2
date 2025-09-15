@@ -1,0 +1,30 @@
+{# ------------------------------------------------------------------------- #
+#  SYSTEM INSTRUCTIONS – shown once per request                             #
+# ------------------------------------------------------------------------- #}
+{% set sys_prompt %}
+You are a translation assistant.
+
+• Translate the provided Persian text into English.
+• Reply with the translation only.
+{% endset -%}
+
+{# ------------------------------------------------------------------------- #
+#  FEW-SHOT EXAMPLES                                                         #
+# ------------------------------------------------------------------------- #}
+{% for ex in shots %}
+<|begin_of_example|>
+متن: {{ ex.question }}
+ترجمهٔ انگلیسی: {{ ex.answer }}
+<|end_of_example|>
+
+{% endfor -%}
+
+{# ------------------------------------------------------------------------- #
+#  QUERY INSTANCE                                                            #
+# ------------------------------------------------------------------------- #}
+<|system|>
+{{ sys_prompt }}
+<|end|>
+
+متن: {{ question }}
+ترجمهٔ انگلیسی:

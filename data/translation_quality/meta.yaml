@@ -2,10 +2,10 @@ board: translation
 
 question_col: "source"
 answer_col: "reference"
-task: text_generation
+task: translation
 metrics: [llm_judge_score]
 evaluator: evaluators/judge_evaluator.py
 judge: false
-prompt_template: prompts/judge_translation_noref.jinja2
+prompt_template: prompts/translation.jinja2
 use_reference: false
 description: "Judge-based evaluation of translation quality"
