@@ -1,3 +1,5 @@
+board: leaderboard
+
 task: classification
 metrics: [accuracy, f1]
 evaluator: evaluators/classification_evaluator.py

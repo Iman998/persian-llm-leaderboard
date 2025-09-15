@@ -1,3 +1,5 @@
+board: translation
+
 question_col: "source"
 answer_col: "reference"
 task: text_generation

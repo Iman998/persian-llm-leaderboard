@@ -60,7 +60,7 @@ def load_metric(name: str) -> Callable[[pd.Series, pd.Series], float]:
 
 # ─────────────────────────── leaderboard builder ─────────────────────────── #
 
-def main() -> None:
+def main(board: str | None = None) -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--results_dir",
@@ -75,6 +75,12 @@ def main() -> None:
     )
     parser.add_argument(
         "--models_dir", default="models", help="Directory containing <model>.yaml files."
+    )
+    parser.add_argument(
+        "--board",
+        default=board or "leaderboard",
+        choices=["leaderboard", "translation", "summarization"],
+        help="Dataset board type to build.",
     )
     parser.add_argument(
         "--lang",
@@ -168,6 +174,10 @@ def main() -> None:
         # Locate meta.yaml to get answer_col -----------------------------------
         meta_file = Path(args.datasets_dir) / dataset / "meta.yaml"
         meta_cfg = yaml.safe_load(meta_file.read_text()) if meta_file.exists() else {}
+
+        board = meta_cfg.get("board", "leaderboard")
+        if board != args.board:
+            continue
 
         lang = meta_cfg.get("language")
         if args.lang != "all" and lang != args.lang:
