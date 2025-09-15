@@ -73,7 +73,8 @@ def _collect_judge_table(ds: str) -> Tuple[pd.DataFrame, List[str]]:
         rows.append({"Model": m, **scores})
 
     metric_order = ["Model"] + [c for c in sorted(metric_names) if c != "Model"]
-    return pd.DataFrame(rows)[metric_order], warnings
+    df = pd.DataFrame(rows).reindex(columns=metric_order)
+    return df, warnings
 
 
 def _collect_category_breakdown(ds: str, models: List[str], cat_sel: str) -> pd.DataFrame | None:
