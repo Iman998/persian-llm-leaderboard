@@ -4,10 +4,8 @@
 {% set sys_prompt %}
 You are a translation assistant.
 
-
-• Translate the provided Persian text into English.
+• Translate the provided text into Persian.
 • Reply with the translation only.
-
 {% endset -%}
 
 {# ------------------------------------------------------------------------- #
@@ -15,9 +13,8 @@ You are a translation assistant.
 # ------------------------------------------------------------------------- #}
 {% for ex in shots %}
 <|begin_of_example|>
-
-متن: {{ ex.question }}
-ترجمهٔ انگلیسی: {{ ex.answer }}
+Source: {{ ex.question }}
+Translation: {{ ex.answer }}
 <|end_of_example|>
 
 {% endfor -%}
@@ -29,5 +26,5 @@ You are a translation assistant.
 {{ sys_prompt }}
 <|end|>
 
-متن: {{ question }}
-ترجمهٔ انگلیسی:
+Source: {{ question }}
+Translation:
