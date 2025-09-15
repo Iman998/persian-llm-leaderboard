@@ -27,21 +27,22 @@ def rebuild_leaderboard(*, dry_run: bool = False) -> None:
     ]
 
     boards = [
-        (paths.LEADERBOARD_OUT, "all", "leaderboard"),
-        (paths.LEADERBOARD_FA_OUT, "fa", "leaderboard"),
-        (paths.LEADERBOARD_EN_OUT, "en", "leaderboard"),
-        (paths.TRANSLATION_OUT, "all", "translation"),
-        (paths.TRANSLATION_FA_OUT, "fa", "translation"),
-        (paths.TRANSLATION_EN_OUT, "en", "translation"),
-        (paths.SUMMARIZATION_OUT, "all", "summarization"),
-        (paths.SUMMARIZATION_FA_OUT, "fa", "summarization"),
-        (paths.SUMMARIZATION_EN_OUT, "en", "summarization"),
+        (paths.LEADERBOARD_OUT, "all", None, ["translat", "summar", "summary"]),
+        (paths.LEADERBOARD_FA_OUT, "fa", None, ["translat", "summar", "summary"]),
+        (paths.LEADERBOARD_EN_OUT, "en", None, ["translat", "summar", "summary"]),
+        (paths.TRANSLATION_OUT, "all", ["translat"], ["translation_quality"]),
+        (paths.SUMMARIZATION_OUT, "all", ["summar", "summary"], ["summarization_quality"]),
+        (paths.SUMMARIZATION_FA_OUT, "fa", ["summar", "summary"], ["summarization_quality"]),
+        (paths.SUMMARIZATION_EN_OUT, "en", ["summar", "summary"], ["summarization_quality"]),
     ]
 
-    for out_path, lang, board in boards:
-        cmd = base_cmd + ["--out", out_path, "--board", board]
-        if lang != "all":
-            cmd += ["--lang", lang]
+    for out_path, lang, include, exclude in boards:
+        cmd = base_cmd + ["--out", out_path]
+        cmd += ["--lang", lang]
+        if include:
+            cmd += ["--include", *include]
+        if exclude:
+            cmd += ["--exclude", *exclude]
         if dry_run:
             print(" ".join(map(str, cmd)))
         else:

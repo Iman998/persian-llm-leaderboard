@@ -214,6 +214,10 @@ def main(board: str | None = None) -> None:
         print("No result CSVs found; nothing to build.")
         sys.exit(1)
 
+    has_language = any(lang in ("en", "fa") for lang in dataset_lang.values())
+    if not has_language and "Language Average" in col_order:
+        col_order.remove("Language Average")
+
     # Long → wide pivot (average duplicates) ----------------------------------
     long = pd.DataFrame(rows)
     wide = (
@@ -275,7 +279,7 @@ def main(board: str | None = None) -> None:
     counts = acc_vals.notna().sum(axis=1)
     wide["Average"] = (acc_vals.sum(axis=1) / counts).round(5).where(counts > 0, "")
 
-    if args.lang == "all":
+    if args.lang == "all" and has_language:
         en_cols = [
             rename_map[(ds, "Accuracy")]
             for ds, lang in dataset_lang.items()

@@ -7,5 +7,4 @@ metrics: [bleu, meteor, chrf, ter]
 evaluator: evaluators/text_generation_evaluator.py
 judge: true
 prompt_template: prompts/text_generation.jinja2
-language: en
 description: "English to Persian translation pairs"
