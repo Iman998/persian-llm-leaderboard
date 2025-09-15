@@ -2,12 +2,10 @@
 #  SYSTEM INSTRUCTIONS – shown once per request                             #
 # ------------------------------------------------------------------------- #}
 {% set sys_prompt %}
-You are a translation assistant.
+You summarize Persian passages.
 
-
-• Translate the provided Persian text into English.
-• Reply with the translation only.
-
+• Read the Persian text carefully.
+• Provide a concise summary in Persian without extra commentary.
 {% endset -%}
 
 {# ------------------------------------------------------------------------- #
@@ -15,9 +13,8 @@ You are a translation assistant.
 # ------------------------------------------------------------------------- #}
 {% for ex in shots %}
 <|begin_of_example|>
-
 متن: {{ ex.question }}
-ترجمهٔ انگلیسی: {{ ex.answer }}
+خلاصه: {{ ex.answer }}
 <|end_of_example|>
 
 {% endfor -%}
@@ -30,4 +27,4 @@ You are a translation assistant.
 <|end|>
 
 متن: {{ question }}
-ترجمهٔ انگلیسی:
+خلاصه:
