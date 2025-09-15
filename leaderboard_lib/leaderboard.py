@@ -211,8 +211,8 @@ def main(board: str | None = None) -> None:
             )
 
     if not rows:
-        print("No result CSVs found; nothing to build.")
-        sys.exit(1)
+        logging.warning("No result CSVs found; nothing to build.")
+        return
 
     has_language = any(lang in ("en", "fa") for lang in dataset_lang.values())
     if not has_language and "Language Average" in col_order:
