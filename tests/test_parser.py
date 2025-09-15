@@ -1,24 +1,28 @@
 from pathlib import Path
 import sys
+import pytest
 
-sys.path.append(str(Path(__file__).resolve().parents[1] / "app"))
-from core import parser
+sys.path.append(str(Path(__file__).resolve().parents[1]))
+
+import app.core.parser as parser
 
 
-def test_scan_result_maps(tmp_path, monkeypatch):
-    tmp_results = tmp_path
-    ds_dir = tmp_results / "ds"
-    ds_dir.mkdir()
-    main = ds_dir / "Qwen2.5-7B-Instruct.csv"
-    raw = ds_dir / "Qwen2.5-7B-Instruct_raw.csv"
-    cat = ds_dir / "Qwen2.5-7B-Instruct_cat1.csv"
-    for f in (main, raw, cat):
-        f.write_text("")
+def test_parse_file_new_scheme(tmp_path, monkeypatch):
+    monkeypatch.setattr(parser, "RESULTS_DIR", tmp_path)
+    assert (
+        parser.parse_file(tmp_path / "ds" / "Qwen2.5-7B-Instruct.csv")
+        == ("ds", "Qwen2.5-7B-Instruct", "")
+    )
 
-    monkeypatch.setattr(parser, "RESULTS_DIR", tmp_results)
-    datasets, main_map, raw_map, cat_map = parser.scan_result_maps()
-    assert datasets == ["ds"]
-    assert main_map[("ds", "Qwen2.5-7B-Instruct")] == main
-    assert raw_map[("ds", "Qwen2.5-7B-Instruct")] == raw
-    assert cat_map[("ds", "Qwen2.5-7B-Instruct", "cat1")] == cat
 
+def test_parse_file_legacy_scheme():
+    assert parser.parse_file(Path("legacy_ds_Qwen2.5-7B-Instruct.csv")) == (
+        "legacy_ds",
+        "Qwen2.5-7B-Instruct",
+        "",
+    )
+
+
+def test_parse_file_invalid_filenames():
+    assert parser.parse_file(Path("ds_Qwen2.5-7B-Instruct_123.csv")) is None
+    assert parser.parse_file(Path("unknown_model.csv")) is None
