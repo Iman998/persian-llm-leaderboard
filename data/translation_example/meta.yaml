@@ -6,5 +6,4 @@ evaluator: evaluators/text_generation_evaluator.py
 judge: true
 prompt_template: prompts/text_generation.jinja2
 judge: true
-language: en
 description: "Example English–Persian translation dataset"
