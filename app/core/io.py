@@ -42,6 +42,7 @@ def load_meta(ds_name: str) -> Dict[str, object]:
         "choice_cols":   cfg.get("choice_cols", []),
         "language":     cfg.get("language", ""),
         "description":  cfg.get("description", ""),
+        "board":        cfg.get("board", "leaderboard"),
     }
 
 

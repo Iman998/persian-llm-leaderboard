@@ -1,3 +1,5 @@
+board: summarization
+
 question_col: "document"
 answer_col: "summary"
 task: text_generation

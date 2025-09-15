@@ -1,3 +1,5 @@
+board: leaderboard
+
 question_col: "text"
 answer_col: "label"
 language: en

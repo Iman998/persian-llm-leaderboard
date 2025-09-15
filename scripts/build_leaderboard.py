@@ -4,6 +4,7 @@
 
 All heavy lifting is performed by :func:`leaderboard_lib.leaderboard.main`."""
 
+import argparse
 import sys
 from pathlib import Path
 
@@ -17,4 +18,13 @@ from leaderboard_lib.leaderboard import main
 if __name__ == "__main__":
     if sys.version_info < (3, 10):
         sys.exit("Python ≥ 3.10 required")
-    main()
+    parser = argparse.ArgumentParser(add_help=False)
+    parser.add_argument(
+        "--board",
+        default="leaderboard",
+        choices=["leaderboard", "translation", "summarization"],
+        help="Dataset board type to build.",
+    )
+    args, rest = parser.parse_known_args()
+    sys.argv = [sys.argv[0]] + rest
+    main(board=args.board)

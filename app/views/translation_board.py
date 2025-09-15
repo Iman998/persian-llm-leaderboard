@@ -32,8 +32,7 @@ def show() -> None:
     _build_leaderboard_if_missing(
         board_path,
         lang,
-        include=["translat"],
-        exclude=["translation_quality"],
+        "translation",
     )
     board_df = load_csv(board_path).sort_values("Average", ascending=False)
 
