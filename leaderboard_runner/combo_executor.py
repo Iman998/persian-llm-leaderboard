@@ -100,6 +100,7 @@ def run_single_combo(
 
     If ``judge`` is ``True`` and the dataset is a ``text_generation`` or
     ``summarization`` task, a second pass is executed using
+    ``translation`` task, a second pass is executed using
     :mod:`evaluators.judge_evaluator` on the predictions from the first run.
     Judge scores are written under ``results/<dataset>_judge/<model>/``.
     """
@@ -165,6 +166,7 @@ def run_single_combo(
         if (
             judge
             and meta_cfg.get("task") in {"text_generation", "summarization"}
+            and meta_cfg.get("task") in {"text_generation", "translation"}
             and meta_cfg.get("judge", False)
         ):
             _run_judge_evaluation(
