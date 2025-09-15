@@ -98,10 +98,10 @@ def run_single_combo(
 ) -> None:
     """Evaluate *model* on *dataset* and write results into ``results/``.
 
-    If ``judge`` is ``True`` and the dataset is a ``text_generation`` task,
-    a second pass is executed using :mod:`evaluators.judge_evaluator` on the
-    predictions from the first run.  Judge scores are written under
-    ``results/<dataset>_judge/<model>/``.
+    If ``judge`` is ``True`` and the dataset is a ``text_generation`` or
+    ``translation`` task, a second pass is executed using
+    :mod:`evaluators.judge_evaluator` on the predictions from the first run.
+    Judge scores are written under ``results/<dataset>_judge/<model>/``.
     """
     csv_file = paths.DATASETS_DIR / dataset / "test.csv"
     meta_file = paths.DATASETS_DIR / dataset / "meta.yaml"
@@ -164,7 +164,7 @@ def run_single_combo(
             meta_cfg.get("judge", False)
         if (
             judge
-            and meta_cfg.get("task") == "text_generation"
+            and meta_cfg.get("task") in {"text_generation", "translation"}
             and meta_cfg.get("judge", False)
         ):
             _run_judge_evaluation(
