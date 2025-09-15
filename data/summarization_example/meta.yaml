@@ -2,11 +2,11 @@ board: summarization
 
 question_col: "document"
 answer_col: "summary"
-task: text_generation
+task: summarization
 metrics: [rouge1, rouge2, rougel]
 evaluator: evaluators/text_generation_evaluator.py
 judge: true
-prompt_template: prompts/text_generation.jinja2
+prompt_template: prompts/summarization.jinja2
 judge: true
 language: fa
 description: "Example dataset for Persian summarization"
