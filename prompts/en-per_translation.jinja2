@@ -2,10 +2,10 @@
 #  SYSTEM INSTRUCTIONS – shown once per request                             #
 # ------------------------------------------------------------------------- #}
 {% set sys_prompt %}
-You answer questions with brief English responses.
+شما دستیار ترجمه هستید.
 
-• Read the question carefully.
-• Give a direct answer in one or two English sentences.
+• متن انگلیسی را بخوان.
+• فقط ترجمهٔ فارسی را بدون توضیح اضافه بنویس.
 {% endset -%}
 
 {# ------------------------------------------------------------------------- #
@@ -13,8 +13,8 @@ You answer questions with brief English responses.
 # ------------------------------------------------------------------------- #}
 {% for ex in shots %}
 <|begin_of_example|>
-Question: {{ ex.question }}
-Answer: {{ ex.answer }}
+متن انگلیسی: {{ ex.question }}
+ترجمه فارسی: {{ ex.answer }}
 <|end_of_example|>
 
 {% endfor -%}
@@ -26,5 +26,5 @@ Answer: {{ ex.answer }}
 {{ sys_prompt }}
 <|end|>
 
-Question: {{ question }}
-Answer:
+متن انگلیسی: {{ question }}
+ترجمه فارسی:

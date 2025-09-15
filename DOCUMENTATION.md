@@ -203,8 +203,20 @@ The repository defines several metrics used during evaluation (see the `metrics/
       ```yaml
       judge: true
       ```
-      
+
     * Ensure `scripts/run_eval.py` supports your dataset's format.
+
+* **Prompt templates:**
+
+  The `prompts/` directory includes Jinja2 templates with task-specific system messages:
+  - `text_generation.jinja2` – "You are an assistant that generates clear English prose."
+  - `per-en_text_generation.jinja2` – English instruction for Persian text generation.
+  - `Persian_text_generation.jinja2` – Persian instructions for Persian text generation.
+  - `open_ended.jinja2` – "You answer questions with brief English responses."
+  - `per-en_open_ended.jinja2` – English instruction for Persian short answers.
+  - `Persian_open_ended.jinja2` – Persian instructions for short answers.
+  - `per-en_translation.jinja2` / `en-per_translation.jinja2` – translation between Persian and English.
+  - `summarization.jinja2`, `per-en_summarization.jinja2`, `Persian_summarization.jinja2` – English and Persian summarization tasks.
 
 * **Models:**
 

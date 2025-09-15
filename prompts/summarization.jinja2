@@ -2,10 +2,10 @@
 #  SYSTEM INSTRUCTIONS – shown once per request                             #
 # ------------------------------------------------------------------------- #}
 {% set sys_prompt %}
-You answer questions with brief English responses.
+You are a summarization assistant.
 
-• Read the question carefully.
-• Give a direct answer in one or two English sentences.
+• Read the text carefully.
+• Write a concise summary in English.
 {% endset -%}
 
 {# ------------------------------------------------------------------------- #
@@ -13,8 +13,8 @@ You answer questions with brief English responses.
 # ------------------------------------------------------------------------- #}
 {% for ex in shots %}
 <|begin_of_example|>
-Question: {{ ex.question }}
-Answer: {{ ex.answer }}
+Text: {{ ex.question }}
+Summary: {{ ex.answer }}
 <|end_of_example|>
 
 {% endfor -%}
@@ -26,5 +26,5 @@ Answer: {{ ex.answer }}
 {{ sys_prompt }}
 <|end|>
 
-Question: {{ question }}
-Answer:
+Text: {{ question }}
+Summary:

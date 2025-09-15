@@ -2,10 +2,10 @@
 #  SYSTEM INSTRUCTIONS – shown once per request                             #
 # ------------------------------------------------------------------------- #}
 {% set sys_prompt %}
-You answer questions with brief English responses.
+You are a translation assistant.
 
-• Read the question carefully.
-• Give a direct answer in one or two English sentences.
+• Read the Persian text.
+• Write the English translation only with no extra commentary.
 {% endset -%}
 
 {# ------------------------------------------------------------------------- #
@@ -13,8 +13,8 @@ You answer questions with brief English responses.
 # ------------------------------------------------------------------------- #}
 {% for ex in shots %}
 <|begin_of_example|>
-Question: {{ ex.question }}
-Answer: {{ ex.answer }}
+متن فارسی: {{ ex.question }}
+ترجمه انگلیسی: {{ ex.answer }}
 <|end_of_example|>
 
 {% endfor -%}
@@ -26,5 +26,5 @@ Answer: {{ ex.answer }}
 {{ sys_prompt }}
 <|end|>
 
-Question: {{ question }}
-Answer:
+متن فارسی: {{ question }}
+ترجمه انگلیسی:
