@@ -60,7 +60,7 @@ def load_metric(name: str) -> Callable[[pd.Series, pd.Series], float]:
 
 # ─────────────────────────── leaderboard builder ─────────────────────────── #
 
-def main() -> None:
+def main(board: str | None = None) -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--results_dir",
@@ -75,6 +75,12 @@ def main() -> None:
     )
     parser.add_argument(
         "--models_dir", default="models", help="Directory containing <model>.yaml files."
+    )
+    parser.add_argument(
+        "--board",
+        default=board or "leaderboard",
+        choices=["leaderboard", "translation", "summarization"],
+        help="Dataset board type to build.",
     )
     parser.add_argument(
         "--lang",
@@ -169,6 +175,10 @@ def main() -> None:
         meta_file = Path(args.datasets_dir) / dataset / "meta.yaml"
         meta_cfg = yaml.safe_load(meta_file.read_text()) if meta_file.exists() else {}
 
+        board = meta_cfg.get("board", "leaderboard")
+        if board != args.board:
+            continue
+
         lang = meta_cfg.get("language")
         if args.lang != "all" and lang != args.lang:
             continue
@@ -203,6 +213,10 @@ def main() -> None:
     if not rows:
         print("No result CSVs found; nothing to build.")
         sys.exit(1)
+
+    has_language = any(lang in ("en", "fa") for lang in dataset_lang.values())
+    if not has_language and "Language Average" in col_order:
+        col_order.remove("Language Average")
 
     # Long → wide pivot (average duplicates) ----------------------------------
     long = pd.DataFrame(rows)
@@ -265,7 +279,7 @@ def main() -> None:
     counts = acc_vals.notna().sum(axis=1)
     wide["Average"] = (acc_vals.sum(axis=1) / counts).round(5).where(counts > 0, "")
 
-    if args.lang == "all":
+    if args.lang == "all" and has_language:
         en_cols = [
             rename_map[(ds, "Accuracy")]
             for ds, lang in dataset_lang.items()

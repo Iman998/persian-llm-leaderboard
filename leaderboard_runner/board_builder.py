@@ -38,8 +38,7 @@ def rebuild_leaderboard(*, dry_run: bool = False) -> None:
 
     for out_path, lang, include, exclude in boards:
         cmd = base_cmd + ["--out", out_path]
-        if lang != "all":
-            cmd += ["--lang", lang]
+        cmd += ["--lang", lang]
         if include:
             cmd += ["--include", *include]
         if exclude:

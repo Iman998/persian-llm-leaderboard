@@ -53,7 +53,7 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument(
         "--judge",
         action="store_true",
-        help="run LLM-judge evaluation for text-generation tasks",
+        help="run LLM-judge evaluation for text-generation or translation tasks",
     )
     p.add_argument("--dry", action="store_true", help="print commands only")
     p.add_argument("--debug", action="store_true", help="verbose logging")

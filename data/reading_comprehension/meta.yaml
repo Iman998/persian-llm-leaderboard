@@ -1,3 +1,5 @@
+board: leaderboard
+
 task: open_ended
 metrics: [exact_match, rougel]
 evaluator: evaluators/open_ended_evaluator.py

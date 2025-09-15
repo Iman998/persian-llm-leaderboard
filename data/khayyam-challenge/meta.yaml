@@ -1,3 +1,5 @@
+board: leaderboard
+
 question_col: "Question Body"
 
 choice_cols:

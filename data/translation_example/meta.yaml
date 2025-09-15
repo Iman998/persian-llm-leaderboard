@@ -1,10 +1,10 @@
+board: translation
+
 question_col: "source"
 answer_col: "target"
-task: text_generation
+task: translation
 metrics: [bleu, meteor, chrf, ter]
 evaluator: evaluators/text_generation_evaluator.py
 judge: true
-prompt_template: prompts/text_generation.jinja2
-judge: true
-language: en
+prompt_template: prompts/translation.jinja2
 description: "Example English–Persian translation dataset"

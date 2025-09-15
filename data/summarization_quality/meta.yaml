@@ -1,6 +1,8 @@
+board: summarization
+
 question_col: "document"
 answer_col: "reference"
-task: text_generation
+task: summarization
 metrics: [llm_judge_score]
 evaluator: evaluators/judge_evaluator.py
 judge: false
