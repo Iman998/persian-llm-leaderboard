@@ -6,8 +6,6 @@ import streamlit as st
 
 from core.paths import (
     TRANSLATION_CSV,
-    TRANSLATION_FA_CSV,
-    TRANSLATION_EN_CSV,
     DATASETS_DIR,
 )
 from core.io import load_csv, load_meta
@@ -19,19 +17,10 @@ def show() -> None:
     """Render the translation leaderboard."""
     st.title("🔤 Translation Leaderboard")
 
-    board_choice = st.sidebar.radio(
-        "Language", ["All", "Persian", "English"], key="translation_lang"
-    )
-    board_map = {
-        "All": (TRANSLATION_CSV, "all"),
-        "Persian": (TRANSLATION_FA_CSV, "fa"),
-        "English": (TRANSLATION_EN_CSV, "en"),
-    }
-    board_path, lang = board_map[board_choice]
-
+    board_path = TRANSLATION_CSV
     _build_leaderboard_if_missing(
         board_path,
-        lang,
+        "all",
         include=["translat"],
         exclude=["translation_quality"],
     )
