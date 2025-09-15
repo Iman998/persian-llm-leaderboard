@@ -17,8 +17,6 @@ LEADERBOARD_FA_OUT = DASHBOARD_DIR / "leaderboard_fa.csv"
 LEADERBOARD_EN_OUT = DASHBOARD_DIR / "leaderboard_en.csv"
 LEADERBOARD_JUDGE_OUT = DASHBOARD_DIR / "llm_judge_board.csv"
 TRANSLATION_OUT = DASHBOARD_DIR / "translation_leaderboard.csv"
-TRANSLATION_FA_OUT = DASHBOARD_DIR / "translation_leaderboard_fa.csv"
-TRANSLATION_EN_OUT = DASHBOARD_DIR / "translation_leaderboard_en.csv"
 SUMMARIZATION_OUT = DASHBOARD_DIR / "summarization_leaderboard.csv"
 SUMMARIZATION_FA_OUT = DASHBOARD_DIR / "summarization_leaderboard_fa.csv"
 SUMMARIZATION_EN_OUT = DASHBOARD_DIR / "summarization_leaderboard_en.csv"
@@ -37,8 +35,6 @@ __all__ = [
     "LEADERBOARD_EN_OUT",
     "LEADERBOARD_JUDGE_OUT",
     "TRANSLATION_OUT",
-    "TRANSLATION_FA_OUT",
-    "TRANSLATION_EN_OUT",
     "SUMMARIZATION_OUT",
     "SUMMARIZATION_FA_OUT",
     "SUMMARIZATION_EN_OUT",
