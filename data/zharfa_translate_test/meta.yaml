@@ -6,5 +6,5 @@ task: translation
 metrics: [bleu, meteor, chrf, ter]
 evaluator: evaluators/text_generation_evaluator.py
 judge: true
-prompt_template: prompts/translation.jinja2
+prompt_template: prompts/zharfa_translate.jinja2
 description: "English to Persian translation pairs"
