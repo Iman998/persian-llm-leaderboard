@@ -1,0 +1,30 @@
+{# ------------------------------------------------------------------------- #
+#  SYSTEM INSTRUCTIONS – shown once per request                             #
+# ------------------------------------------------------------------------- #}
+{% set sys_prompt %}
+You are a translation assistant.
+
+• Translate the provided text from {{ src_language }} to {{ tgt_lang }}.
+• Reply with the translation only.
+{% endset -%}
+
+{# ------------------------------------------------------------------------- #
+#  FEW-SHOT EXAMPLES                                                         #
+# ------------------------------------------------------------------------- #}
+{% for ex in shots %}
+<|begin_of_example|>
+Source ({{ ex.src_language }}): {{ ex.question }}
+Translation ({{ ex.tgt_lang }}): {{ ex.answer }}
+<|end_of_example|>
+
+{% endfor -%}
+
+{# ------------------------------------------------------------------------- #
+#  QUERY INSTANCE                                                            #
+# ------------------------------------------------------------------------- #}
+<|system|>
+{{ sys_prompt }}
+<|end|>
+
+Source ({{ src_language }}): {{ question }}
+Translation ({{ tgt_lang }}):

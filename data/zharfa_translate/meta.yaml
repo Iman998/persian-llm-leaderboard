@@ -1,0 +1,9 @@
+board: translation
+task: translation
+question_col: "text"
+answer_col: "gold_translation"
+evaluator: evaluators/text_generation_evaluator.py
+judge: true
+metrics: [bleu, meteor, chrf, ter]
+prompt_template: prompts/zharfa_translate.jinja2
+description: "Multi-source translation dataset (zharfa_translate)"
