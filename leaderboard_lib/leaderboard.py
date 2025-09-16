@@ -273,11 +273,15 @@ def main(board: str | None = None) -> None:
             if col not in wide.columns:
                 wide[col] = ""
 
-    # Compute Average over accuracy columns -----------------------------------
-    acc_cols = [c for c in wide.columns if c.endswith("(Accuracy)")]
-    acc_vals = wide[acc_cols].apply(pd.to_numeric, errors="coerce")
-    counts = acc_vals.notna().sum(axis=1)
-    wide["Average"] = (acc_vals.sum(axis=1) / counts).round(5).where(counts > 0, "")
+    # Compute Average over metric columns -------------------------------------
+    if args.board == "translation":
+        avg_cols = [c for c in wide.columns if "(" in c and c.endswith(")")]
+    else:
+        avg_cols = [c for c in wide.columns if c.endswith("(Accuracy)")]
+
+    avg_vals = wide[avg_cols].apply(pd.to_numeric, errors="coerce")
+    counts = avg_vals.notna().sum(axis=1)
+    wide["Average"] = (avg_vals.sum(axis=1) / counts).round(5).where(counts > 0, "")
 
     if args.lang == "all" and has_language:
         en_cols = [
