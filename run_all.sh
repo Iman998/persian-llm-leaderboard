@@ -26,10 +26,10 @@ fi
 
 # ────────────────────────── CONFIGURATION ──────────────────────────── #
 # Space-separated list of model stubs located in models/<name>.yaml
-MODELS=( "gemma-3-27b-it-books-dpo" )
+MODELS=( "gemma-3-4b-it" )
 
 # Space-separated list of dataset folder names inside data/
-DATASETS=("mmlu","mmlu-pro","arc","persian-arc","khayyam-challenge","quiz-of-kings", "permmlu(mcinext)")
+DATASETS=("zharfa_translate")
 
 # ("bookBench")
 
@@ -39,7 +39,7 @@ DATASETS=("mmlu","mmlu-pro","arc","persian-arc","khayyam-challenge","quiz-of-kin
 # Sample size per dataset:
 #   * Empty string  → evaluate full CSV (default)
 #   * Positive int  → sample exactly N rows (header preserved)
-N_ROWS=""
+N_ROWS=100
 
 # Number of few-shot examples to include in each prompt
 SHOTS=3

@@ -2,8 +2,20 @@ board: translation
 task: translation
 question_col: "text"
 answer_col: "gold_translation"
+
+# list one or more columns whose values define categories
+category_cols:
+  - "src_language"          # src_language of question
+  - "tgt_lang"          # tgt_lang of question
+  - "genre"        # genre of question
+  - "complexity"          # complexity of question
+  - "noise"          # noise of question
+  - "register"          # register of question
+  - "style"          # style of question
+  
+
 evaluator: evaluators/text_generation_evaluator.py
-judge: true
+judge: false
 metrics: [bleu, meteor, chrf, ter]
 prompt_template: prompts/zharfa_translate.jinja2
 description: "Multi-source translation dataset (zharfa_translate)"
