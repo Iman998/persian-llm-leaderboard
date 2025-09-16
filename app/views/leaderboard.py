@@ -75,6 +75,10 @@ def _build_leaderboard_if_missing(
         st.text(proc.stderr)
         st.stop()
 
+    if not board_path.exists():
+        st.info("No results found for this leaderboard yet.")
+        st.stop()
+
 
 def _render_quick_chart(df: pd.DataFrame) -> None:
     with st.expander("📊 Quick chart"):
