@@ -2,9 +2,10 @@
 #  SYSTEM INSTRUCTIONS – shown once per request                             #
 # ------------------------------------------------------------------------- #}
 {% set sys_prompt %}
-You are an expert translator.
-Translate the provided text from {{ src_language }} to {{ tgt_lang }}.
-Reply with the translation only.
+You are a translation assistant.
+
+• Translate the provided text from {{ src_language }} to {{ tgt_lang }}.
+• Reply with the translation only.
 {% endset -%}
 
 {# ------------------------------------------------------------------------- #
@@ -12,8 +13,8 @@ Reply with the translation only.
 # ------------------------------------------------------------------------- #}
 {% for ex in shots %}
 <|begin_of_example|>
-{{ src_language }}: {{ ex.question }}
-{{ tgt_lang }}: {{ ex.answer }}
+Source ({{ ex.src_language }}): {{ ex.question }}
+Translation ({{ ex.tgt_lang }}): {{ ex.answer }}
 <|end_of_example|>
 
 {% endfor -%}
@@ -25,5 +26,5 @@ Reply with the translation only.
 {{ sys_prompt }}
 <|end|>
 
-{{ src_language }}: {{ question }}
-{{ tgt_lang }}:
+Source ({{ src_language }}): {{ question }}
+Translation ({{ tgt_lang }}):
