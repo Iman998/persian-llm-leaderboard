@@ -32,7 +32,7 @@ def show() -> None:
     _build_leaderboard_if_missing(
         board_path,
         lang,
-        "summarization",
+        board="summarization",
     )
     board_df = load_csv(board_path).sort_values("Average", ascending=False)
 

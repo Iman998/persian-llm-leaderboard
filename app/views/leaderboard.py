@@ -30,7 +30,9 @@ from core.style import apply_gradient, render_styler
 def _build_leaderboard_if_missing(
     board_path: Path,
     lang: str,
-    board: str,
+    board: str = "leaderboard",
+    include: list[str] | None = None,
+    exclude: list[str] | None = None,
 ) -> None:
     """
     (Re)generate `dashboard/leaderboard.csv` if it is absent.
@@ -44,6 +46,8 @@ def _build_leaderboard_if_missing(
 
     with st.spinner("Building leaderboard…"):
         script = Path(__file__).resolve().parents[2] / "scripts" / "build_leaderboard.py"
+        include_args = ["--include", *include] if include else []
+        exclude_args = ["--exclude", *exclude] if exclude else []
         proc = subprocess.run(
             [
                 sys.executable,
@@ -58,6 +62,8 @@ def _build_leaderboard_if_missing(
                 str(board_path),
                 "--board",
                 board,
+                *include_args,
+                *exclude_args,
                 *( ["--lang", lang] if lang != "all" else [] ),
             ],
             capture_output=True,
@@ -113,7 +119,6 @@ def show() -> None:
     _build_leaderboard_if_missing(
         board_path,
         lang,
-        "leaderboard",
     )
     board_df = load_csv(board_path).sort_values("Average", ascending=False)
 

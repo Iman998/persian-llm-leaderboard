@@ -21,6 +21,7 @@ def show() -> None:
     _build_leaderboard_if_missing(
         board_path,
         "all",
+        board="translation",
         include=["translat"],
         exclude=["translation_quality"],
     )
