@@ -102,9 +102,10 @@ def main(board: str | None = None) -> None:
     )
     args = parser.parse_args()
 
-    # Language-specific boards and non-leaderboard boards should not include the cross-lingual average
+    # Language-specific and translation boards should not include the cross-lingual average
     col_order = COL_ORDER.copy()
-    if (args.lang != "all" or args.board != "leaderboard") and "Language Average" in col_order:
+    if ((args.lang != "all") or (args.board == "translation")) and "Language Average" in col_order:
+
         col_order.remove("Language Average")
 
     model_names = sorted(
@@ -273,11 +274,15 @@ def main(board: str | None = None) -> None:
             if col not in wide.columns:
                 wide[col] = ""
 
-    # Compute Average over accuracy columns -----------------------------------
-    acc_cols = [c for c in wide.columns if c.endswith("(Accuracy)")]
-    acc_vals = wide[acc_cols].apply(pd.to_numeric, errors="coerce")
-    counts = acc_vals.notna().sum(axis=1)
-    wide["Average"] = (acc_vals.sum(axis=1) / counts).round(5).where(counts > 0, "")
+    # Compute Average over metric columns -------------------------------------
+    if args.board == "translation":
+        avg_cols = [c for c in wide.columns if "(" in c and c.endswith(")")]
+    else:
+        avg_cols = [c for c in wide.columns if c.endswith("(Accuracy)")]
+
+    avg_vals = wide[avg_cols].apply(pd.to_numeric, errors="coerce")
+    counts = avg_vals.notna().sum(axis=1)
+    wide["Average"] = (avg_vals.sum(axis=1) / counts).round(5).where(counts > 0, "")
 
     if args.board == "leaderboard" and args.lang == "all" and has_language:
         en_cols = [
