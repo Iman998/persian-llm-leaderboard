@@ -105,6 +105,7 @@ def main(board: str | None = None) -> None:
     # Language-specific and translation boards should not include the cross-lingual average
     col_order = COL_ORDER.copy()
     if ((args.lang != "all") or (args.board == "translation")) and "Language Average" in col_order:
+
         col_order.remove("Language Average")
 
     model_names = sorted(
@@ -215,7 +216,7 @@ def main(board: str | None = None) -> None:
         return
 
     has_language = any(lang in ("en", "fa") for lang in dataset_lang.values())
-    if not has_language and "Language Average" in col_order:
+    if (not has_language or args.board != "leaderboard") and "Language Average" in col_order:
         col_order.remove("Language Average")
 
     # Long → wide pivot (average duplicates) ----------------------------------
@@ -283,7 +284,7 @@ def main(board: str | None = None) -> None:
     counts = avg_vals.notna().sum(axis=1)
     wide["Average"] = (avg_vals.sum(axis=1) / counts).round(5).where(counts > 0, "")
 
-    if args.lang == "all" and has_language:
+    if args.board == "leaderboard" and args.lang == "all" and has_language:
         en_cols = [
             rename_map[(ds, "Accuracy")]
             for ds, lang in dataset_lang.items()
