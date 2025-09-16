@@ -102,9 +102,9 @@ def main(board: str | None = None) -> None:
     )
     args = parser.parse_args()
 
-    # Language-specific boards should not include the cross-lingual average
+    # Language-specific and translation boards should not include the cross-lingual average
     col_order = COL_ORDER.copy()
-    if args.lang != "all" and "Language Average" in col_order:
+    if ((args.lang != "all") or (args.board == "translation")) and "Language Average" in col_order:
         col_order.remove("Language Average")
 
     model_names = sorted(
