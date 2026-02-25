@@ -80,15 +80,14 @@ class MCQEvaluator(BaseEvaluator):
 
     def _query_model(self, prompt: str) -> str:
         """Single chat completion call → assistant text."""
+        request_kwargs = self._chat_completion_options()
         resp = self.client.chat.completions.create(
             model=self.model_name,
             messages=[
                 {"role": "system",   "content": "You are an expert evaluator for multiple-choice questions (MCQs). Your task is to carefully read each question and its options, determine the most accurate answer based on logic and knowledge, and explain your reasoning briefly if needed."},
                 {"role": "user",   "content": prompt},
             ],
-            temperature=0.01,
-            top_p=0.01,
-            max_tokens = 4000,
+            **request_kwargs,
         )
         return resp.choices[0].message.content
 

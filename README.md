@@ -127,7 +127,9 @@ python scripts/run_eval.py --model JUDGE_MODEL --judge \
     --out results/summarization_quality/JUDGE_MODEL/JUDGE_MODEL.csv
 ```
 
-Model configuration files in `models/` specify only the model name and base URL.
+Model configuration files in `models/` include the model name and base URL.
+You can also set optional request controls such as `enable_thinking` for reasoning-capable
+models (for example Qwen 3.5): set it to `false` to disable thinking mode or `true` to enable it.
 The OpenAI API key is provided at runtime via the `OPENAI_API_KEY` environment
 variable or a `secrets.toml` file in the project root.
 
@@ -150,12 +152,13 @@ Be sure to add `secrets.toml` to `.gitignore` so the key is not committed:
 echo 'secrets.toml' >> .gitignore
 ```
 
-The model YAML files remain minimal:
+Example model YAML:
 
 ```yaml
-name: gpt-4.1-nano-2025-04-14
+name: qwen3.5
 base_url: "https://api.example.com/v1"
-model: "gpt-4.1-nano-2025-04-14"
+model: "qwen3.5"
+enable_thinking: false  # optional
 ```
 
 After running a judge evaluation, restart the Streamlit dashboard and select the **LLM Judge** page to explore the scores.

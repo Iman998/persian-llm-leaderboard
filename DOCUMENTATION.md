@@ -123,11 +123,13 @@ python scripts/run_eval.py --model JUDGE_MODEL --judge \
     --out results/translation_quality/JUDGE_MODEL/JUDGE_MODEL.csv
 ```
 
-The judge model's YAML file only defines the model name and `base_url`.
-Provide the OpenAI API key via the `OPENAI_API_KEY` environment variable or in
-`secrets.toml` at the project root so the evaluator can contact the API. Each
-model can specify a separate key using `OPENAI_API_KEY_<MODEL>` or the
-`[model_keys]` table in `secrets.toml`.
+The judge model's YAML file defines the model name and `base_url`, and can
+optionally set `enable_thinking` for reasoning-capable models. Set
+`enable_thinking: false` to disable thinking mode (for example with Qwen 3.5),
+or `true` to enable it explicitly. Provide the OpenAI API key via the
+`OPENAI_API_KEY` environment variable or in `secrets.toml` at the project root
+so the evaluator can contact the API. Each model can specify a separate key
+using `OPENAI_API_KEY_<MODEL>` or the `[model_keys]` table in `secrets.toml`.
 Example:
 
 ```toml

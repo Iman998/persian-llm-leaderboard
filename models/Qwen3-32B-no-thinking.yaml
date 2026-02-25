@@ -4,3 +4,4 @@ model: "Qwen3-32B-no-thinking"
 parameters: "32B"
 organization: "Alibaba"
 license: "Apache-2.0"
+enable_thinking: false

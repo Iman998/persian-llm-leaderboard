@@ -31,3 +31,34 @@ def test_extract_valid(text, expected, evaluator):
 @pytest.mark.parametrize("text", [None, "", "****abc****", "no pattern here"])
 def test_extract_invalid(text, evaluator):
     assert evaluator._extract(text) is None
+
+
+def test_chat_completion_options_without_thinking_flag(evaluator):
+    options = evaluator._chat_completion_options()
+    assert options["temperature"] == 0.01
+    assert options["top_p"] == 0.01
+    assert options["max_tokens"] == 4000
+    assert "extra_body" not in options
+
+
+def test_chat_completion_options_with_thinking_disabled(tmp_path):
+    prompt_path = tmp_path / "template.jinja2"
+    prompt_path.write_text("{{ question }}")
+    meta_path = tmp_path / "meta.yaml"
+    meta_path.write_text("choice_cols: ['a', 'b']\n")
+    model_cfg = {
+        "api_key": "test",
+        "base_url": "http://localhost",
+        "model": "dummy",
+        "enable_thinking": False,
+    }
+
+    eval_with_thinking = MCQEvaluator(
+        model_cfg=model_cfg,
+        prompt_path=prompt_path,
+        meta_path=meta_path,
+    )
+    options = eval_with_thinking._chat_completion_options()
+    assert options["extra_body"] == {
+        "chat_template_kwargs": {"enable_thinking": False}
+    }
