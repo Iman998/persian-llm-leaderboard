@@ -30,7 +30,7 @@ def parse_csv_or_file(arg: str) -> List[str]:
             raise FileNotFoundError(f"{p} is not a file")
         text = p.read_text(encoding="utf-8")
         return [ln.strip() for ln in text.splitlines() if ln.strip()]
-    if any(sep in arg for sep in ("/", "\\")) or p.suffix:
+    if any(sep in arg for sep in ("/", "\\")):
         raise FileNotFoundError(p)
     return [x.strip() for x in arg.split(",") if x.strip()]
 
