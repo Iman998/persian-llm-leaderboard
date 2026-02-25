@@ -6,7 +6,7 @@ from pathlib import Path
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import logging
 import random
-from typing import List
+from typing import Any, List
 
 import pandas as pd
 import yaml
@@ -42,6 +42,7 @@ class BaseEvaluator:
             timeout=100_000,
         )
         self.model_name: str = model_cfg["model"]
+        self.enable_thinking: bool | None = model_cfg.get("enable_thinking")
 
         # Jinja2 template ----------------------------------------------------
         env = Environment(trim_blocks=True, lstrip_blocks=True)
@@ -109,15 +110,26 @@ class BaseEvaluator:
     # Internal helpers
     # ------------------------------------------------------------------
     def _query_model(self, prompt: str) -> str:
+        request_kwargs = self._chat_completion_options()
         resp = self.client.chat.completions.create(
             model=self.model_name,
             messages=[{"role": "user", "content": prompt}],
-            temperature=0.01,
-            top_p=0.01,
-            max_tokens = 4000,
-
+            **request_kwargs,
         )
         return resp.choices[0].message.content
+
+    def _chat_completion_options(self) -> dict[str, Any]:
+        """Return default chat-completion options from model configuration."""
+        options: dict[str, Any] = {
+            "temperature": 0.01,
+            "top_p": 0.01,
+            "max_tokens": 4000,
+        }
+        if self.enable_thinking is not None:
+            options["extra_body"] = {
+                "chat_template_kwargs": {"enable_thinking": self.enable_thinking}
+            }
+        return options
 
     def _build_prompt(self, df: pd.DataFrame, row: pd.Series) -> str:  # noqa: D401
         """Return the prompt for *row* (implemented by subclasses)."""
