@@ -1,6 +1,6 @@
-name: gemma
+name: gemma-3-4b-cross-v1
 base_url: "http://192.168.1.204:5959/v1"
-model: "gemma"
-parameters: "12B"
+model: "gemma-3-4b-cross-v1"
+parameters: "4B"
 organization: "Google"
 license: "Gemma License"

@@ -1,0 +1,6 @@
+name: gpt-oss-20b-grad-lora
+base_url: "http://192.168.1.204:8819/v1"
+model: "gpt-oss-20b-grad-lora"
+parameters: "20B"
+organization: "Openai"
+license: "Apache-2.0"

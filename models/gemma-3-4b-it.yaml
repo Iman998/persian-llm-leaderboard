@@ -1,5 +1,5 @@
 name: gemma-3-4b-it
-base_url: "http://192.168.1.204:5757/v1"
+base_url: "http://192.168.1.204:7676/v1"
 model: "gemma-3-4b-it"
 parameters: "4B"
 organization: "Google"

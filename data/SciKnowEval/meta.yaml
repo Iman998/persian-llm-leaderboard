@@ -1,0 +1,23 @@
+board: leaderboard
+
+question_col: "question"
+
+choice_cols:
+  - "choice1"
+  - "choice2"
+  - "choice3"
+  - "choice4"
+
+answer_col: "answer"
+language: en
+
+# list one or more columns whose values define categories
+category_cols:
+  - "domain"          # domain of question
+  - "subdomain"          # subdomain of question
+  - "level"        # level of question
+task: multiple_choice
+metrics: [accuracy]
+evaluator: evaluators/mcq_evaluator.py
+prompt_template: prompts/mcq_fewshot.jinja2
+description: "Massive Multitask Language Understanding benchmark"

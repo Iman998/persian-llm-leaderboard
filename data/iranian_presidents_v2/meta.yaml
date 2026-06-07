@@ -1,0 +1,28 @@
+board: leaderboard
+
+question_col: "question"
+
+choice_cols:
+  - "option1"
+  - "option2"
+  - "option3"
+  - "option4"
+
+answer_col: "answer-key"
+language: fa
+
+# list one or more columns whose values define categories
+category_cols:
+  - "level"                    # difficulty level of question
+  - "primary_president_tag"    # main president related to the question
+  - "presidency_term_tags"     # specific presidential term / period
+  - "time_period_tags"         # broader historical time period
+  - "question_type_tags"       # type/form of question
+  - "question_target_tags"     # subject targeted by the question
+  - "event_tags"               # related historical/political event
+
+task: multiple_choice
+metrics: [accuracy]
+evaluator: evaluators/mcq_evaluator.py
+prompt_template: prompts/Persian_mcq_fewshot.jinja2
+description: "Multiple-choice quiz questions about the presidents of the Islamic Republic of Iran, their presidential terms, elections, cabinets, political events, constitutional powers, domestic and foreign policy, and major historical developments related to Iranian presidencies."

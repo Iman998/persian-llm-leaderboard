@@ -26,12 +26,14 @@ fi
 
 # ────────────────────────── CONFIGURATION ──────────────────────────── #
 # Space-separated list of model stubs located in models/<name>.yaml
-MODELS=( "gemma-3-4b-it" )
+MODELS=( "gemma-3-12b-president-pt-sft-v2.1" )
 
 # Space-separated list of dataset folder names inside data/
-DATASETS=("zharfa_translate")
-
+DATASETS=("arc","persian-arc","khayyam-challenge","quiz-of-kings", "permmlu(mcinext)", "SciKnowEval", "recentBench", "iranian_presidents")
 # ("bookBench")
+# ("iranian_presidents")
+
+# "mmlu","mmlu-pro","arc","persian-arc","khayyam-challenge","quiz-of-kings", "permmlu(mcinext)",
 
 # DATASETS=( "permmlu(mcinext)")
 
@@ -39,7 +41,7 @@ DATASETS=("zharfa_translate")
 # Sample size per dataset:
 #   * Empty string  → evaluate full CSV (default)
 #   * Positive int  → sample exactly N rows (header preserved)
-N_ROWS=100
+N_ROWS=""
 
 # Number of few-shot examples to include in each prompt
 SHOTS=3

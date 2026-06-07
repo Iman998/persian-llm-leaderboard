@@ -84,3 +84,4 @@ dashboard/
 *.tmp
 *.bak
 *~
+data/zharfa_translate/test.csv

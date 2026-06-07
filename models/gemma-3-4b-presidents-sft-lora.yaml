@@ -1,0 +1,6 @@
+name: gemma-3-4b-presidents-sft-lora
+base_url: "http://192.168.1.204:5757/v1"
+model: "gemma-3-4b-presidents-sft-lora"
+parameters: "4B"
+organization: "Google"
+license: "Gemma License"

@@ -1,0 +1,31 @@
+board: leaderboard
+
+question_col: "question"
+
+choice_cols:
+  - "option1"
+  - "option2"
+  - "option3"
+  - "option4"
+
+answer_col: "answer-key"
+language: fa
+
+# list one or more columns whose values define categories
+category_cols:
+  - "level"                    # difficulty level of question
+  - "time_period_tags"         # time period of the event
+  - "event_tags"               # main recent event
+  - "person_tags"              # key people mentioned or targeted
+  - "organization_tags"        # groups, governments, parties, or institutions
+  - "country_region_tags"      # relevant country or region
+  - "question_type_tags"       # type/form of question
+  - "question_target_tags"     # subject targeted by the question
+  - "conflict_context_tags"    # war, ceasefire, assassination, diplomacy, crisis context
+  - "important_dimension_tags" # broader dimension such as military, diplomacy, leadership, domestic politics
+
+task: multiple_choice
+metrics: [accuracy]
+evaluator: evaluators/mcq_evaluator.py
+prompt_template: prompts/Persian_mcq_fewshot.jinja2
+description: "Multiple-choice quiz questions about recent events related to Iran, the Islamic Republic of Iran, regional conflicts, Iranian politics, Iran-Israel tensions, Hamas, Hezbollah, Syria, Lebanon, Yemen, Venezuela, international diplomacy, assassinations, ceasefires, elections, government officials, and other major recent world events connected to Iran."

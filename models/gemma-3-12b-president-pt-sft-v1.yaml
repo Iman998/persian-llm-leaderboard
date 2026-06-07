@@ -1,6 +1,6 @@
-name: gemma
+name: gemma_pt-sft
 base_url: "http://192.168.1.204:5959/v1"
-model: "gemma"
+model: "gemma_pt-sft"
 parameters: "12B"
 organization: "Google"
 license: "Gemma License"

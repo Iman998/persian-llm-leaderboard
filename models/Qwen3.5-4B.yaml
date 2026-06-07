@@ -1,0 +1,6 @@
+name: Qwen3.5-4B
+base_url: "http://192.168.1.204:7070/v1"
+model: "Qwen3.5-4B"
+parameters: "4B"
+organization: "Alibaba"
+license: "Apache-2.0"

@@ -1,0 +1,7 @@
+name: qwen3_5_multimodal
+base_url: "http://192.168.1.202:5865/v1"
+model: "qwen3_5_multimodal"
+parameters: "397B"
+organization: "Alibaba"
+enable_thinking: false
+license: "Apache-2.0"

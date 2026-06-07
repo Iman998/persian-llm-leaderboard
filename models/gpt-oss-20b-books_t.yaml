@@ -1,0 +1,6 @@
+name: gpt-oss-20b-books_t
+base_url: "http://192.168.1.201:8765/v1"
+model: "gpt-oss-20b-books_t"
+parameters: "20B"
+organization: "Openai"
+license: "Apache-2.0"

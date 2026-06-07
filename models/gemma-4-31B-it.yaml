@@ -1,0 +1,6 @@
+name: gemma-4-31b
+base_url: "http://192.168.1.204:6969/v1"
+model: "gemma-4-31b"
+parameters: "31B"
+organization: "Google"
+license: "Gemma License"

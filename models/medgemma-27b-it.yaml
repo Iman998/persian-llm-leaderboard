@@ -1,0 +1,6 @@
+name: medgemma-27b-it
+base_url: "http://192.168.1.204:5757/v1"
+model: "medgemma-27b-it"
+parameters: "27B"
+organization: "Google"
+license: "Gemma License"

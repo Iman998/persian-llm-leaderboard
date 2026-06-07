@@ -1,0 +1,6 @@
+name: gemma-4-E2B-it
+base_url: "http://192.168.1.204:7474/v1"
+model: "gemma-4-E2B-it"
+parameters: "5.1B"
+organization: "Google"
+license: "Gemma License"

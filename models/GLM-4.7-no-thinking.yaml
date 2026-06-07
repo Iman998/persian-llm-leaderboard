@@ -1,0 +1,7 @@
+name: glm-test
+base_url: "http://192.168.1.206:16739/v1"
+model: "glm-test"
+parameters: "355B"
+organization: "Zai"
+enable_thinking: false
+license: "MIT"
