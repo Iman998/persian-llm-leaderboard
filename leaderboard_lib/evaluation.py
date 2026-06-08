@@ -16,7 +16,7 @@ import shutil
 import pandas as pd
 import yaml
 
-from .data_utils import _read_dataset, _norm
+from .data_utils import _norm, _read_dataset, explode_tag_column
 from .utils import _load_module
 
 # ───────────────────────── global logging ─────────────────────────────── #
@@ -138,23 +138,17 @@ def save_results(
             print(f"⚠️  column '{cat}' missing – skipped")
             continue
 
-        def _cat_acc(g: pd.DataFrame) -> float:
-            return (g["pred"].map(_norm) == g["Key"].map(_norm)).mean() * 100
-
-        try:
-            cat_df = (
-                result_df.groupby(cat, dropna=False)
-                .apply(_cat_acc, include_groups=False)  # pandas ≥ 2.1
-                .reset_index(name="Accuracy")
-                .sort_values(cat)
-            )
-        except TypeError:
-            cat_df = (
-                result_df.groupby(cat, dropna=False)
-                .apply(_cat_acc)  # pandas < 2.1
-                .reset_index(name="Accuracy")
-                .sort_values(cat)
-            )
+        grouped_df = explode_tag_column(result_df, cat, keep_empty=True)
+        grouped_df["_correct"] = (
+            grouped_df["pred"].map(_norm) == grouped_df["Key"].map(_norm)
+        )
+        cat_df = (
+            grouped_df.groupby(cat, dropna=False)["_correct"]
+            .mean()
+            .mul(100)
+            .reset_index(name="Accuracy")
+            .sort_values(cat)
+        )
 
         cat_file = out_path.with_name(f"{out_path.stem}_{cat}.csv")
         cat_df.to_csv(cat_file, index=False)
@@ -201,4 +195,3 @@ def main() -> None:  # noqa: D401
             for f in out_path.parent.glob(f"{out_path.stem}_*.csv"):
                 new_name = f.name.replace(out_path.stem, base_stem, 1)
                 shutil.copy2(f, f.with_name(new_name))
-

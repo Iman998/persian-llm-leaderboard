@@ -132,3 +132,29 @@ def test_save_results_creates_files_and_handles_missing_columns(tmp_path, capsys
 
     raw_file = tmp_path / "result_raw.csv"
     assert raw_file.exists()
+
+
+def test_save_results_splits_multi_value_category_cells(tmp_path):
+    df = pd.DataFrame(
+        {
+            "pred": ["a", "b", "a"],
+            "correct": ["a", "a", "a"],
+            "question": ["q1", "q2", "q3"],
+            "topic": ["t1|t2", "t1, t3", "t2"],
+        }
+    )
+    out = tmp_path / "result.csv"
+
+    evaluation.save_results(
+        df,
+        {"category_cols": ["topic"]},
+        out,
+        answer_col="correct",
+        question_col="question",
+    )
+
+    topic_df = pd.read_csv(tmp_path / "result_topic.csv").set_index("topic")
+    assert topic_df.index.tolist() == ["t1", "t2", "t3"]
+    assert topic_df.loc["t1", "Accuracy"] == 50.0
+    assert topic_df.loc["t2", "Accuracy"] == 100.0
+    assert topic_df.loc["t3", "Accuracy"] == 0.0

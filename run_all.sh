@@ -29,14 +29,7 @@ fi
 MODELS=( "gemma-3-12b-president-pt-sft-v2.1" )
 
 # Space-separated list of dataset folder names inside data/
-DATASETS=("arc","persian-arc","khayyam-challenge","quiz-of-kings", "permmlu(mcinext)", "SciKnowEval", "recentBench", "iranian_presidents")
-# ("bookBench")
-# ("iranian_presidents")
-
-# "mmlu","mmlu-pro","arc","persian-arc","khayyam-challenge","quiz-of-kings", "permmlu(mcinext)",
-
-# DATASETS=( "permmlu(mcinext)")
-
+DATASETS=( "recentBench_v2" "iranian_presidents_v2" )
 
 # Sample size per dataset:
 #   * Empty string  → evaluate full CSV (default)
@@ -67,4 +60,3 @@ python3 "${SCRIPT_DIR}/scripts/main.py" \
   -s "${SHOTS}" \
   -w "${WORKERS}" \
   ${JUDGE_FLAG:+$JUDGE_FLAG} "$@"
-
