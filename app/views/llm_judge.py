@@ -16,7 +16,7 @@ import streamlit as st
 
 from core.io import load_csv
 from core.parser import scan_result_maps
-from core.style import apply_gradient, render_styler
+from core.style import apply_gradient, page_header, render_styler
 
 # -------------------------------------------------------------
 # Build result maps once (shared across pages)
@@ -100,7 +100,7 @@ def show() -> None:
         st.info("No LLM‑Judge datasets available.")
         return
 
-    ds_sel = st.sidebar.selectbox("📂 Dataset", judge_datasets)
+    ds_sel = st.sidebar.selectbox("Dataset", judge_datasets)
     table_df, warnings = _collect_judge_table(ds_sel)
     for w in warnings:
         st.warning(w)
@@ -109,10 +109,21 @@ def show() -> None:
         st.warning("Judge scores not found for this dataset.")
         return
 
-    st.title(f"{ds_sel} – Judge scores")
+    page_header(
+        "LLM Judge",
+        f"Review evaluator-model scores and category-level comparisons for {ds_sel}.",
+    )
+    summary_cols = st.columns(3)
+    summary_cols[0].metric("Dataset", ds_sel)
+    summary_cols[1].metric("Models scored", f"{len(table_df):,}")
+    summary_cols[2].metric(
+        "Score fields",
+        f"{max(0, len(table_df.columns) - 1):,}",
+    )
+    st.write("")
     render_styler(apply_gradient(table_df))
     st.download_button(
-        "Download CSV",
+        "↓  Download CSV",
         table_df.to_csv(index=False).encode(),
         file_name=f"{ds_sel}_judge_scores.csv",
     )
@@ -154,16 +165,28 @@ def show() -> None:
             .encode(
                 x=alt.X(f"{cat_sel}:N", sort=None),
                 y="Score:Q",
-                color=alt.Color("Model:N", legend=alt.Legend(orient="top-right")),
+                color=alt.Color(
+                    "Model:N",
+                    legend=alt.Legend(orient="top-right"),
+                    scale=alt.Scale(
+                        range=[
+                            "#23885a",
+                            "#6f8774",
+                            "#2f3f35",
+                            "#a8b9ad",
+                            "#53665a",
+                        ]
+                    ),
+                ),
                 xOffset="Model:N",
             )
             .properties(width=width)
             .interactive(bind_y=False),
-            use_container_width=True,
+            width="stretch",
         )
 
         st.download_button(
-            "Download CSV",
+            "↓  Download CSV",
             comp_df.reset_index().to_csv(index=False).encode(),
             file_name=f"{ds_sel}_{cat_sel}_judge_compare.csv",
         )

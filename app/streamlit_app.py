@@ -19,11 +19,13 @@ from pathlib import Path
 import streamlit as st
 
 # ──────────────────────────────────────────────────────────
-# Ensure `ROOT_DIR` is import-searchable
+# Ensure project and app packages are import-searchable
 # ──────────────────────────────────────────────────────────
-ROOT_DIR = Path(__file__).resolve().parents[1]          # …/app/..
-if str(ROOT_DIR) not in sys.path:
-    sys.path.insert(0, str(ROOT_DIR))
+APP_DIR = Path(__file__).resolve().parent
+ROOT_DIR = APP_DIR.parent
+for search_path in (ROOT_DIR, APP_DIR):
+    if str(search_path) not in sys.path:
+        sys.path.insert(0, str(search_path))
 
 # Now regular absolute imports work even when run as a script
 from app.views import (
@@ -33,16 +35,35 @@ from app.views import (
     translation_board,
     summarization_board,
 )  # noqa: E402
+from app.core.style import inject_global_styles  # noqa: E402
 
-st.set_page_config(page_title="Persian-LLM Leaderboard", layout="wide")
+st.set_page_config(
+    page_title="Persian LLM Leaderboard",
+    page_icon=":material/leaderboard:",
+    layout="wide",
+    initial_sidebar_state="expanded",
+)
+inject_global_styles()
+
+st.sidebar.markdown(
+    """
+    <div class="app-brand">
+        <div class="app-brand__mark">PL</div>
+        <div class="app-brand__name">Persian LLM<br>Leaderboard</div>
+        <div class="app-brand__meta">Open model evaluation workspace</div>
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
 
 PAGE_MAP = {
-    "🏆 Leaderboard": leaderboard.show,
-    "🔤 Translation": translation_board.show,
-    "📝 Summarization": summarization_board.show,
-    "📂 Dataset view": dataset_view.show,
-    "🤖 LLM Judge": llm_judge.show,
+    "Leaderboard": leaderboard.show,
+    "Translation": translation_board.show,
+    "Summarization": summarization_board.show,
+    "Dataset explorer": dataset_view.show,
+    "LLM judge": llm_judge.show,
 }
 
-choice = st.sidebar.radio("📑 Page", list(PAGE_MAP))
+choice = st.sidebar.radio("Workspace", list(PAGE_MAP), label_visibility="collapsed")
+st.sidebar.divider()
 PAGE_MAP[choice]()

@@ -11,14 +11,12 @@ from core.paths import (
     DATASETS_DIR,
 )
 from core.io import load_csv, load_meta
-from core.style import apply_gradient, render_styler
+from core.style import apply_gradient, page_header, render_styler
 from .leaderboard import _build_leaderboard_if_missing, _render_quick_chart
 
 
 def show() -> None:
     """Render the summarization leaderboard."""
-    st.title("📝 Summarization Leaderboard")
-
     board_choice = st.sidebar.radio(
         "Language", ["All", "Persian", "English"], key="summarization_lang"
     )
@@ -35,6 +33,20 @@ def show() -> None:
         board="summarization",
     )
     board_df = load_csv(board_path).sort_values("Average", ascending=False)
+    page_header(
+        "Summarization Leaderboard",
+        "Compare model performance on concise, faithful summarization in "
+        "Persian and English.",
+    )
+
+    summary_cols = st.columns(3)
+    summary_cols[0].metric("Models ranked", f"{len(board_df):,}")
+    summary_cols[1].metric(
+        "Top model",
+        str(board_df.iloc[0]["Model"]) if not board_df.empty else "—",
+    )
+    summary_cols[2].metric("View", board_choice)
+    st.write("")
 
     ranks = list(range(1, len(board_df) + 1))
     medals = {1: "\U0001F947", 2: "\U0001F948", 3: "\U0001F949"}
@@ -67,6 +79,5 @@ def show() -> None:
     _render_quick_chart(board_df)
 
     st.download_button(
-        "Download CSV", board_path.read_bytes(), file_name=board_path.name
+        "↓  Download CSV", board_path.read_bytes(), file_name=board_path.name
     )
-
