@@ -60,8 +60,20 @@ def build_parser() -> argparse.ArgumentParser:
     return p
 
 
+def _validate_args(parser: argparse.ArgumentParser, args: argparse.Namespace) -> None:
+    """Reject invalid numeric options before spawning subprocesses."""
+    if args.n_rows is not None and args.n_rows <= 0:
+        parser.error("--n_rows must be a positive integer")
+    if args.shots < 0:
+        parser.error("--shots must be zero or a positive integer")
+    if args.workers <= 0:
+        parser.error("--workers must be a positive integer")
+
+
 def main(argv: List[str] | None = None) -> None:
-    args = build_parser().parse_args(argv)
+    parser = build_parser()
+    args = parser.parse_args(argv)
+    _validate_args(parser, args)
 
     logging_level = logging.DEBUG if args.debug else logging.INFO
     logging.basicConfig(level=logging_level, format="%(levelname)s: %(message)s")

@@ -19,6 +19,18 @@ import streamlit as st
 __all__ = ["apply_gradient", "render_styler"]
 
 
+def _map_styles(
+    styler: pd.io.formats.style.Styler,
+    func,
+    *,
+    subset: list[str] | str,
+) -> pd.io.formats.style.Styler:
+    """Apply elementwise styles across pandas versions."""
+    if hasattr(styler, "map"):
+        return styler.map(func, subset=subset)
+    return styler.applymap(func, subset=subset)
+
+
 def _medal_colors(avgs: pd.Series) -> List[str]:
     """Return a list of gold/silver/bronze hex colours by rank."""
     ranks = avgs.rank(method="first", ascending=False, na_option="bottom")
@@ -64,7 +76,11 @@ def apply_gradient(df: pd.DataFrame) -> pd.io.formats.style.Styler:
 
         for col in numeric:
             norm = norms[col]
-            styler = styler.applymap(lambda v, n=norm: _num_style(v, n), subset=[col])
+            styler = _map_styles(
+                styler,
+                lambda v, n=norm: _num_style(v, n),
+                subset=[col],
+            )
 
     def _param_column_style(series: pd.Series) -> mcolors.Normalize:
         vals = pd.to_numeric(series.astype(str).str.replace("B", "", regex=False), errors="coerce")
@@ -85,7 +101,11 @@ def apply_gradient(df: pd.DataFrame) -> pd.io.formats.style.Styler:
     for col in [c for c in ["Parameters", "Active Parameters"] if c in df.columns]:
         norm = _param_column_style(df[col])
         df[col] = df[col].astype(str).str.replace("B", "", regex=False)
-        styler = styler.applymap(lambda v: _param_style(v, norm), subset=[col])
+        styler = _map_styles(
+            styler,
+            lambda v: _param_style(v, norm),
+            subset=[col],
+        )
 
     # License column colours
     if "License" in df.columns:
@@ -100,7 +120,7 @@ def apply_gradient(df: pd.DataFrame) -> pd.io.formats.style.Styler:
             text = _contrast_color(colour)
             return f"background-color:{colour};color:{text}"
 
-        styler = styler.applymap(_license_style, subset=["License"])
+        styler = _map_styles(styler, _license_style, subset=["License"])
 
     # Highlight specific organization
     if "Organization" in df.columns:
@@ -111,7 +131,7 @@ def apply_gradient(df: pd.DataFrame) -> pd.io.formats.style.Styler:
                 return f"background-color:{colour};color:{text}"
             return ""
 
-        styler = styler.applymap(_org_style, subset=["Organization"])
+        styler = _map_styles(styler, _org_style, subset=["Organization"])
 
     if "Average" in df.columns:
         avgs = df["Average"].astype(float)
@@ -143,4 +163,3 @@ def render_styler(
         hide_index=True,
         column_config=column_config or {},
     )
-

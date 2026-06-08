@@ -50,6 +50,25 @@ def test_parse_args_definitions(monkeypatch):
     assert params["--workers"]["type"] is int
 
 
+def test_parse_args_rejects_invalid_numeric_args(monkeypatch):
+    argv_base = [
+        "run_eval.py",
+        "--dataset",
+        "ds.csv",
+        "--meta",
+        "meta.yaml",
+        "--model",
+        "model.yaml",
+        "--out",
+        "out.csv",
+    ]
+
+    for bad_arg in (["--n_rows", "0"], ["--shots", "-1"], ["--workers", "0"]):
+        monkeypatch.setattr(sys, "argv", argv_base + bad_arg)
+        with pytest.raises(SystemExit):
+            evaluation.parse_args()
+
+
 def test_load_configs_infers_evaluator_class(tmp_path):
     dataset = tmp_path / "data.csv"
     pd.DataFrame({"Key": ["1"], "question": ["q"], "pred": ["1"]}).to_csv(dataset, index=False)

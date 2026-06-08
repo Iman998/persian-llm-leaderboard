@@ -4,6 +4,8 @@ import types
 from pathlib import Path
 from unittest.mock import MagicMock
 
+import pytest
+
 sys.path.append(str(Path(__file__).resolve().parents[1]))
 
 
@@ -41,3 +43,16 @@ def test_runner_cli_combinations(monkeypatch):
     combos = {(c.kwargs["model"], c.kwargs["dataset"]) for c in run_mock.call_args_list}
     assert combos == {("m1", "d1"), ("m1", "d2"), ("m2", "d1"), ("m2", "d2")}
     rebuild_mock.assert_called_once_with(dry_run=False)
+
+
+def test_runner_cli_rejects_invalid_numeric_args(monkeypatch):
+    from leaderboard_runner import cli
+
+    with pytest.raises(SystemExit):
+        cli.main(["-m", "m", "-d", "d", "-n", "0"])
+
+    with pytest.raises(SystemExit):
+        cli.main(["-m", "m", "-d", "d", "-s", "-1"])
+
+    with pytest.raises(SystemExit):
+        cli.main(["-m", "m", "-d", "d", "-w", "0"])

@@ -18,7 +18,7 @@ def load_meta_fields(meta_file: Path) -> Tuple[str, str]:
         prompt_template → prompts/mcq_fewshot.jinja2
         evaluator       → evaluators/mcq_evaluator.py
     """
-    cfg = yaml.safe_load(meta_file.read_text())
+    cfg = yaml.safe_load(meta_file.read_text()) or {}
     return (
         cfg.get("prompt_template", "prompts/mcq_fewshot.jinja2"),
         cfg.get("evaluator", "evaluators/mcq_evaluator.py"),

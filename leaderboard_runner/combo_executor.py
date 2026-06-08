@@ -56,35 +56,38 @@ def _run_judge_evaluation(
         df.to_csv(tmp.name, index=False)
         tmp_path = Path(tmp.name)
 
-    out_dir = paths.RESULTS_DIR / f"{dataset}_judge" / model
-    out_dir.mkdir(parents=True, exist_ok=True)
-    suffix = f"_{n_rows}" if n_rows else ""
-    judge_csv = out_dir / f"{model}{suffix}.csv"
+    try:
+        out_dir = paths.RESULTS_DIR / f"{dataset}_judge" / model
+        out_dir.mkdir(parents=True, exist_ok=True)
+        suffix = f"_{n_rows}" if n_rows else ""
+        judge_csv = out_dir / f"{model}{suffix}.csv"
 
-    cmd = build_run_eval_cmd(
-        model_stub=model,
-        dataset_path=tmp_path,
-        meta_path=meta_file,
-        prompt_template="prompts/judge.jinja2",
-        evaluator="evaluators/judge_evaluator.py",
-        n_rows=n_rows,
-        shots=shots,
-        workers=workers,
-        out_csv=judge_csv,
-    )
+        cmd = build_run_eval_cmd(
+            model_stub=model,
+            dataset_path=tmp_path,
+            meta_path=meta_file,
+            prompt_template="prompts/judge.jinja2",
+            evaluator="evaluators/judge_evaluator.py",
+            n_rows=n_rows,
+            shots=shots,
+            workers=workers,
+            out_csv=judge_csv,
+        )
 
-    if dry_run:
-        print(" ".join(map(str, cmd)))
-    else:
-        logger.info("RUN %s × %s → judge %s", model, dataset, judge_csv.name)
-        subprocess.run([str(c) for c in cmd], check=True)
+        if dry_run:
+            print(" ".join(map(str, cmd)))
+        else:
+            logger.info("RUN %s × %s → judge %s", model, dataset, judge_csv.name)
+            subprocess.run([str(c) for c in cmd], check=True)
 
-        if n_rows:
-            shutil.copy2(judge_csv, out_dir / f"{model}.csv")
-            for f in out_dir.glob(f"{model}{suffix}_*.csv"):
-                shutil.copy2(f, out_dir / f"{model}{f.name[len(model + suffix):]}")
-
-    tmp_path.unlink(missing_ok=True)
+            if n_rows:
+                shutil.copy2(judge_csv, out_dir / f"{model}.csv")
+                for f in out_dir.glob(f"{model}{suffix}_*.csv"):
+                    shutil.copy2(
+                        f, out_dir / f"{model}{f.name[len(model + suffix):]}"
+                    )
+    finally:
+        tmp_path.unlink(missing_ok=True)
 
 def run_single_combo(
     *,
@@ -98,9 +101,8 @@ def run_single_combo(
 ) -> None:
     """Evaluate *model* on *dataset* and write results into ``results/``.
 
-    If ``judge`` is ``True`` and the dataset is a ``text_generation`` or
-    ``summarization`` task, a second pass is executed using
-    ``translation`` task, a second pass is executed using
+    If ``judge`` is ``True`` and the dataset is a ``text_generation``,
+    ``summarization`` or ``translation`` task, a second pass is executed using
     :mod:`evaluators.judge_evaluator` on the predictions from the first run.
     Judge scores are written under ``results/<dataset>_judge/<model>/``.
     """
@@ -161,12 +163,11 @@ def run_single_combo(
 
         # Optional LLM-judge evaluation ------------------------------------- #
         with meta_file.open("r", encoding="utf-8") as fh:
-            meta_cfg = yaml.safe_load(fh)
-            meta_cfg.get("judge", False)
+            meta_cfg = yaml.safe_load(fh) or {}
         if (
             judge
-            and meta_cfg.get("task") in {"text_generation", "summarization"}
-            and meta_cfg.get("task") in {"text_generation", "translation"}
+            and meta_cfg.get("task")
+            in {"text_generation", "summarization", "translation"}
             and meta_cfg.get("judge", False)
         ):
             _run_judge_evaluation(

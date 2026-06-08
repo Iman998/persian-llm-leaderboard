@@ -52,12 +52,22 @@ def parse_args() -> argparse.Namespace:
         action="store_true",
         help="Enable INFO-level logs",
     )
-    return parser.parse_args()
+    args = parser.parse_args()
+    n_rows = getattr(args, "n_rows", None)
+    shots = getattr(args, "shots", 0)
+    workers = getattr(args, "workers", 1)
+    if n_rows is not None and n_rows <= 0:
+        parser.error("--n_rows must be a positive integer")
+    if shots < 0:
+        parser.error("--shots must be zero or a positive integer")
+    if workers <= 0:
+        parser.error("--workers must be a positive integer")
+    return args
 
 
 def load_configs(args: argparse.Namespace) -> tuple[type, dict[str, Any], dict[str, Any], pd.DataFrame]:
     """Load model/meta YAML and dataset, returning the Evaluator class."""
-    meta_cfg: dict[str, Any] = yaml.safe_load(Path(args.meta).read_text())
+    meta_cfg: dict[str, Any] = yaml.safe_load(Path(args.meta).read_text()) or {}
     if not args.evaluator:
         args.evaluator = meta_cfg.get("evaluator", "evaluators/mcq_evaluator.py")
     if not args.prompt:
@@ -85,7 +95,7 @@ def load_configs(args: argparse.Namespace) -> tuple[type, dict[str, Any], dict[s
             msg += f" Available classes: {available}"
         raise AttributeError(msg)
 
-    model_cfg: dict[str, Any] = yaml.safe_load(Path(args.model).read_text())
+    model_cfg: dict[str, Any] = yaml.safe_load(Path(args.model).read_text()) or {}
     df = _read_dataset(args.dataset, verbose=args.verbose)
     return Evaluator, model_cfg, meta_cfg, df
 
