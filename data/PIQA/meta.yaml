@@ -1,0 +1,20 @@
+board: leaderboard
+
+question_col: goal
+choice_cols:
+  - choice1
+  - choice2
+answer_col: answer
+language: en
+
+task: multiple_choice
+metrics: [accuracy]
+evaluator: evaluators/piqa_evaluator.py
+prompt_template: prompts/piqa.jinja2
+description: "PIQA physical commonsense reasoning benchmark, official labeled validation split"
+source_url: "https://arxiv.org/abs/1911.11641"
+data_url: "https://github.com/ybisk/ybisk.github.io/tree/master/piqa"
+source_split: validation
+source_data_sha256: "93503cc97c679e459b065c3d13e848282e44b2a25213985bed3e5d458abef72d"
+source_labels_sha256: "b4192dc3a2a0363d9d60ccf79800cbbe2f32ebb17726efdde6970e0b8131bceb"
+license: "Academic Free License 3.0"

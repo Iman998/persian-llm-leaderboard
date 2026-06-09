@@ -1,0 +1,34 @@
+{% set sys_prompt %}
+Choose the solution that best achieves the practical goal.
+
+- Read the goal and both numbered solutions.
+- Use physical commonsense and real-world feasibility.
+- Consider object properties, safety, and whether the solution works.
+- Briefly explain your choice in English.
+- End with exactly this line:
+
+Correct option: ****n****
+
+where n is 1 or 2.
+{% endset -%}
+
+{% for ex in shots %}
+<|begin_of_example|>
+Goal: {{ ex.question }}
+{% for i, choice in enumerate(ex.choices, 1) -%}
+{{ i }}) {{ choice }}
+{% endfor %}
+Correct option: ****{{ ex.answer }}****
+<|end_of_example|>
+
+{% endfor -%}
+<|system|>
+{{ sys_prompt }}
+<|end|>
+
+Goal: {{ question }}
+{% for i, choice in enumerate(choices, 1) -%}
+{{ i }}) {{ choice }}
+{% endfor %}
+
+Explain briefly, then write the final line exactly as specified.
