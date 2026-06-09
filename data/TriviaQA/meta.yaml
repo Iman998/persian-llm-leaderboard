@@ -1,0 +1,18 @@
+board: leaderboard
+
+task: open_ended
+metrics: [triviaqa_exact_match, triviaqa_f1]
+evaluator: evaluators/triviaqa_evaluator.py
+prompt_template: prompts/triviaqa.jinja2
+question_col: question
+answer_col: accepted_answers
+canonical_answer_col: canonical_answer
+language: en
+
+description: "TriviaQA open-domain question answering benchmark, official unfiltered no-context validation split"
+source_url: "https://arxiv.org/abs/1705.03551"
+data_url: "https://huggingface.co/datasets/mandarjoshi/trivia_qa"
+source_config: "unfiltered.nocontext"
+source_split: validation
+source_sha256: "58925ac87e2e2031154899e9c1226f15d81e1675237da1a308e234b77b7bdcaf"
+license: "Apache-2.0"

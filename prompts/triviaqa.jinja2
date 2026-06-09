@@ -1,0 +1,23 @@
+{% set sys_prompt %}
+Answer the trivia question with a concise factual response.
+
+- Give only the answer needed to identify the person, place, object, date, or fact.
+- Do not include reasoning or supporting explanation.
+- End with exactly one line in this format:
+
+Answer: final answer
+{% endset -%}
+
+{% for ex in shots %}
+<|begin_of_example|>
+Question: {{ ex.question }}
+Answer: {{ ex.answer }}
+<|end_of_example|>
+
+{% endfor -%}
+<|system|>
+{{ sys_prompt }}
+<|end|>
+
+Question: {{ question }}
+Answer:
