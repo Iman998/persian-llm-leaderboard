@@ -1,0 +1,25 @@
+board: leaderboard
+
+question_col: context
+choice_cols:
+  - choice1
+  - choice2
+  - choice3
+  - choice4
+answer_col: answer
+language: en
+
+category_cols:
+  - split_type
+  - source
+
+task: multiple_choice
+metrics: [accuracy]
+evaluator: evaluators/hellaswag_evaluator.py
+prompt_template: prompts/hellaswag.jinja2
+description: "HellaSwag commonsense sentence-completion benchmark, official labeled validation split"
+source_url: "https://arxiv.org/abs/1905.07830"
+data_url: "https://github.com/rowanz/hellaswag"
+source_split: validation
+source_sha256: "0aa3b88843990f3f10a97b9575c94d7b71fb2205240ba04ae4884d9e9c992588"
+license: MIT

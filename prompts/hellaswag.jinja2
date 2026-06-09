@@ -1,0 +1,33 @@
+{% set sys_prompt %}
+Choose the most plausible continuation for each context.
+
+- Read the context and all four numbered continuations.
+- Use commonsense, physical possibility, and narrative coherence.
+- Briefly explain your choice in English.
+- End with exactly this line:
+
+Correct option: ****n****
+
+where n is the number from 1 to 4 of the best continuation.
+{% endset -%}
+
+{% for ex in shots %}
+<|begin_of_example|>
+Context: {{ ex.question }}
+{% for i, choice in enumerate(ex.choices, 1) -%}
+{{ i }}) {{ choice }}
+{% endfor %}
+Correct option: ****{{ ex.answer }}****
+<|end_of_example|>
+
+{% endfor -%}
+<|system|>
+{{ sys_prompt }}
+<|end|>
+
+Context: {{ question }}
+{% for i, choice in enumerate(choices, 1) -%}
+{{ i }}) {{ choice }}
+{% endfor %}
+
+Explain briefly, then write the final line exactly as specified.

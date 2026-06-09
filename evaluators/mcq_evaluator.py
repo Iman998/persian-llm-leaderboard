@@ -37,6 +37,13 @@ PERS_TO_ASCII = str.maketrans("۰۱۲۳۴۵۶۷۸۹", "0123456789")
 class MCQEvaluator(BaseEvaluator):
     """Evaluate a DataFrame of MCQ rows against an LLM endpoint."""
 
+    SYSTEM_PROMPT = (
+        "You are an expert evaluator for multiple-choice questions (MCQs). "
+        "Carefully read each question and its options, determine the most "
+        "accurate answer using logic and knowledge, and explain your reasoning "
+        "briefly if needed."
+    )
+
     # --------------------------------------------------------------------- #
     # Constructor                                                           #
     # --------------------------------------------------------------------- #
@@ -84,7 +91,7 @@ class MCQEvaluator(BaseEvaluator):
         resp = self.client.chat.completions.create(
             model=self.model_name,
             messages=[
-                {"role": "system",   "content": "You are an expert evaluator for multiple-choice questions (MCQs). Your task is to carefully read each question and its options, determine the most accurate answer based on logic and knowledge, and explain your reasoning briefly if needed."},
+                {"role": "system", "content": self.SYSTEM_PROMPT},
                 {"role": "user",   "content": prompt},
             ],
             **request_kwargs,
