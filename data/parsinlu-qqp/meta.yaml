@@ -1,0 +1,21 @@
+board: leaderboard
+
+task: classification
+metrics: [accuracy, qqp_f1]
+evaluator: evaluators/parsinlu_qqp_evaluator.py
+prompt_template: prompts/parsinlu_qqp.jinja2
+question_col: question_1
+question_2_col: question_2
+answer_col: is_duplicate
+language: fa
+
+category_cols:
+  - data_source
+
+description: "ParsiNLU Persian question-pair paraphrase classification benchmark, official labeled test split"
+source_url: "https://github.com/persiannlp/parsinlu"
+data_url: "https://raw.githubusercontent.com/persiannlp/parsinlu/master/data/qqp/test.jsonl"
+source_split: test
+source_sha256: "5881f70203e937308ffe2cfd0a1da1ac29499d18bbfa219fe9382c42e12c4070"
+converted_data_sha256: "c07a6361730cb969a95b24870ac5aefcdf3329257768cee46c38c4b1ca68a0e3"
+license: "CC BY-NC-SA 4.0"

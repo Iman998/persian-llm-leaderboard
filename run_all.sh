@@ -29,7 +29,7 @@ fi
 MODELS=( "gemma-3-12b-president-pt-sft-v2.1" )
 
 # Space-separated list of dataset folder names inside data/
-DATASETS=( "MATH" "HellaSwag" "BoolQ" "PIQA" "SocialIQA" "TriviaQA" "NaturalQuestions" "WinoGrande" "DROP" "BIG-Bench-Hard" )
+DATASETS=( "MATH" "HellaSwag" "BoolQ" "PIQA" "SocialIQA" "TriviaQA" "NaturalQuestions" "WinoGrande" "DROP" "BIG-Bench-Hard" "parsinlu-qqp" )
 
 # Sample size per dataset:
 #   * Empty string  → evaluate full CSV (default)
