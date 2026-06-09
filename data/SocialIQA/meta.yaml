@@ -1,0 +1,25 @@
+board: leaderboard
+
+question_col: input
+choice_cols:
+  - choice1
+  - choice2
+  - choice3
+answer_col: answer
+language: en
+
+category_cols:
+  - original_label
+
+task: multiple_choice
+metrics: [accuracy]
+evaluator: evaluators/socialiqa_evaluator.py
+prompt_template: prompts/socialiqa.jinja2
+description: "SocialIQA social commonsense reasoning benchmark, official v1.4 labeled development split"
+source_url: "https://arxiv.org/abs/1904.09728"
+data_url: "https://maartensap.com/social-iqa/"
+source_version: "1.4"
+source_split: development
+source_archive_sha256: "99a399d50f1a996388e94ab435ba0ceadc6b8ad9d90e6420358c962a4850d217"
+source_data_sha256: "cba3ebde73c53f12cbdf5e05788ea95e6e6e3918466f7184e3afc324a07cc692"
+license: "CC BY 4.0"
