@@ -128,6 +128,7 @@ def main(board: str | None = None) -> None:
             "nq_open_exact_match": "Exact Match",
             "drop_exact_match": "Exact Match",
             "drop_f1": "F1",
+            "bbh_accuracy": "Accuracy",
             "f1": "F1",
             "bleu": "BLEU",
             "chrf": "chrF",

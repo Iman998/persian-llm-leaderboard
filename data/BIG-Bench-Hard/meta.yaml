@@ -1,0 +1,28 @@
+board: leaderboard
+
+task: reasoning
+metrics: [bbh_accuracy]
+evaluator: evaluators/big_bench_hard_evaluator.py
+prompt_template: prompts/big_bench_hard.jinja2
+question_col: input
+answer_col: scoring_key
+target_col: target
+task_col: task
+task_family_col: task_family
+cot_prompt_dir: prompts/big_bench_hard
+language: en
+
+category_cols:
+  - task_family
+  - task
+
+description: "BIG-Bench Hard, official 6,511-example release with three-shot chain-of-thought prompts and macro accuracy across 23 task families"
+source_url: "https://arxiv.org/abs/2210.09261"
+data_url: "https://github.com/suzgunmirac/BIG-Bench-Hard"
+source_revision: "9ee07bd481feebf959a6b59d61ea57bdcf30964d"
+source_archive_sha256: "6df5df45684bf80f03713546a53c765e89796662e0bcf985ba36d70e047687a0"
+source_data_sha256: "eae86f6cdf68f36fd069d8657bcb97cf4c106fd7b69ad02187b082fcf1392fe4"
+source_prompts_sha256: "6747af1709d27fc6fe03e9c357e758f98a30660d9e3db98166e21f9aa4fe66cb"
+converted_data_sha256: "9d38830fb4a888596806f5f0ebb9f9f47f7b225cb4bf8c72966decea4fd23636"
+source_split: evaluation
+license: MIT
