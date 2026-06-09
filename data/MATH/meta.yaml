@@ -1,0 +1,17 @@
+board: leaderboard
+
+task: math
+metrics: [math_equivalence]
+evaluator: evaluators/math_evaluator.py
+prompt_template: prompts/math.jinja2
+question_col: problem
+answer_col: answer
+language: en
+
+category_cols:
+  - type
+  - level
+
+description: "MATH competition mathematics benchmark (Hendrycks et al., NeurIPS 2021), official 5,000-problem test split"
+source: "https://arxiv.org/abs/2103.03874"
+license: MIT

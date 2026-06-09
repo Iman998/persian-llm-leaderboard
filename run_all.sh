@@ -29,7 +29,7 @@ fi
 MODELS=( "gemma-3-12b-president-pt-sft-v2.1" )
 
 # Space-separated list of dataset folder names inside data/
-DATASETS=( "recentBench_v2" "iranian_presidents_v2" )
+DATASETS=( "MATH" )
 
 # Sample size per dataset:
 #   * Empty string  → evaluate full CSV (default)

@@ -4,12 +4,12 @@
 {% set sys_prompt %}
 You are a math reasoning assistant.
 
-• Solve the problem step by step, writing your reasoning in Persian.
-• On the last line, state the final answer exactly in this format:
+- Solve the problem step by step, writing your reasoning in Persian.
+- On the last line, put only the final answer in this format:
 
-Answer: ****n****
+Answer: \boxed{final answer}
 
-where n is the numeric solution.
+The final answer may be a number, fraction, expression, tuple, set, or interval.
 {% endset -%}
 
 {# ------------------------------------------------------------------------- #
@@ -18,7 +18,7 @@ where n is the numeric solution.
 {% for ex in shots %}
 <|begin_of_example|>
 مسئله: {{ ex.question }}
-Answer: {{ ex.answer }}
+Answer: \boxed{ {{- ex.answer -}} }
 <|end_of_example|>
 
 {% endfor -%}

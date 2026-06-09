@@ -122,6 +122,7 @@ def main(board: str | None = None) -> None:
         mapping = {
             "accuracy": "Accuracy",
             "exact_match": "Exact Match",
+            "math_equivalence": "Math Accuracy",
             "f1": "F1",
             "bleu": "BLEU",
             "chrf": "chrF",

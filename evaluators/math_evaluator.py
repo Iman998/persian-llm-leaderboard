@@ -1,18 +1,17 @@
-"""Evaluator for numerical reasoning datasets."""
+"""Evaluator for mathematical reasoning datasets."""
 
 from __future__ import annotations
 
 from pathlib import Path
-import re
 import pandas as pd
+
+from leaderboard_lib.math_utils import normalize_math_answer
 
 from .open_ended_evaluator import OpenEndedEvaluator
 
 
 class MathEvaluator(OpenEndedEvaluator):
     """Evaluator for math reasoning tasks."""
-
-    NUMBER_RE = re.compile(r"-?\d+(?:\.\d+)?")
 
     def __init__(
         self,
@@ -34,5 +33,5 @@ class MathEvaluator(OpenEndedEvaluator):
         )
 
     def _extract(self, text: str) -> str | None:
-        m = self.NUMBER_RE.search(text)
-        return m.group(0) if m else text.strip()
+        answer = normalize_math_answer(text)
+        return answer or None
