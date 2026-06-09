@@ -2,6 +2,11 @@ board: translation
 task: translation
 question_col: "text"
 answer_col: "gold_translation"
+source_text_col: "text"
+target_text_col: "gold_translation"
+source_language_col: "src_language"
+target_language_col: "tgt_lang"
+language: multilingual
 
 # list one or more columns whose values define categories
 category_cols:
@@ -14,8 +19,8 @@ category_cols:
   - "style"          # style of question
   
 
-evaluator: evaluators/text_generation_evaluator.py
+evaluator: evaluators/zharfa_translation_evaluator.py
 judge: false
 metrics: [bleu, meteor, chrf, ter]
 prompt_template: prompts/zharfa_translate.jinja2
-description: "Multi-source translation dataset (zharfa_translate)"
+description: "Zharfa Translation multilingual benchmark with 36,572 examples across 30 directed language pairs"

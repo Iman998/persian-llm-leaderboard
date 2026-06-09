@@ -83,6 +83,26 @@ def _first_present_column(df: pd.DataFrame, candidates: List[str]) -> str | None
     return next((column for column in candidates if column in df.columns), None)
 
 
+def _translation_language_columns(meta: Dict[str, object]) -> Tuple[str | None, str | None]:
+    """Return configured source and target language columns."""
+    return (
+        meta.get("source_language_col"),
+        meta.get("target_language_col"),
+    )
+
+
+def _translation_display_columns(
+    meta: Dict[str, object], language_view: str
+) -> Tuple[bool, bool]:
+    """Return whether source and target content should be displayed."""
+    is_translation = bool(
+        meta.get("source_text_col") or meta.get("target_text_col")
+    )
+    if not is_translation:
+        return True, True
+    return language_view != "target", language_view != "source"
+
+
 def _display_prediction(value: object) -> object:
     """Display whole-number model predictions without a decimal suffix."""
     if pd.isna(value):
@@ -104,11 +124,12 @@ def _style_row_outputs(
 
     def _styles(data: pd.DataFrame) -> pd.DataFrame:
         styles = pd.DataFrame("", index=data.index, columns=data.columns)
-        if "Gold" not in data.columns:
+        gold_column = "Target Text" if "Target Text" in data.columns else "Gold"
+        if gold_column not in data.columns:
             return styles
 
-        styles["Gold"] = gold_style
-        gold = data["Gold"].map(_norm)
+        styles[gold_column] = gold_style
+        gold = data[gold_column].map(_norm)
         for column in model_columns:
             if column not in data.columns:
                 continue
@@ -170,6 +191,7 @@ def _collect_row_tables(
     meta: Dict[str, object],
     cat_filters: Dict[str, Set[str]],
     show_raw: bool,
+    language_view: str = "both",
 ) -> Tuple[pd.DataFrame | None, List[str]]:
     """
     Build a merged DataFrame where each model contributes a column
@@ -183,6 +205,11 @@ def _collect_row_tables(
     question_aliases = [q_name, "Question Body", "question"]
     answer_aliases = [a_name, "Gold", "Key", "answer-key", "answer"]
     choice_cols: List[str] = meta["choice_cols"]
+    source_language_col, target_language_col = _translation_language_columns(meta)
+    show_source, show_target = _translation_display_columns(meta, language_view)
+    is_translation = bool(
+        meta.get("source_text_col") or meta.get("target_text_col")
+    )
 
     for m in models:
         raw_file = RAW_MAP.get((ds, m))
@@ -212,30 +239,56 @@ def _collect_row_tables(
             warnings.append(f"Column 'pred' missing in *{raw_file.name}* – skipped.")
             continue
 
-        keep_cols = [q_col, a_col] + choice_cols + ["pred"]
-        if show_raw and "raw" in df.columns:
+        keep_cols = []
+        if show_source:
+            keep_cols.append(q_col)
+            if source_language_col and source_language_col in df.columns:
+                keep_cols.append(source_language_col)
+        if show_target:
+            keep_cols.append(a_col)
+            if target_language_col and target_language_col in df.columns:
+                keep_cols.append(target_language_col)
+            keep_cols.append("pred")
+        keep_cols.extend(choice_cols)
+        if show_raw and show_target and "raw" in df.columns:
             keep_cols.append("raw")
 
-        df = df[keep_cols].rename(
-            columns={
-                q_col: "Question",
-                a_col: "Gold",
-                "pred": m,
-                "raw": f"{m}-raw" if show_raw else "raw",
-            }
-        )
-        df[m] = pd.Series(
-            [_display_prediction(value) for value in df[m]],
-            index=df.index,
-            dtype=object,
-        )
+        rename_map = {
+            q_col: "Source Text" if is_translation else "Question",
+            a_col: "Target Text" if is_translation else "Gold",
+            "pred": m,
+            "raw": f"{m}-raw" if show_raw else "raw",
+        }
+        if source_language_col:
+            rename_map[source_language_col] = "Source Language"
+        if target_language_col:
+            rename_map[target_language_col] = "Target Language"
+        df = df[list(dict.fromkeys(keep_cols))].rename(columns=rename_map)
+        if m in df.columns:
+            df[m] = pd.Series(
+                [_display_prediction(value) for value in df[m]],
+                index=df.index,
+                dtype=object,
+            )
 
         if merged is None:
             merged = df
         else:
-            # Keep Question/Gold/choice_cols only once (from the first model)
+            shared_columns = [
+                "Question",
+                "Gold",
+                "Source Text",
+                "Target Text",
+                "Source Language",
+                "Target Language",
+                *choice_cols,
+            ]
             merged = merged.merge(
-                df.drop(columns=["Question", "Gold"] + choice_cols),
+                df.drop(
+                    columns=[
+                        column for column in shared_columns if column in df.columns
+                    ]
+                ),
                 left_index=True,
                 right_index=True,
                 how="inner",
@@ -335,13 +388,35 @@ def show() -> None:
 
     # Category filters (optional)
     cat_filters: Dict[str, Set[str]] = {}
+    sample_file = RAW_MAP.get((ds_sel, models_sel[0]))
+    sample_df = load_csv(sample_file) if sample_file else None
+    source_language_col, target_language_col = _translation_language_columns(meta)
+    language_columns = {
+        column
+        for column in (source_language_col, target_language_col)
+        if column
+    }
+
+    if sample_df is not None and language_columns:
+        with st.sidebar.expander("Translation languages", expanded=True):
+            for label, column in (
+                ("Source language", source_language_col),
+                ("Target language", target_language_col),
+            ):
+                if column and column in sample_df.columns:
+                    selected = st.multiselect(
+                        label,
+                        _category_values(sample_df, column),
+                        key=f"{column}_{ds_sel}",
+                    )
+                    if selected:
+                        cat_filters[column] = set(selected)
+
     if meta["category_cols"]:
         with st.sidebar.expander("Category filters", expanded=False):
-            # Pick a sample raw file just to enumerate possible values
-            sample_file = RAW_MAP.get((ds_sel, models_sel[0]))
-            sample_df = load_csv(sample_file) if sample_file else None
-
             for col in meta["category_cols"]:
+                if col in language_columns:
+                    continue
                 if sample_df is not None and col in sample_df.columns:
                     vals = _category_values(sample_df, col)
                     sel = st.multiselect(
@@ -356,6 +431,19 @@ def show() -> None:
     show_raw = st.sidebar.checkbox(
         "Show raw model output", value=False, key=f"show_raw_{ds_sel}"
     )
+    language_view = "both"
+    if language_columns:
+        language_view = st.sidebar.radio(
+            "Translation row view",
+            options=["both", "source", "target"],
+            format_func={
+                "both": "Source and target",
+                "source": "Source only",
+                "target": "Target only",
+            }.get,
+            horizontal=True,
+            key=f"translation_view_{ds_sel}",
+        )
 
     # Build UI tabs
     summary_cols = st.columns(3)
@@ -373,7 +461,12 @@ def show() -> None:
     # ---------------------------------------------------------------- #
     with row_tab:
         merged_df, warnings = _collect_row_tables(
-            ds_sel, models_sel, meta, cat_filters, show_raw
+            ds_sel,
+            models_sel,
+            meta,
+            cat_filters,
+            show_raw,
+            language_view,
         )
         if show_raw and all((ds_sel, m) not in RAW_MAP for m in models_sel):
             st.info("Raw outputs are not available for the selected model(s).")

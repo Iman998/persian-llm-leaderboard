@@ -88,3 +88,71 @@ def test_category_styles_compare_models_within_each_row():
     assert ("background-color", "#e8a4a4") in styler.ctx[(1, 1)]
     assert ("background-color", "#73ad87") in styler.ctx[(1, 2)]
     assert (0, 0) not in styler.ctx
+
+
+def test_collect_translation_rows_can_show_source_and_target_separately(
+    tmp_path, monkeypatch
+):
+    raw_file = tmp_path / "model_raw.csv"
+    pd.DataFrame(
+        {
+            "text": ["سلام"],
+            "gold_translation": ["hello"],
+            "src_language": ["Persian"],
+            "tgt_lang": ["English"],
+            "pred": ["hello"],
+        }
+    ).to_csv(raw_file, index=False)
+    monkeypatch.setattr(
+        dataset_view,
+        "RAW_MAP",
+        {("zharfa_translate", "model"): Path(raw_file)},
+    )
+    meta = {
+        "question_col": "text",
+        "answer_col": "gold_translation",
+        "choice_cols": [],
+        "source_text_col": "text",
+        "target_text_col": "gold_translation",
+        "source_language_col": "src_language",
+        "target_language_col": "tgt_lang",
+    }
+
+    both, _ = dataset_view._collect_row_tables(
+        "zharfa_translate", ["model"], meta, {}, False, "both"
+    )
+    source, _ = dataset_view._collect_row_tables(
+        "zharfa_translate", ["model"], meta, {}, True, "source"
+    )
+    target, _ = dataset_view._collect_row_tables(
+        "zharfa_translate", ["model"], meta, {}, False, "target"
+    )
+
+    assert both.columns.tolist() == [
+        "Source Text",
+        "Source Language",
+        "Target Text",
+        "Target Language",
+        "model",
+    ]
+    assert source.columns.tolist() == ["Source Text", "Source Language"]
+    assert target.columns.tolist() == ["Target Text", "Target Language", "model"]
+
+
+def test_translation_language_filters_are_independent():
+    df = pd.DataFrame(
+        {
+            "src_language": ["Persian", "Persian", "English"],
+            "tgt_lang": ["English", "Arabic", "Persian"],
+        }
+    )
+
+    filtered = dataset_view._filter_by_categories(
+        df,
+        {
+            "src_language": {"Persian"},
+            "tgt_lang": {"Arabic"},
+        },
+    )
+
+    assert filtered.index.tolist() == [1]

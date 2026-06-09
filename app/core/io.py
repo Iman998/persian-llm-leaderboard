@@ -43,6 +43,10 @@ def load_meta(ds_name: str) -> Dict[str, object]:
         "language":     cfg.get("language", ""),
         "description":  cfg.get("description", ""),
         "board":        cfg.get("board", "leaderboard"),
+        "source_text_col": cfg.get("source_text_col"),
+        "target_text_col": cfg.get("target_text_col"),
+        "source_language_col": cfg.get("source_language_col"),
+        "target_language_col": cfg.get("target_language_col"),
     }
 
 

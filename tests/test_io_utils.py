@@ -49,6 +49,10 @@ def test_load_meta_fallback(tmp_path, monkeypatch):
         "language": "",
         "description": "",
         "board": "leaderboard",
+        "source_text_col": None,
+        "target_text_col": None,
+        "source_language_col": None,
+        "target_language_col": None,
     }
 
     # Dataset with partial meta.yaml
@@ -63,6 +67,10 @@ def test_load_meta_fallback(tmp_path, monkeypatch):
     assert partial["choice_cols"] == []
     assert partial["description"] == ""
     assert partial["board"] == "leaderboard"
+    assert partial["source_text_col"] is None
+    assert partial["target_text_col"] is None
+    assert partial["source_language_col"] is None
+    assert partial["target_language_col"] is None
 
 
 def test_numeric_cols():
