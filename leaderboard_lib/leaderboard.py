@@ -130,6 +130,7 @@ def main(board: str | None = None) -> None:
             "drop_f1": "F1",
             "bbh_accuracy": "Accuracy",
             "qqp_f1": "F1",
+            "nli_macro_f1": "Macro F1",
             "f1": "F1",
             "bleu": "BLEU",
             "chrf": "chrF",

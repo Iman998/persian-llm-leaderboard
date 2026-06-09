@@ -1,0 +1,23 @@
+board: leaderboard
+
+task: nli
+metrics: [accuracy, nli_macro_f1]
+evaluator: evaluators/parsinlu_entailment_evaluator.py
+prompt_template: prompts/parsinlu_entailment.jinja2
+question_col: sentence_1
+hypothesis_col: sentence_2
+answer_col: relation_label
+language: fa
+
+category_cols:
+  - data_source
+
+description: "ParsiNLU Persian natural language inference benchmark, 1,673 labeled examples from the official test split"
+source_url: "https://github.com/persiannlp/parsinlu"
+data_url: "https://raw.githubusercontent.com/persiannlp/parsinlu/master/data/entailment/test.csv"
+source_split: test
+source_rows: 1675
+excluded_unlabeled_rows: 2
+source_sha256: "cb25c16b51dd5a61ed832be9fee6a4d9eb6b645e5f2caa8ebb665ed190ffdebd"
+converted_data_sha256: "3283dbaa44f506c82b8106250bd602a492a08b7e0cf47792647ef7472329ead9"
+license: "CC BY-NC-SA 4.0"
