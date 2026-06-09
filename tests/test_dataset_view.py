@@ -40,3 +40,51 @@ def test_collect_row_tables_prefers_metadata_answer_column(tmp_path, monkeypatch
     assert warnings == []
     assert table is not None
     assert table["Gold"].tolist() == [2]
+    assert table["model"].tolist() == [2]
+    assert isinstance(table["model"].iloc[0], int)
+
+
+def test_display_prediction_removes_only_integral_decimal_suffixes():
+    assert dataset_view._display_prediction(2.0) == 2
+    assert isinstance(dataset_view._display_prediction(2.0), int)
+    assert dataset_view._display_prediction("3.0") == 3
+    assert dataset_view._display_prediction(2.5) == 2.5
+    assert dataset_view._display_prediction("option A") == "option A"
+
+
+def test_row_output_styles_gold_and_prediction_correctness():
+    df = pd.DataFrame(
+        {
+            "Question": ["q1", "q2"],
+            "Gold": ["A", "B"],
+            "model": ["A", "C"],
+        }
+    )
+
+    styler = dataset_view._style_row_outputs(df, ["model"])
+    styler._compute()
+
+    assert ("background-color", "#f4e7b2") in styler.ctx[(0, 1)]
+    assert ("background-color", "#73ad87") in styler.ctx[(0, 2)]
+    assert ("background-color", "#e8a4a4") in styler.ctx[(1, 2)]
+
+
+def test_category_styles_compare_models_within_each_row():
+    df = pd.DataFrame(
+        {
+            "Category": ["easy", "hard"],
+            "model-a": [90.0, 20.0],
+            "model-b": [40.0, 80.0],
+        }
+    )
+
+    styler = dataset_view._style_category_scores(
+        df, "Category", ["model-a", "model-b"]
+    )
+    styler._compute()
+
+    assert ("background-color", "#73ad87") in styler.ctx[(0, 1)]
+    assert ("background-color", "#e8a4a4") in styler.ctx[(0, 2)]
+    assert ("background-color", "#e8a4a4") in styler.ctx[(1, 1)]
+    assert ("background-color", "#73ad87") in styler.ctx[(1, 2)]
+    assert (0, 0) not in styler.ctx
