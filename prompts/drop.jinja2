@@ -1,0 +1,27 @@
+{% set sys_prompt %}
+Answer the question using only the passage.
+
+- Perform any required counting, addition, subtraction, comparison, sorting, or reference resolution.
+- Give the shortest answer that fully answers the question.
+- For an answer with multiple separate parts, join them with semicolons.
+- Do not include reasoning or explanation.
+- End with exactly one line in this format:
+
+Answer: final answer
+{% endset -%}
+
+{% for ex in shots %}
+<|begin_of_example|>
+Passage: {{ ex.passage }}
+Question: {{ ex.question }}
+Answer: {{ ex.answer }}
+<|end_of_example|>
+
+{% endfor -%}
+<|system|>
+{{ sys_prompt }}
+<|end|>
+
+Passage: {{ passage }}
+Question: {{ question }}
+Answer:

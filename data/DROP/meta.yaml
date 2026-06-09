@@ -1,0 +1,20 @@
+board: leaderboard
+
+task: open_ended
+metrics: [drop_exact_match, drop_f1]
+evaluator: evaluators/drop_evaluator.py
+prompt_template: prompts/drop.jinja2
+question_col: question
+passage_col: passage
+answer_col: accepted_answers
+canonical_answer_col: canonical_answer
+language: en
+
+description: "DROP reading comprehension and discrete reasoning benchmark, official labeled development split"
+source_url: "https://arxiv.org/abs/1903.00161"
+data_url: "https://s3-us-west-2.amazonaws.com/allennlp/datasets/drop/drop_dataset.zip"
+source_split: development
+source_archive_sha256: "39d2278a29fd729de301b111a45f434c24834f40df8f4ff116d864589e3249d6"
+source_data_sha256: "f25f09a9e939e946dbb37799b3b3e2c2a9f7416e524017cc4a79780f2ba6edca"
+evaluation_source_sha256: "589abfbb8a85760cdb3d30381068acb4545c82076311c2da5a112e283193e0a2"
+license: "CC BY-SA 4.0"
