@@ -19,4 +19,10 @@ task: multiple_choice
 metrics: [accuracy]
 evaluator: evaluators/mcq_evaluator.py
 prompt_template: prompts/Persian_mcq_fewshot.jinja2
-description: "parsinlu multiple choice benchmark"
+description: "ParsiNLU multiple-choice question answering benchmark, official labeled test split"
+source_url: "https://github.com/persiannlp/parsinlu"
+data_url: "https://raw.githubusercontent.com/persiannlp/parsinlu/master/data/multiple-choice/test.jsonl"
+source_split: test
+source_sha256: "d833a454985866cdc46e60a1fa39e0f1198602e2814a94300e6b4e7135d9d57b"
+converted_data_sha256: "4b06dc8d2aa6d47117e9024f32bfe1f38fdb2c0965b5bc53406ed9a04933f988"
+license: "CC BY-NC-SA 4.0"
