@@ -1,0 +1,21 @@
+board: leaderboard
+
+question_col: sentence
+choice_cols:
+  - choice1
+  - choice2
+answer_col: answer
+language: en
+
+task: multiple_choice
+metrics: [accuracy]
+evaluator: evaluators/winogrande_evaluator.py
+prompt_template: prompts/winogrande.jinja2
+description: "WinoGrande commonsense coreference benchmark, official v1.1 XL labeled development split"
+source_url: "https://arxiv.org/abs/1907.10641"
+data_url: "https://github.com/allenai/winogrande"
+mirror_url: "https://huggingface.co/datasets/allenai/winogrande"
+source_version: "1.1"
+source_config: "winogrande_xl"
+source_split: validation
+source_sha256: "f9d914d1818c0aba98cabdf8af2bc4bd943c462b9c5e7062647e05c2ce3315d1"

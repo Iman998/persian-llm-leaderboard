@@ -1,0 +1,33 @@
+{% set sys_prompt %}
+Choose the option that correctly fills the blank in the sentence.
+
+- Replace the underscore with each candidate and compare the completed sentences.
+- Use grammar, context, and everyday commonsense.
+- Briefly explain your choice in English.
+- End with exactly this line:
+
+Correct option: ****n****
+
+where n is 1 or 2.
+{% endset -%}
+
+{% for ex in shots %}
+<|begin_of_example|>
+Sentence: {{ ex.question }}
+{% for i, choice in enumerate(ex.choices, 1) -%}
+{{ i }}) {{ choice }}
+{% endfor %}
+Correct option: ****{{ ex.answer }}****
+<|end_of_example|>
+
+{% endfor -%}
+<|system|>
+{{ sys_prompt }}
+<|end|>
+
+Sentence: {{ question }}
+{% for i, choice in enumerate(choices, 1) -%}
+{{ i }}) {{ choice }}
+{% endfor %}
+
+Explain briefly, then write the final line exactly as specified.
