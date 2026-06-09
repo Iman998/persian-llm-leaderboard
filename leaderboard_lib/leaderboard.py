@@ -125,6 +125,7 @@ def main(board: str | None = None) -> None:
             "math_equivalence": "Math Accuracy",
             "triviaqa_exact_match": "Exact Match",
             "triviaqa_f1": "F1",
+            "nq_open_exact_match": "Exact Match",
             "f1": "F1",
             "bleu": "BLEU",
             "chrf": "chrF",

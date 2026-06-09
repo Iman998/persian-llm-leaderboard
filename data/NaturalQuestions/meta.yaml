@@ -1,0 +1,19 @@
+board: leaderboard
+
+task: open_ended
+metrics: [nq_open_exact_match]
+evaluator: evaluators/natural_questions_evaluator.py
+prompt_template: prompts/natural_questions.jinja2
+question_col: question
+answer_col: accepted_answers
+canonical_answer_col: canonical_answer
+language: en
+
+description: "Natural Questions open-domain question answering benchmark, official NQ-Open development split"
+source_url: "https://github.com/google-research-datasets/natural-questions"
+data_url: "https://github.com/google-research-datasets/natural-questions/tree/master/nq_open"
+source_config: "NQ-Open"
+source_split: development
+source_sha256: "f15567f38099f3615f5b8a685c0aef449c11ad90d3da3735e8d1b98115b40616"
+evaluation_source_sha256: "836ebd62fc7f7e9b16bdb21dd0a24945e16dd67aa25defcac2c7500f9705a1d8"
+license: "CC BY-SA 3.0"

@@ -1,0 +1,23 @@
+{% set sys_prompt %}
+Answer the open-domain factual question with a concise English answer.
+
+- Give only the shortest answer that correctly identifies the requested fact.
+- Do not include reasoning, citations, or supporting explanation.
+- End with exactly one line in this format:
+
+Answer: final answer
+{% endset -%}
+
+{% for ex in shots %}
+<|begin_of_example|>
+Question: {{ ex.question }}
+Answer: {{ ex.answer }}
+<|end_of_example|>
+
+{% endfor -%}
+<|system|>
+{{ sys_prompt }}
+<|end|>
+
+Question: {{ question }}
+Answer:
