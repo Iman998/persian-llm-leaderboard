@@ -12,8 +12,6 @@ import numpy as np
 import pandas as pd
 from matplotlib import cm, colors as mcolors
 
-from .io import numeric_cols
-
 import streamlit as st
 
 __all__ = [
@@ -410,8 +408,37 @@ def _medal_colors(avgs: pd.Series) -> List[str]:
     """Return a list of gold/silver/bronze hex colours by rank."""
     ranks = avgs.rank(method="first", ascending=False, na_option="bottom")
     ranks = ranks.fillna(len(avgs) + 1).astype(int)
-    medal_map = {1: "#F6E7A6", 2: "#E6E9E7", 3: "#E8C9AD"}
+    medal_map = {
+        1: "#FFD700",
+        2: "#A7ADB2",
+        3: "#A66F45",
+    }
     return [medal_map.get(r, "") for r in ranks]
+
+
+def _column_leaf(column: object) -> str:
+    """Return the visible label for flat and grouped columns."""
+    return str(column[-1] if isinstance(column, tuple) else column)
+
+
+def _score_columns(df: pd.DataFrame) -> List[object]:
+    """Return model-score columns, excluding numeric metadata."""
+    metadata = {
+        "Rank",
+        "Model Type",
+        "Train Type",
+        "Model",
+        "Parameters",
+        "Active Parameters",
+        "Organization",
+        "License",
+    }
+    return [
+        column
+        for column in df.columns
+        if _column_leaf(column) not in metadata
+        and pd.api.types.is_numeric_dtype(df[column])
+    ]
 
 
 def _contrast_color(hex_color: str) -> str:
@@ -423,15 +450,27 @@ def _contrast_color(hex_color: str) -> str:
 
 def apply_gradient(df: pd.DataFrame) -> pd.io.formats.style.Styler:
     """
-    Colour numeric columns with a soft green gradient and apply
-    custom colouring rules for other columns.
-    The top‑3 ``Average`` rows receive medal backgrounds.
+    Compare every score vertically across models using a red-to-green scale.
+    The top three models in each score column receive medal backgrounds.
     """
-    numeric = numeric_cols(df)
+    score_columns = _score_columns(df)
     styler = df.style
-    if numeric:
+
+    def _column(label: str) -> object | None:
+        if label in df.columns:
+            return label
+        return next(
+            (
+                column
+                for column in df.columns
+                if isinstance(column, tuple) and column[-1] == label
+            ),
+            None,
+        )
+
+    if score_columns:
         norms = {}
-        for col in numeric:
+        for col in score_columns:
             vals = pd.to_numeric(df[col], errors="coerce")
             vmin, vmax = vals.min(), vals.max()
             if np.isnan(vmin) or np.isnan(vmax) or vmin == vmax:
@@ -448,7 +487,7 @@ def apply_gradient(df: pd.DataFrame) -> pd.io.formats.style.Styler:
             text = _contrast_color(colour)
             return f"background-color:{colour};color:{text}"
 
-        for col in numeric:
+        for col in score_columns:
             norm = norms[col]
             styler = _map_styles(
                 styler,
@@ -475,7 +514,12 @@ def apply_gradient(df: pd.DataFrame) -> pd.io.formats.style.Styler:
         text = _contrast_color(colour)
         return f"background-color:{colour};color:{text}"
 
-    for col in [c for c in ["Parameters", "Active Parameters"] if c in df.columns]:
+    parameter_columns = [
+        column
+        for label in ("Parameters", "Active Parameters")
+        if (column := _column(label)) is not None
+    ]
+    for col in parameter_columns:
         norm = _param_column_style(df[col])
         df[col] = df[col].astype(str).str.replace("B", "", regex=False)
         styler = _map_styles(
@@ -485,7 +529,8 @@ def apply_gradient(df: pd.DataFrame) -> pd.io.formats.style.Styler:
         )
 
     # License column colours
-    if "License" in df.columns:
+    license_column = _column("License")
+    if license_column is not None:
         def _license_style(val: str) -> str:
             v = str(val).strip().lower()
             if v == "proprietary":
@@ -497,10 +542,11 @@ def apply_gradient(df: pd.DataFrame) -> pd.io.formats.style.Styler:
             text = _contrast_color(colour)
             return f"background-color:{colour};color:{text}"
 
-        styler = _map_styles(styler, _license_style, subset=["License"])
+        styler = _map_styles(styler, _license_style, subset=[license_column])
 
     # Highlight specific organization
-    if "Organization" in df.columns:
+    organization_column = _column("Organization")
+    if organization_column is not None:
         def _org_style(val: str) -> str:
             if str(val).strip() == "ZharfaTech":
                 colour = "#dcece1"
@@ -508,23 +554,55 @@ def apply_gradient(df: pd.DataFrame) -> pd.io.formats.style.Styler:
                 return f"background-color:{colour};color:{text}"
             return ""
 
-        styler = _map_styles(styler, _org_style, subset=["Organization"])
+        styler = _map_styles(
+            styler,
+            _org_style,
+            subset=[organization_column],
+        )
 
-    if "Average" in df.columns:
-        avgs = df["Average"].astype(float)
-        medals = _medal_colors(avgs)
+    for score_column in score_columns:
+        scores = pd.to_numeric(df[score_column], errors="coerce")
+        medals = _medal_colors(scores)
 
-        def _rowstyles(_: pd.Series) -> List[str]:
+        def _rowstyles(
+            _: pd.Series,
+            medal_colors: List[str] = medals,
+        ) -> List[str]:
             return [
                 f"background-color:{m};color:{_contrast_color(m)}" if m else ""
-                for m in medals
+                for m in medal_colors
             ]
 
-        styler = styler.apply(_rowstyles, subset=["Average"], axis=0)
-        if "Model" in df.columns:
-            styler = styler.apply(_rowstyles, subset=["Model"], axis=0)
-        if "Rank" in df.columns:
-            styler = styler.apply(_rowstyles, subset=["Rank"], axis=0)
+        styler = styler.apply(_rowstyles, subset=[score_column], axis=0)
+
+    average_column = _column("Average")
+    if average_column is not None:
+        average_medals = _medal_colors(
+            pd.to_numeric(df[average_column], errors="coerce")
+        )
+
+        def _average_rowstyles(_: pd.Series) -> List[str]:
+            return [
+                f"background-color:{colour};color:{_contrast_color(colour)}"
+                if colour
+                else ""
+                for colour in average_medals
+            ]
+
+        model_column = _column("Model")
+        if model_column is not None:
+            styler = styler.apply(
+                _average_rowstyles,
+                subset=[model_column],
+                axis=0,
+            )
+        rank_column = _column("Rank")
+        if rank_column is not None:
+            styler = styler.apply(
+                _average_rowstyles,
+                subset=[rank_column],
+                axis=0,
+            )
 
     return styler
 

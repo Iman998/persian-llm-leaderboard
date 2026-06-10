@@ -216,7 +216,7 @@ def show() -> None:
         "transparent dataset-level scores and model metadata.",
     )
 
-    summary_cols = st.columns(4)
+    summary_cols = st.columns([1, 1.6, 1, 1])
     summary_cols[0].metric("Models ranked", f"{len(board_df):,}")
     summary_cols[1].metric(
         "Top model",
