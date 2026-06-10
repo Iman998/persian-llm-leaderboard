@@ -2,15 +2,79 @@
 
 from __future__ import annotations
 
+import re
+
+import pandas as pd
 import streamlit as st
 
 from core.paths import (
     TRANSLATION_CSV,
-    DATASETS_DIR,
 )
-from core.io import load_csv, load_meta
-from core.style import apply_gradient, page_header, render_styler
+from core.io import load_csv
+from core.style import SCORE_CMAP, page_header, render_styler
 from .leaderboard import _build_leaderboard_if_missing, _render_quick_chart
+
+_METRIC_COLUMN = re.compile(r"^(?P<dataset>.+) \((?P<metric>[^()]+)\)$")
+
+
+def _split_metric_column(column: object) -> tuple[str, str] | None:
+    """Split a flat ``dataset (metric)`` leaderboard column."""
+    match = _METRIC_COLUMN.fullmatch(str(column))
+    if not match:
+        return None
+    return match.group("dataset"), match.group("metric")
+
+
+def _group_translation_columns(df: pd.DataFrame) -> pd.DataFrame:
+    """Return a copy with datasets as headers and metrics as subheaders."""
+    grouped = df.copy()
+    grouped.columns = pd.MultiIndex.from_tuples(
+        [
+            _split_metric_column(column) or ("", str(column))
+            for column in grouped.columns
+        ]
+    )
+    return grouped
+
+
+def _add_dataset_averages(df: pd.DataFrame) -> pd.DataFrame:
+    """Add an average metric column for every translation dataset."""
+    result = df.copy()
+    dataset_metrics: dict[str, list[str]] = {}
+    for column in df.columns:
+        metric_column = _split_metric_column(column)
+        if metric_column:
+            dataset, metric = metric_column
+            if metric != "Average":
+                dataset_metrics.setdefault(dataset, []).append(str(column))
+
+    for dataset, columns in dataset_metrics.items():
+        average_column = f"{dataset} (Average)"
+        values = result[columns].apply(pd.to_numeric, errors="coerce")
+        average = values.mean(axis=1).round(5)
+        insert_at = max(result.columns.get_loc(column) for column in columns) + 1
+        result.insert(insert_at, average_column, average)
+
+    return result
+
+
+def _style_translation_table(
+    df: pd.DataFrame,
+) -> pd.io.formats.style.Styler:
+    """Apply score gradients while preserving grouped column headers."""
+    metric_columns = [
+        column
+        for column in df.columns
+        if isinstance(column, tuple) and bool(column[0])
+    ]
+    styler = df.style
+    if metric_columns:
+        styler = styler.background_gradient(
+            cmap=SCORE_CMAP,
+            axis=0,
+            subset=metric_columns,
+        )
+    return styler.format(precision=5, na_rep="")
 
 
 def show() -> None:
@@ -30,7 +94,9 @@ def show() -> None:
         "METEOR, chrF, and translation error rate.",
     )
 
-    metric_cols = [column for column in board_df.columns if " (" in column]
+    metric_cols = [
+        column for column in board_df.columns if _split_metric_column(column)
+    ]
     summary_cols = st.columns(3)
     summary_cols[0].metric("Models ranked", f"{len(board_df):,}")
     summary_cols[1].metric("Metrics", f"{len(metric_cols):,}")
@@ -45,31 +111,13 @@ def show() -> None:
     rank_col = [medals.get(r, str(r)) for r in ranks]
     board_df.insert(0, "Rank", rank_col)
 
-    col_cfg: dict[str, st.column_config.Column] = {}
-    if "Language Average" in board_df.columns:
-        col_cfg["Language Average"] = st.column_config.NumberColumn(
-            "Language Average",
-            help="(English Average × 2/3) + (Persian Average × 1/3)",
-        )
-
-    desc_map = {}
-    for p in DATASETS_DIR.iterdir():
-        if p.is_dir():
-            meta = load_meta(p.name)
-            desc = meta.get("description")
-            if desc:
-                desc_map[p.name] = desc
-
-    for col in board_df.columns:
-        if " (" in col and col.endswith(")"):
-            ds = col.split(" (", 1)[0]
-            desc = desc_map.get(ds)
-            if desc:
-                col_cfg[col] = st.column_config.NumberColumn(col, help=desc)
-
-    render_styler(apply_gradient(board_df), column_config=col_cfg or None)
+    board_df = _add_dataset_averages(board_df)
+    grouped_df = _group_translation_columns(board_df)
+    render_styler(_style_translation_table(grouped_df))
     _render_quick_chart(board_df)
 
     st.download_button(
-        "↓  Download CSV", board_path.read_bytes(), file_name=board_path.name
+        "↓  Download CSV",
+        grouped_df.to_csv(index=False).encode(),
+        file_name=board_path.name,
     )
