@@ -1,0 +1,19 @@
+{% if language == "zh" -%}
+请回答以下考试题。{% if question_type == "mcq" %}请选择正确选项，并在最后一行写“答案：X”。{% else %}请解题，并在最后一行写“答案：X”。{% endif %}
+{% else -%}
+Answer the following exam problem. {% if question_type == "mcq" %}Choose the correct option and write "Final answer: X" on the last line.{% else %}Solve the problem and write "Final answer: X" on the last line.{% endif %}
+{% endif %}
+{% for shot in shots %}
+
+{% if shot.passage %}{{ shot.passage }}
+{% endif %}{{ shot.question }}
+{% for choice in shot.choices %}{{ choice }}
+{% endfor %}
+{% if language == "zh" %}答案：{{ shot.answer }}{% else %}Final answer: {{ shot.answer }}{% endif %}
+{% endfor %}
+
+{% if passage %}{{ passage }}
+{% endif %}{{ question }}
+{% for choice in choices %}{{ choice }}
+{% endfor %}
+{% if language == "zh" %}答案：{% else %}Final answer:{% endif %}

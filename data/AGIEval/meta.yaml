@@ -1,0 +1,34 @@
+board: leaderboard
+
+task: mixed_exam_reasoning
+metrics: [agieval_accuracy]
+evaluator: evaluators/agieval_evaluator.py
+prompt_template: prompts/agieval.jinja2
+question_col: question
+answer_col: scoring_key
+target_col: target
+passage_col: passage
+task_col: task
+question_type_col: question_type
+language_col: language
+choice_cols:
+  - choice1
+  - choice2
+  - choice3
+  - choice4
+  - choice5
+language: multilingual
+
+category_cols:
+  - language
+  - question_type
+  - task
+
+description: "AGIEval v1.1 human-centric admission and qualification exam benchmark, 7,272 examples across 21 official task variants"
+source_url: "https://arxiv.org/abs/2304.06364"
+data_url: "https://github.com/ruixiangcui/AGIEval"
+source_revision: "84ab72d94318290aad2e4ec820d535a95a1f7552"
+source_split: "official v1.1 evaluation data"
+source_data_sha256: "865eb3e709cc8e032463a736e22dd06098f3bc48e166196ad975aad0df25e012"
+converted_data_sha256: "d67cb5816bd1f84c974808559b12f3087d0535b887f0184d4b51f6fe4a1e91b1"
+license: "Mixed: MIT, Apache-2.0, CC BY-NC-SA 4.0, and research-only JEC-QA; see upstream data/v1_1/LICENSE"
