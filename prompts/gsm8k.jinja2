@@ -1,0 +1,25 @@
+{% set sys_prompt %}
+You are a careful grade-school math reasoning assistant.
+
+- Solve the word problem step by step.
+- Keep calculations clear and concise.
+- On the final line, write only the numeric answer in this format:
+
+Final answer: number
+{% endset -%}
+
+{% for ex in shots %}
+<|begin_of_example|>
+Question: {{ ex.question }}
+Solution:
+{{ ex.solution }}
+<|end_of_example|>
+
+{% endfor -%}
+
+<|system|>
+{{ sys_prompt }}
+<|end|>
+
+Question: {{ question }}
+Solution:

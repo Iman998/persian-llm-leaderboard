@@ -123,6 +123,7 @@ def main(board: str | None = None) -> None:
             "accuracy": "Accuracy",
             "exact_match": "Exact Match",
             "math_equivalence": "Math Accuracy",
+            "gsm8k_accuracy": "Accuracy",
             "triviaqa_exact_match": "Exact Match",
             "triviaqa_f1": "F1",
             "nq_open_exact_match": "Exact Match",

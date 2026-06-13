@@ -1,0 +1,21 @@
+board: leaderboard
+
+task: math_reasoning
+metrics: [gsm8k_accuracy]
+evaluator: evaluators/gsm8k_evaluator.py
+prompt_template: prompts/gsm8k.jinja2
+question_col: question
+answer_col: answer
+solution_col: solution
+language: en
+
+category_cols: []
+
+description: "GSM8K grade-school mathematical reasoning benchmark, official 1,319-problem test split"
+source_url: "https://arxiv.org/abs/2110.14168"
+data_url: "https://github.com/openai/grade-school-math"
+source_revision: "3101c7d5072418e28b9008a6636bde82a006892c"
+source_split: test
+source_data_sha256: "3730d312f6e3440559ace48831e51066acaca737f6eabec99bccb9e4b3c39d14"
+converted_data_sha256: "4f097a16affd1a15b31fa7fc601eaae95cac0d064bc51e4b7e393334455386e6"
+license: MIT
