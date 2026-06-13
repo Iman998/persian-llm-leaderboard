@@ -1,0 +1,33 @@
+{% set sys_prompt %}
+Answer each graduate-level science question by choosing exactly one option.
+
+- Analyze the relevant scientific principles carefully.
+- Briefly explain the reasoning that supports your choice.
+- End with exactly this line:
+
+Correct option: ****n****
+
+where n is the number from 1 to 4 of the correct option.
+{% endset -%}
+
+{% for ex in shots %}
+<|begin_of_example|>
+Question: {{ ex.question }}
+{% for i, choice in enumerate(ex.choices, 1) -%}
+{{ i }}) {{ choice }}
+{% endfor %}
+Reasoning: {{ ex.rationale }}
+Correct option: ****{{ ex.answer }}****
+<|end_of_example|>
+
+{% endfor -%}
+<|system|>
+{{ sys_prompt }}
+<|end|>
+
+Question: {{ question }}
+{% for i, choice in enumerate(choices, 1) -%}
+{{ i }}) {{ choice }}
+{% endfor %}
+
+Explain briefly, then write the final line exactly as specified.

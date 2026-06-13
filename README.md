@@ -64,7 +64,6 @@ This project provides an intuitive interface for comparing and benchmarking vari
 
 Detailed setup and usage instructions are available in the [DOCUMENTATION.md](./DOCUMENTATION.md).
 
-
 To start the dashboard:
 
 ```bash
@@ -79,6 +78,7 @@ To evaluate all models:
 ```bash
 bash run_all.sh
 ```
+
 The script now reads each dataset's `meta.yaml` to determine the
 appropriate evaluator, prompt template, metrics and judge flag.
 This includes fairness metrics like TPR, FPR, Bias Score and Toxicity Rate when applicable.
@@ -95,19 +95,24 @@ bash run_all.sh --n_rows 250
 The script also writes `leaderboard_fa.csv` and `leaderboard_en.csv` filtered by the dataset language.
 The Streamlit dashboard will also attempt to build the leaderboard automatically when results are present but the CSV is missing.
 
-
 ### Multiple ROUGE metrics
+
 Datasets can request any combination of ROUGE-1, ROUGE-2 and ROUGE-L. For example:
+
 ```yaml
 metrics: [rouge1, rouge2, rougel]
 ```
+
 You can also override the list when calling `scripts/run_eval.py`:
+
 ```bash
 python scripts/run_eval.py --dataset data/summarization/test.csv \
     --model MY_MODEL --metrics rouge1,rouge2,rougel \
     --out results/summarization/MY_MODEL.csv
 ```
+
 If several ROUGE metrics are provided their scores are averaged.
+
 ## 🤖 LLM Judge Evaluation
 
 Some datasets use a second model to "judge" the quality of a candidate answer. Judge evaluation runs only when
