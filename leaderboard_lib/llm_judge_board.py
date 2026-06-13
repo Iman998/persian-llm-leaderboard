@@ -19,6 +19,8 @@ COL_ORDER: List[str] = [
     "Model Type",
     "Model",
     "Average",
+    "zharfa_translate (Reference Score)",
+    "zharfa_translate (No-reference Score)",
     "summarization_quality (Score)",
     "translation_quality (Score)",
 ]
@@ -87,6 +89,18 @@ def main() -> None:
         }
         return mapping.get(name, name)
 
+    def _judge_result_info(dataset: str) -> tuple[str, str] | None:
+        modes = {
+            "_judge_reference": "Reference",
+            "_judge_no_reference": "No-reference",
+        }
+        for suffix, label in modes.items():
+            if dataset.endswith(suffix):
+                return dataset[: -len(suffix)], label
+        if dataset.endswith("_judge"):
+            return dataset[:-6], ""
+        return None
+
     for csv_path in Path(args.results_dir).rglob("*.csv"):
         m = file_re.match(csv_path.name)
         if not m:
@@ -99,16 +113,23 @@ def main() -> None:
         if suffix or dataset.endswith(("raw", "Level")):
             continue
 
+        judge_result = _judge_result_info(dataset)
+        is_judge_result = judge_result is not None
+        is_legacy_judge_dataset = dataset.endswith("_quality")
+        if not is_judge_result and not is_legacy_judge_dataset:
+            continue
+
         model_yaml = Path(args.models_dir) / f"{model_stub}.yaml"
         if not model_yaml.exists():
             continue
         model_cfg = yaml.safe_load(model_yaml.read_text())
-        model_type = model_cfg.get("type", "Instruct")
+        model_type = model_cfg.get("model_type", model_cfg.get("type", "Instruct"))
         model_name = model_cfg.get("display_name", model_stub)
 
         df = pd.read_csv(csv_path)
 
-        meta_dataset = dataset[:-6] if dataset.endswith("_judge") else dataset
+        meta_dataset = judge_result[0] if judge_result else dataset
+        judge_mode_label = judge_result[1] if judge_result else ""
         meta_file = Path(args.datasets_dir) / meta_dataset / "meta.yaml"
         meta_cfg = {}
         if meta_file.exists():
@@ -120,18 +141,33 @@ def main() -> None:
         if answer_col not in df.columns:
             continue
 
-        metrics = meta_cfg.get("metrics", ["accuracy"])
+        judge_cfg = meta_cfg.get("judge")
+        if is_judge_result and isinstance(judge_cfg, dict):
+            metrics = judge_cfg.get("metrics", ["llm_judge_score"])
+            score_max = judge_cfg.get("score_max", 10)
+        else:
+            metrics = meta_cfg.get("metrics", ["llm_judge_score"])
+            score_max = meta_cfg.get("judge_score_max", 10)
 
         for metric_name in metrics:
             metric_fn = load_metric(metric_name)
             value = metric_fn(df["pred"], df[answer_col])
+            metric_label = _pretty_metric(metric_name)
+            if judge_mode_label and metric_name == "llm_judge_score":
+                metric_label = f"{judge_mode_label} Score"
+            normalized_value = (
+                value / float(score_max)
+                if metric_name == "llm_judge_score" and score_max
+                else value
+            )
             rows.append(
                 {
                     "dataset": meta_dataset,
-                    "metric_label": _pretty_metric(metric_name),
+                    "metric_label": metric_label,
                     "model": model_name,
                     "model_type": model_type,
                     "value": value,
+                    "normalized_value": normalized_value,
                 }
             )
 
@@ -171,10 +207,27 @@ def main() -> None:
         if col not in wide.columns:
             wide[col] = ""
 
-    num_cols = [c for c in wide.columns if c not in {"Model Type", "Model"}]
-    num_vals = wide[num_cols].apply(pd.to_numeric, errors="coerce")
-    counts = num_vals.notna().sum(axis=1)
-    wide["Average"] = (num_vals.sum(axis=1) / counts).round(5).where(counts > 0, "")
+    normalized = (
+        long.pivot_table(
+            index=["model_type", "model"],
+            values="normalized_value",
+            aggfunc="mean",
+        )
+        .reset_index()
+        .rename(
+            columns={
+                "model_type": "Model Type",
+                "model": "Model",
+                "normalized_value": "Average",
+            }
+        )
+    )
+    wide = wide.drop(columns=["Average"], errors="ignore").merge(
+        normalized,
+        on=["Model Type", "Model"],
+        how="left",
+    )
+    wide["Average"] = wide["Average"].round(5)
 
     extra_cols = [c for c in wide.columns if c not in COL_ORDER]
     wide = wide[[c for c in COL_ORDER if c in wide.columns] + extra_cols]

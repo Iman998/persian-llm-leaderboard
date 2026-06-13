@@ -106,22 +106,47 @@ Each model now has its own subfolder containing the main CSV, raw outputs, and p
 
 ### Running LLM Judge Evaluations
 
-Some datasets use a separate model to score candidate answers. Judge evaluation runs only when you pass `--judge` and the
-dataset's `meta.yaml` has `judge: true`:
+Some datasets use a separate model to score candidate answers. Judge
+evaluation runs only when you pass `--judge` and the dataset's `meta.yaml`
+enables it. Prefer a structured configuration:
 
 ```yaml
-judge: true
+judge:
+  enabled: true
+  model: deepseek-chat-judge
+  evaluator: evaluators/judge_evaluator.py
+  reference_prompt_template: prompts/judge_zharfa_translation.jinja2
+  no_reference_prompt_template: prompts/judge_zharfa_translation_noref.jinja2
+  score_min: 0
+  score_max: 100
+  metrics: [llm_judge_score]
 ```
 
-Include the judge datasets in `run_all.sh` or invoke `scripts/run_eval.py` manually. Example:
+Run the candidate and judge passes together:
 
 ```bash
-python scripts/run_eval.py --model JUDGE_MODEL --judge \
-    --dataset data/translation_quality/test.csv \
-    --evaluator evaluators/judge_evaluator.py \
-    --prompt prompts/judge_translation_noref.jinja2 \
-    --out results/translation_quality/JUDGE_MODEL/JUDGE_MODEL.csv
+python scripts/main.py \
+    --models CANDIDATE_MODEL \
+    --datasets zharfa_translate \
+    --judge
 ```
+
+Reuse an existing candidate result without generating it again:
+
+```bash
+python scripts/main.py \
+    --models CANDIDATE_MODEL \
+    --datasets zharfa_translate \
+    --judge \
+    --judge-only \
+    --judge-mode both
+```
+
+The older `judge: true` form remains supported. Use
+`--judge-model MODEL_STUB` to override either form from the command line.
+`--judge-mode` accepts `reference`, `no-reference`, or `both`. Results are
+stored by candidate model under `results/<dataset>_judge_reference/` and
+`results/<dataset>_judge_no_reference/`.
 
 The judge model's YAML file defines the model name and `base_url`, and can
 optionally set `enable_thinking` for reasoning-capable models. Set
@@ -201,9 +226,17 @@ The repository defines several metrics used during evaluation (see the `metrics/
     - Datasets may include any combination of `rouge1`, `rouge2` and `rougel`.
     - `prompt_template`: default prompt template
     - `use_reference`: pass reference text to judge prompts (default `true`)
-    - `judge`: run LLM-judge evaluation after standard scoring (requires `--judge`)
+    - `judge`: configure LLM-judge evaluation after standard scoring (requires `--judge`)
       ```yaml
-      judge: true
+      judge:
+        enabled: true
+        model: deepseek-chat-judge
+        reference_prompt_template: prompts/judge_zharfa_translation.jinja2
+        no_reference_prompt_template: prompts/judge_zharfa_translation_noref.jinja2
+        evaluator: evaluators/judge_evaluator.py
+        score_min: 0
+        score_max: 100
+        metrics: [llm_judge_score]
       ```
 
     * Ensure `scripts/run_eval.py` supports your dataset's format.

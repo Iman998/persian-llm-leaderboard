@@ -12,17 +12,11 @@
 # Any extra CLI flags (e.g. --dry) are forwarded unchanged to the Python
 # orchestrator.  All comments are in English for consistency.
 #
-# Optional environment variables:
-#   RUN_JUDGE=true   → pass the --judge flag to scripts/main.py
+# Judge behavior is configured in the CONFIGURATION block below.
 #------------------------------------------------------------------------------
 
 set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-
-JUDGE_FLAG=""
-if [[ "${RUN_JUDGE:-}" == "true" ]]; then
-  JUDGE_FLAG="--judge"
-fi
 
 # ────────────────────────── CONFIGURATION ──────────────────────────── #
 # Space-separated list of model stubs located in models/<name>.yaml
@@ -41,6 +35,16 @@ SHOTS=3
 
 # Maximum number of Python worker threads (affects evaluator concurrency)
 WORKERS=200
+
+# LLM-as-judge configuration
+#   RUN_JUDGE=true       → run judge evaluation for tagged datasets
+#   JUDGE_ONLY=true      → reuse existing results; never regenerate model output
+#   JUDGE_MODE options   → reference | no-reference | both
+#   JUDGE_MODEL          → model stub from models/<name>.yaml
+RUN_JUDGE=true
+JUDGE_ONLY=true
+JUDGE_MODE="both"
+JUDGE_MODEL="deepseek-chat-judge"
 # ───────────────────────────────────────────────────────────────────── #
 
 #
@@ -48,6 +52,16 @@ WORKERS=200
 #
 MODELS_CSV="$(IFS=,; echo "${MODELS[*]}")"
 DATASETS_CSV="$(IFS=,; echo "${DATASETS[*]}")"
+JUDGE_ARGS=()
+if [[ "${RUN_JUDGE}" == "true" ]]; then
+  JUDGE_ARGS+=(--judge --judge-mode "${JUDGE_MODE}")
+  if [[ -n "${JUDGE_MODEL}" ]]; then
+    JUDGE_ARGS+=(--judge-model "${JUDGE_MODEL}")
+  fi
+  if [[ "${JUDGE_ONLY}" == "true" ]]; then
+    JUDGE_ARGS+=(--judge-only)
+  fi
+fi
 
 #
 # Forward everything to the orchestrator.  If N_ROWS is set (non-empty),
@@ -59,4 +73,5 @@ python3 "${SCRIPT_DIR}/scripts/main.py" \
   ${N_ROWS:+-n "${N_ROWS}"} \
   -s "${SHOTS}" \
   -w "${WORKERS}" \
-  ${JUDGE_FLAG:+$JUDGE_FLAG} "$@"
+  "${JUDGE_ARGS[@]}" \
+  "$@"

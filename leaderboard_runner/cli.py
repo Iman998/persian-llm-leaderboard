@@ -10,6 +10,7 @@ from typing import List
 from .board_builder import rebuild_leaderboard
 from .combo_executor import run_single_combo
 from .io_utils import parse_csv_or_file
+from .meta_utils import JUDGE_MODES
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -55,6 +56,22 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="run LLM-judge evaluation for text-generation or translation tasks",
     )
+    p.add_argument(
+        "--judge-model",
+        default=None,
+        help="override the judge model configured in dataset meta.yaml",
+    )
+    p.add_argument(
+        "--judge-mode",
+        choices=JUDGE_MODES,
+        default="reference",
+        help="judge with the gold reference, without it, or run both passes",
+    )
+    p.add_argument(
+        "--judge-only",
+        action="store_true",
+        help="reuse an existing candidate result CSV without generating it again",
+    )
     p.add_argument("--dry", action="store_true", help="print commands only")
     p.add_argument("--debug", action="store_true", help="verbose logging")
     return p
@@ -68,6 +85,8 @@ def _validate_args(parser: argparse.ArgumentParser, args: argparse.Namespace) ->
         parser.error("--shots must be zero or a positive integer")
     if args.workers <= 0:
         parser.error("--workers must be a positive integer")
+    if args.judge_only and not args.judge:
+        parser.error("--judge-only requires --judge")
 
 
 def main(argv: List[str] | None = None) -> None:
@@ -97,6 +116,9 @@ def main(argv: List[str] | None = None) -> None:
                 shots=args.shots,
                 workers=args.workers,
                 judge=args.judge,
+                judge_model=args.judge_model,
+                judge_mode=args.judge_mode,
+                judge_only=args.judge_only,
                 dry_run=args.dry,
             )
 

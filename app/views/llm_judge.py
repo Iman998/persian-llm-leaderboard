@@ -25,11 +25,16 @@ DATASETS, MAIN_MAP, _RAW_MAP, CAT_MAP = scan_result_maps()
 
 
 def _discover_judge_datasets() -> List[str]:
-    """Return datasets whose name hints at summarisation / translation."""
+    """Return dedicated or legacy judge-result datasets."""
     return [
         ds
         for ds in DATASETS
-        if any(key in ds.lower() for key in ("summarization", "translation"))
+        if "_judge_" in ds.lower()
+        or ds.lower().endswith("_judge")
+        or any(
+            key in ds.lower()
+            for key in ("summarization_quality", "translation_quality")
+        )
     ]
 
 

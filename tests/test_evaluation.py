@@ -177,3 +177,27 @@ def test_save_results_splits_multi_value_category_cells(tmp_path):
     assert topic_df.loc["t1", "Accuracy"] == 50.0
     assert topic_df.loc["t2", "Accuracy"] == 100.0
     assert topic_df.loc["t3", "Accuracy"] == 0.0
+
+
+def test_save_results_averages_judge_scores_by_category(tmp_path):
+    df = pd.DataFrame(
+        {
+            "pred": ["80", "60", "90"],
+            "gold": ["a", "b", "c"],
+            "text": ["q1", "q2", "q3"],
+            "genre": ["news", "news", "fiction"],
+        }
+    )
+    out = tmp_path / "result.csv"
+
+    evaluation.save_results(
+        df,
+        {"category_cols": ["genre"], "metrics": ["llm_judge_score"]},
+        out,
+        answer_col="gold",
+        question_col="text",
+    )
+
+    breakdown = pd.read_csv(tmp_path / "result_genre.csv").set_index("genre")
+    assert breakdown.loc["news", "Score"] == 70.0
+    assert breakdown.loc["fiction", "Score"] == 90.0

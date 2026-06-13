@@ -32,6 +32,9 @@ def test_runner_cli_combinations(monkeypatch):
         shots=3,
         workers=1,
         judge=False,
+        judge_model=None,
+        judge_mode="reference",
+        judge_only=False,
         dry=False,
         debug=False,
     )
@@ -56,3 +59,6 @@ def test_runner_cli_rejects_invalid_numeric_args(monkeypatch):
 
     with pytest.raises(SystemExit):
         cli.main(["-m", "m", "-d", "d", "-w", "0"])
+
+    with pytest.raises(SystemExit):
+        cli.main(["-m", "m", "-d", "d", "--judge-only"])

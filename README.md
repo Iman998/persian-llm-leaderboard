@@ -115,22 +115,53 @@ If several ROUGE metrics are provided their scores are averaged.
 
 ## 🤖 LLM Judge Evaluation
 
-Some datasets use a second model to "judge" the quality of a candidate answer. Judge evaluation runs only when
-you pass `--judge` and the dataset's `meta.yaml` includes `judge: true`:
+Some datasets use a second model to judge candidate outputs. Judge evaluation
+runs only when you pass `--judge` and the dataset's `meta.yaml` enables it.
+The recommended form keeps the evaluator model and rubric with the dataset:
 
 ```yaml
-judge: true
+judge:
+  enabled: true
+  model: deepseek-chat-judge
+  evaluator: evaluators/judge_evaluator.py
+  reference_prompt_template: prompts/judge_zharfa_translation.jinja2
+  no_reference_prompt_template: prompts/judge_zharfa_translation_noref.jinja2
+  score_min: 0
+  score_max: 100
+  metrics: [llm_judge_score]
 ```
 
-Include the desired judge datasets in `run_all.sh`'s `DATASET_LIST` or call `scripts/run_eval.py` directly:
+`judge: true` is still accepted for older datasets, but it falls back to the
+candidate model unless `--judge-model` is supplied.
+
+Run Zharfa generation followed by its configured judge:
 
 ```bash
-python scripts/run_eval.py --model JUDGE_MODEL --judge \
-    --dataset data/summarization_quality/test.csv \
-    --evaluator evaluators/judge_evaluator.py \
-    --prompt prompts/judge_summarization_noref.jinja2 \
-    --out results/summarization_quality/JUDGE_MODEL/JUDGE_MODEL.csv
+python scripts/main.py \
+    --models CANDIDATE_MODEL \
+    --datasets zharfa_translate \
+    --judge
 ```
+
+To judge results that already exist without calling the candidate model again:
+
+```bash
+python scripts/main.py \
+    --models CANDIDATE_MODEL \
+    --datasets zharfa_translate \
+    --judge \
+    --judge-only \
+    --judge-mode both
+```
+
+`--judge-mode` accepts `reference`, `no-reference`, or `both`. Use
+`--judge-model MODEL_STUB` to override the dataset setting. Reference and
+no-reference results are written separately under
+`results/<dataset>_judge_reference/` and
+`results/<dataset>_judge_no_reference/`.
+
+The same options are available in `run_all.sh` through `RUN_JUDGE`,
+`JUDGE_ONLY`, `JUDGE_MODE`, and `JUDGE_MODEL`.
 
 Model configuration files in `models/` include the model name and base URL.
 You can also set optional request controls such as `enable_thinking` for reasoning-capable
@@ -140,6 +171,8 @@ variable or a `secrets.toml` file in the project root.
 
 Each model can also have its own key by setting `OPENAI_API_KEY_<MODEL>` or by
 listing the key under `[model_keys]` in `secrets.toml`.
+For the included `deepseek-chat-judge` configuration, use
+`OPENAI_API_KEY_DEEPSEEK_CHAT`.
 Example `secrets.toml`:
 
 ```toml

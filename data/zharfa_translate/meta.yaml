@@ -20,7 +20,15 @@ category_cols:
   
 
 evaluator: evaluators/zharfa_translation_evaluator.py
-judge: false
+judge:
+  enabled: true
+  model: deepseek-chat-judge
+  evaluator: evaluators/judge_evaluator.py
+  reference_prompt_template: prompts/judge_zharfa_translation.jinja2
+  no_reference_prompt_template: prompts/judge_zharfa_translation_noref.jinja2
+  score_min: 0
+  score_max: 100
+  metrics: [llm_judge_score]
 metrics: [bleu, meteor, chrf, ter]
 prompt_template: prompts/zharfa_translate.jinja2
 description: "Zharfa Translation multilingual benchmark with 36,572 examples across 30 directed language pairs"

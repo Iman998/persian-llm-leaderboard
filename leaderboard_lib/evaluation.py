@@ -143,22 +143,34 @@ def save_results(
     result_df.to_csv(out_path, index=False)
     print(f"✅  main results → {out_path}")
 
+    judge_score_breakdown = meta_cfg.get("metrics") == ["llm_judge_score"]
     for cat in meta_cfg.get("category_cols", []):
         if cat not in result_df.columns:
             print(f"⚠️  column '{cat}' missing – skipped")
             continue
 
         grouped_df = explode_tag_column(result_df, cat, keep_empty=True)
-        grouped_df["_correct"] = (
-            grouped_df["pred"].map(_norm) == grouped_df["Key"].map(_norm)
-        )
-        cat_df = (
-            grouped_df.groupby(cat, dropna=False)["_correct"]
-            .mean()
-            .mul(100)
-            .reset_index(name="Accuracy")
-            .sort_values(cat)
-        )
+        if judge_score_breakdown:
+            grouped_df["_score"] = pd.to_numeric(
+                grouped_df["pred"], errors="coerce"
+            )
+            cat_df = (
+                grouped_df.groupby(cat, dropna=False)["_score"]
+                .mean()
+                .reset_index(name="Score")
+                .sort_values(cat)
+            )
+        else:
+            grouped_df["_correct"] = (
+                grouped_df["pred"].map(_norm) == grouped_df["Key"].map(_norm)
+            )
+            cat_df = (
+                grouped_df.groupby(cat, dropna=False)["_correct"]
+                .mean()
+                .mul(100)
+                .reset_index(name="Accuracy")
+                .sort_values(cat)
+            )
 
         cat_file = out_path.with_name(f"{out_path.stem}_{cat}.csv")
         cat_df.to_csv(cat_file, index=False)

@@ -1,0 +1,7 @@
+name: deepseek-chat
+display_name: DeepSeek Chat (Judge)
+base_url: "https://api.avalapis.ir/v1"
+model: deepseek-chat
+model_type: Judge
+organization: DeepSeek
+license: Proprietary API
