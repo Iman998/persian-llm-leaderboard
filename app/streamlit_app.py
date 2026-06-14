@@ -31,6 +31,7 @@ for search_path in (ROOT_DIR, APP_DIR):
 from app.views import (
     leaderboard,
     battle,
+    league,
     dataset_view,
     llm_judge,
     translation_board,
@@ -60,6 +61,7 @@ st.sidebar.markdown(
 PAGE_MAP = {
     "Leaderboard": leaderboard.show,
     "Battle": battle.show,
+    "League": league.show,
     "Translation": translation_board.show,
     "Summarization": summarization_board.show,
     "Dataset explorer": dataset_view.show,

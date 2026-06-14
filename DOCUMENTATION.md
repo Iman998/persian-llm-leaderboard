@@ -183,6 +183,62 @@ results/battle/<dataset>/<model-1>__vs__<model-2>/battle.csv
 dashboard/battle_board.csv
 ```
 
+### Running Named Elo Leagues
+
+A league evaluates a pool of models over one or more generation datasets using
+existing result CSVs. Each match samples a small number of aligned rows, sends
+the pair to the configured battle judge, and updates both models' Elo ratings
+from their aggregate row score.
+
+```bash
+python scripts/main.py \
+    --league \
+    --league-only \
+    --league-name "Zharfa Generation League" \
+    --league-models MODEL_1,MODEL_2,MODEL_3 \
+    --league-datasets zharfa_translate \
+    --league-judge-model deepseek-chat-judge \
+    --league-matches 20 \
+    --league-rows-per-match 25 \
+    --league-k-factor 32 \
+    --league-calibration-games 2 \
+    --league-repeat-penalty 64 \
+    --league-seed 42
+```
+
+The league name is persistent. Reusing it continues the existing standings
+and history. A league's model list, dataset list, judge, row count, Elo
+settings, and sampling seed are saved in `league.yaml`; create a different
+league name when those settings should define a separate competition.
+
+The playing strategy is:
+
+1. During calibration, schedule the least-played models against opponents that
+   also need calibration games.
+2. After calibration, keep games balanced and prefer nearby Elo opponents.
+3. Add a configurable penalty for repeat pairings so one matchup does not
+   dominate the league.
+4. Choose the least-used common dataset for the pair, then the least-used
+   dataset across the league.
+5. Use a deterministic shuffled row rotation for each pair and dataset, which
+   covers new rows before cycling through the data again.
+
+Elo uses each match's row score:
+`(wins + 0.5 * equals) / evaluated_rows`. The dashboard reports Elo, games,
+match wins/losses/draws, row win/loss/equal rates, score rate, rating movement,
+and match history.
+
+```text
+results/league/<league-slug>/league.yaml
+results/league/<league-slug>/standings.csv
+results/league/<league-slug>/history.csv
+results/league/<league-slug>/matches/*.csv
+dashboard/league_board.csv
+```
+
+The same controls are available in the `Named Elo League configuration`
+section of `run_all.sh`.
+
 The judge model's YAML file defines the model name and `base_url`, and can
 optionally set `enable_thinking` for reasoning-capable models. Set
 `enable_thinking: false` to disable thinking mode (for example with Qwen 3.5),

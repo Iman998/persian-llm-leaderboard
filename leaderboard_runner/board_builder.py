@@ -92,3 +92,24 @@ def rebuild_leaderboard(*, dry_run: bool = False) -> None:
             logger.error("build_battle_board failed: %s", proc.stderr.strip())
             raise RuntimeError(f"Battle board build failed with code {proc.returncode}")
         logger.info("DONE Battle board updated -> %s", paths.BATTLE_OUT)
+
+    league_cmd = [
+        sys.executable,
+        paths.BUILD_LEAGUE_BOARD_SCRIPT,
+        "--results_dir",
+        paths.RESULTS_DIR,
+        "--models_dir",
+        paths.MODELS_DIR,
+        "--out",
+        paths.LEAGUE_OUT,
+    ]
+    if dry_run:
+        print(" ".join(map(str, league_cmd)))
+    else:
+        proc = subprocess.run(
+            [str(c) for c in league_cmd], capture_output=True, text=True
+        )
+        if proc.returncode != 0:
+            logger.error("build_league_board failed: %s", proc.stderr.strip())
+            raise RuntimeError(f"League board build failed with code {proc.returncode}")
+        logger.info("DONE League board updated -> %s", paths.LEAGUE_OUT)

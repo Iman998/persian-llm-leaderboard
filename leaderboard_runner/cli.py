@@ -11,6 +11,7 @@ from .battle_executor import run_battle
 from .board_builder import rebuild_leaderboard
 from .combo_executor import run_single_combo
 from .io_utils import parse_csv_or_file
+from .league_executor import run_league
 from .meta_utils import JUDGE_MODES
 
 
@@ -89,6 +90,74 @@ def build_parser() -> argparse.ArgumentParser:
         "--battle-judge-model",
         help="judge model stub for pairwise battles",
     )
+    p.add_argument(
+        "--league",
+        action="store_true",
+        help="run or continue a named sampled Elo league",
+    )
+    p.add_argument(
+        "--league-only",
+        action="store_true",
+        help="run the league without generating candidate outputs",
+    )
+    p.add_argument("--league-name", help="persistent name of the league")
+    p.add_argument(
+        "--league-models",
+        default=None,
+        help="CSV list or file path with league models; defaults to --models",
+    )
+    p.add_argument(
+        "--league-datasets",
+        default=None,
+        help="CSV list or file path with generation datasets; defaults to --datasets",
+    )
+    p.add_argument(
+        "--league-judge-model",
+        default=None,
+        help="judge model for a new league",
+    )
+    p.add_argument(
+        "--league-matches",
+        type=int,
+        default=10,
+        help="number of new matches to schedule",
+    )
+    p.add_argument(
+        "--league-rows-per-match",
+        type=int,
+        default=20,
+        help="sampled rows judged in each match",
+    )
+    p.add_argument(
+        "--league-k-factor",
+        type=float,
+        default=32.0,
+        help="Elo K-factor",
+    )
+    p.add_argument(
+        "--league-initial-elo",
+        type=float,
+        default=1000.0,
+        help="starting Elo for a new league",
+    )
+    p.add_argument(
+        "--league-calibration-games",
+        type=int,
+        default=2,
+        help="games per model before nearby-Elo matchmaking",
+    )
+    p.add_argument(
+        "--league-repeat-penalty",
+        type=float,
+        default=64.0,
+        help="rating-distance penalty for repeated pairs",
+    )
+    p.add_argument(
+        "--league-seed",
+        type=int,
+        default=42,
+        help="seed for deterministic row rotation",
+    )
     p.add_argument("--dry", action="store_true", help="print commands only")
     p.add_argument("--debug", action="store_true", help="verbose logging")
     return p
@@ -106,6 +175,21 @@ def _validate_args(parser: argparse.ArgumentParser, args: argparse.Namespace) ->
         parser.error("--judge-only requires --judge")
     if args.battle_only and not args.battle:
         parser.error("--battle-only requires --battle")
+    if args.league_only and not args.league:
+        parser.error("--league-only requires --league")
+    if args.league:
+        if not args.league_name or not args.league_name.strip():
+            parser.error("--league requires --league-name")
+        if args.league_matches <= 0:
+            parser.error("--league-matches must be a positive integer")
+        if args.league_rows_per_match <= 0:
+            parser.error("--league-rows-per-match must be a positive integer")
+        if args.league_k_factor <= 0:
+            parser.error("--league-k-factor must be positive")
+        if args.league_calibration_games < 0:
+            parser.error("--league-calibration-games cannot be negative")
+        if args.league_repeat_penalty < 0:
+            parser.error("--league-repeat-penalty cannot be negative")
 
 
 def main(argv: List[str] | None = None) -> None:
@@ -118,6 +202,8 @@ def main(argv: List[str] | None = None) -> None:
 
     models = parse_csv_or_file(args.models)
     datasets = parse_csv_or_file(args.datasets)
+    league_models = parse_csv_or_file(args.league_models or args.models)
+    league_datasets = parse_csv_or_file(args.league_datasets or args.datasets)
     battle_model_1 = args.battle_model_1
     battle_model_2 = args.battle_model_2
     if args.battle:
@@ -138,7 +224,7 @@ def main(argv: List[str] | None = None) -> None:
         "full" if args.n_rows is None else args.n_rows,
     )
 
-    if not args.battle_only:
+    if not args.battle_only and not args.league_only:
         for model in models:
             for ds in datasets:
                 run_single_combo(
@@ -165,5 +251,22 @@ def main(argv: List[str] | None = None) -> None:
                 workers=args.workers,
                 dry_run=args.dry,
             )
+
+    if args.league:
+        run_league(
+            name=args.league_name,
+            models=league_models,
+            datasets=league_datasets,
+            judge_model=args.league_judge_model,
+            matches=args.league_matches,
+            rows_per_match=args.league_rows_per_match,
+            workers=args.workers,
+            k_factor=args.league_k_factor,
+            initial_elo=args.league_initial_elo,
+            calibration_games=args.league_calibration_games,
+            repeat_penalty=args.league_repeat_penalty,
+            seed=args.league_seed,
+            dry_run=args.dry,
+        )
 
     rebuild_leaderboard(dry_run=args.dry)

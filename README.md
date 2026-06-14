@@ -16,6 +16,7 @@ This project provides an intuitive interface for comparing and benchmarking vari
 * **Interactive Quick Chart:** Use sliders to pick the metric, adjust the page size, and set the start index.
 * **Comprehensive Metrics:** Evaluate translations with BLEU, METEOR, chrF and 1‑TER.
 * **Pairwise Battle Board:** Compare two models with an independent judge and inspect win, loss, and equal rates.
+* **Named Elo Leagues:** Run persistent sampled tournaments with balanced matchmaking, Elo rankings, and rating history.
 * **Paginated Category Tables:** Category comparisons now support page controls just like row outputs.
 * **Refreshed Look:** Sidebar navigation with page icons and a red→yellow→green gradient highlights numeric columns.
 
@@ -202,6 +203,48 @@ summary table and comparison chart.
 
 `run_all.sh` exposes the same behavior through `RUN_BATTLE`, `BATTLE_ONLY`,
 `BATTLE_MODEL_1`, `BATTLE_MODEL_2`, and `BATTLE_JUDGE_MODEL`.
+
+## League Board
+
+The **League** board runs a persistent tournament across a list of models and
+generation datasets. It reuses existing candidate result CSVs, judges only a
+small deterministic sample per match, and updates Elo ratings from the
+row-level result: win = `1`, equal = `0.5`, loss = `0`.
+
+Create a named league:
+
+```bash
+python scripts/main.py \
+    --league \
+    --league-only \
+    --league-name "Zharfa Generation League" \
+    --league-models MODEL_1,MODEL_2,MODEL_3 \
+    --league-datasets zharfa_translate \
+    --league-judge-model deepseek-chat-judge \
+    --league-matches 20 \
+    --league-rows-per-match 25
+```
+
+Run the same command again to schedule more matches in the existing league.
+The scheduler first gives every model calibration games. It then anchors on
+the least-played models and prefers opponents with nearby Elo ratings, while
+penalizing repeated pairings. Dataset selection balances pair-level and
+league-wide usage. Within each model pair and dataset, rows follow a
+deterministically shuffled rotation so unseen rows are used before cycling.
+
+League state is stored under:
+
+```text
+results/league/<league-name>/league.yaml
+results/league/<league-name>/standings.csv
+results/league/<league-name>/history.csv
+results/league/<league-name>/matches/*.csv
+dashboard/league_board.csv
+```
+
+The Streamlit **League** page shows the current Elo ranking, row win/loss/equal
+rates, Elo progression, and recent matches. `run_all.sh` exposes all league
+settings in its `Named Elo League configuration` block.
 
 Model configuration files in `models/` include the model name and base URL.
 You can also set optional request controls such as `enable_thinking` for reasoning-capable

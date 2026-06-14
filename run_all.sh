@@ -53,6 +53,23 @@ BATTLE_ONLY=true
 BATTLE_MODEL_1="gemma-3-4b-it"
 BATTLE_MODEL_2="zharfa-mini"
 BATTLE_JUDGE_MODEL="deepseek-chat-judge"
+
+# Named Elo League configuration
+# League reuses existing generation result CSVs and samples only a small row
+# set per match. Re-running the same name continues its saved standings.
+RUN_LEAGUE=false
+LEAGUE_ONLY=true
+LEAGUE_NAME="zharfa-generation-league"
+LEAGUE_MODELS=( "gemma-3-4b-it" "zharfa-mini" )
+LEAGUE_DATASETS=( "zharfa_translate" )
+LEAGUE_JUDGE_MODEL="deepseek-chat-judge"
+LEAGUE_MATCHES=10
+LEAGUE_ROWS_PER_MATCH=20
+LEAGUE_K_FACTOR=32
+LEAGUE_INITIAL_ELO=1000
+LEAGUE_CALIBRATION_GAMES=2
+LEAGUE_REPEAT_PENALTY=64
+LEAGUE_SEED=42
 # ───────────────────────────────────────────────────────────────────── #
 
 #
@@ -60,6 +77,8 @@ BATTLE_JUDGE_MODEL="deepseek-chat-judge"
 #
 MODELS_CSV="$(IFS=,; echo "${MODELS[*]}")"
 DATASETS_CSV="$(IFS=,; echo "${DATASETS[*]}")"
+LEAGUE_MODELS_CSV="$(IFS=,; echo "${LEAGUE_MODELS[*]}")"
+LEAGUE_DATASETS_CSV="$(IFS=,; echo "${LEAGUE_DATASETS[*]}")"
 JUDGE_ARGS=()
 if [[ "${RUN_JUDGE}" == "true" ]]; then
   JUDGE_ARGS+=(--judge --judge-mode "${JUDGE_MODE}")
@@ -82,6 +101,26 @@ if [[ "${RUN_BATTLE}" == "true" ]]; then
     BATTLE_ARGS+=(--battle-only)
   fi
 fi
+LEAGUE_ARGS=()
+if [[ "${RUN_LEAGUE}" == "true" ]]; then
+  LEAGUE_ARGS+=(
+    --league
+    --league-name "${LEAGUE_NAME}"
+    --league-models "${LEAGUE_MODELS_CSV}"
+    --league-datasets "${LEAGUE_DATASETS_CSV}"
+    --league-judge-model "${LEAGUE_JUDGE_MODEL}"
+    --league-matches "${LEAGUE_MATCHES}"
+    --league-rows-per-match "${LEAGUE_ROWS_PER_MATCH}"
+    --league-k-factor "${LEAGUE_K_FACTOR}"
+    --league-initial-elo "${LEAGUE_INITIAL_ELO}"
+    --league-calibration-games "${LEAGUE_CALIBRATION_GAMES}"
+    --league-repeat-penalty "${LEAGUE_REPEAT_PENALTY}"
+    --league-seed "${LEAGUE_SEED}"
+  )
+  if [[ "${LEAGUE_ONLY}" == "true" ]]; then
+    LEAGUE_ARGS+=(--league-only)
+  fi
+fi
 
 #
 # Forward everything to the orchestrator.  If N_ROWS is set (non-empty),
@@ -95,4 +134,5 @@ python3 "${SCRIPT_DIR}/scripts/main.py" \
   -w "${WORKERS}" \
   "${JUDGE_ARGS[@]}" \
   "${BATTLE_ARGS[@]}" \
+  "${LEAGUE_ARGS[@]}" \
   "$@"

@@ -106,6 +106,63 @@ def _battle_config(
     }
 
 
+def load_battle_inputs(
+    *,
+    dataset: str,
+    model_1: str,
+    model_2: str,
+    n_rows: int | None = None,
+) -> tuple[pd.DataFrame, dict[str, Any]]:
+    """Return aligned existing outputs and dataset metadata for a matchup."""
+    meta_path = paths.DATASETS_DIR / dataset / "meta.yaml"
+    if not meta_path.exists():
+        raise FileNotFoundError(f"Dataset metadata missing: {meta_path}")
+    meta_cfg = yaml.safe_load(meta_path.read_text(encoding="utf-8")) or {}
+
+    model_1_path = _result_path(dataset, model_1, n_rows)
+    model_2_path = _result_path(dataset, model_2, n_rows)
+    for result_path in (model_1_path, model_2_path):
+        if not result_path.exists():
+            raise FileNotFoundError(f"Battle candidate result missing: {result_path}")
+
+    model_1_df, model_2_df = _align_results(
+        pd.read_csv(model_1_path),
+        pd.read_csv(model_2_path),
+        meta_cfg=meta_cfg,
+    )
+    battle_df = model_1_df.copy()
+    battle_df["model_1_output"] = model_1_df["pred"]
+    battle_df["model_2_output"] = model_2_df["pred"]
+    battle_df["model_1"] = model_1
+    battle_df["model_2"] = model_2
+    return battle_df, meta_cfg
+
+
+def build_battle_meta(
+    meta_cfg: dict[str, Any],
+    *,
+    model_1: str,
+    model_2: str,
+    use_reference: bool,
+) -> dict[str, Any]:
+    """Return temporary evaluator metadata for one pairwise match."""
+    battle_meta = meta_cfg.copy()
+    battle_meta.update(
+        {
+            "answer_col": meta_cfg.get("answer_col", "Key"),
+            "model_1_col": "model_1_output",
+            "model_2_col": "model_2_output",
+            "model_1_name": model_1,
+            "model_2_name": model_2,
+            "use_reference": use_reference,
+            "category_cols": [],
+            "metrics": [],
+            "battle": False,
+        }
+    )
+    return battle_meta
+
+
 def run_battle(
     *,
     dataset: str,
@@ -138,37 +195,19 @@ def run_battle(
     if not judge_model_path.exists():
         raise FileNotFoundError(f"Battle judge model missing: {judge_model_path}")
 
-    model_1_path = _result_path(dataset, model_1, n_rows)
-    model_2_path = _result_path(dataset, model_2, n_rows)
-    for result_path in (model_1_path, model_2_path):
-        if not result_path.exists():
-            raise FileNotFoundError(f"Battle candidate result missing: {result_path}")
-
-    model_1_df, model_2_df = _align_results(
-        pd.read_csv(model_1_path),
-        pd.read_csv(model_2_path),
-        meta_cfg=meta_cfg,
+    battle_df, _ = load_battle_inputs(
+        dataset=dataset,
+        model_1=model_1,
+        model_2=model_2,
+        n_rows=n_rows,
     )
-    battle_df = model_1_df.copy()
-    battle_df["model_1_output"] = model_1_df["pred"]
-    battle_df["model_2_output"] = model_2_df["pred"]
-    battle_df["model_1"] = model_1
-    battle_df["model_2"] = model_2
     battle_df["judge_model"] = config["model"]
 
-    battle_meta = meta_cfg.copy()
-    battle_meta.update(
-        {
-            "answer_col": meta_cfg.get("answer_col", "Key"),
-            "model_1_col": "model_1_output",
-            "model_2_col": "model_2_output",
-            "model_1_name": model_1,
-            "model_2_name": model_2,
-            "use_reference": config["use_reference"],
-            "category_cols": [],
-            "metrics": [],
-            "battle": False,
-        }
+    battle_meta = build_battle_meta(
+        meta_cfg,
+        model_1=model_1,
+        model_2=model_2,
+        use_reference=config["use_reference"],
     )
 
     safe_pair = re.sub(r"[^A-Za-z0-9_.-]+", "_", f"{model_1}__vs__{model_2}")
