@@ -16,6 +16,7 @@ LEADERBOARD_OUT = DASHBOARD_DIR / "leaderboard.csv"
 LEADERBOARD_FA_OUT = DASHBOARD_DIR / "leaderboard_fa.csv"
 LEADERBOARD_EN_OUT = DASHBOARD_DIR / "leaderboard_en.csv"
 LEADERBOARD_JUDGE_OUT = DASHBOARD_DIR / "llm_judge_board.csv"
+BATTLE_OUT = DASHBOARD_DIR / "battle_board.csv"
 TRANSLATION_OUT = DASHBOARD_DIR / "translation_leaderboard.csv"
 SUMMARIZATION_OUT = DASHBOARD_DIR / "summarization_leaderboard.csv"
 SUMMARIZATION_FA_OUT = DASHBOARD_DIR / "summarization_leaderboard_fa.csv"
@@ -24,6 +25,7 @@ SUMMARIZATION_EN_OUT = DASHBOARD_DIR / "summarization_leaderboard_en.csv"
 RUN_EVAL_SCRIPT = ROOT / "scripts" / "run_eval.py"
 BUILD_BOARD_SCRIPT = ROOT / "scripts" / "build_leaderboard.py"
 BUILD_JUDGE_BOARD_SCRIPT = ROOT / "scripts" / "build_llm_judge_board.py"
+BUILD_BATTLE_BOARD_SCRIPT = ROOT / "scripts" / "build_battle_board.py"
 
 __all__ = [
     "ROOT",
@@ -34,6 +36,7 @@ __all__ = [
     "LEADERBOARD_FA_OUT",
     "LEADERBOARD_EN_OUT",
     "LEADERBOARD_JUDGE_OUT",
+    "BATTLE_OUT",
     "TRANSLATION_OUT",
     "SUMMARIZATION_OUT",
     "SUMMARIZATION_FA_OUT",
@@ -41,4 +44,5 @@ __all__ = [
     "RUN_EVAL_SCRIPT",
     "BUILD_BOARD_SCRIPT",
     "BUILD_JUDGE_BOARD_SCRIPT",
+    "BUILD_BATTLE_BOARD_SCRIPT",
 ]

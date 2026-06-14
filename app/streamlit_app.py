@@ -30,6 +30,7 @@ for search_path in (ROOT_DIR, APP_DIR):
 # Now regular absolute imports work even when run as a script
 from app.views import (
     leaderboard,
+    battle,
     dataset_view,
     llm_judge,
     translation_board,
@@ -58,6 +59,7 @@ st.sidebar.markdown(
 
 PAGE_MAP = {
     "Leaderboard": leaderboard.show,
+    "Battle": battle.show,
     "Translation": translation_board.show,
     "Summarization": summarization_board.show,
     "Dataset explorer": dataset_view.show,

@@ -7,6 +7,7 @@ import logging
 import sys
 from typing import List
 
+from .battle_executor import run_battle
 from .board_builder import rebuild_leaderboard
 from .combo_executor import run_single_combo
 from .io_utils import parse_csv_or_file
@@ -72,6 +73,22 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="reuse an existing candidate result CSV without generating it again",
     )
+    p.add_argument(
+        "--battle",
+        action="store_true",
+        help="compare two models using their existing result CSVs",
+    )
+    p.add_argument(
+        "--battle-only",
+        action="store_true",
+        help="run battles without generating or judging candidate outputs",
+    )
+    p.add_argument("--battle-model-1", help="first model stub in the battle")
+    p.add_argument("--battle-model-2", help="second model stub in the battle")
+    p.add_argument(
+        "--battle-judge-model",
+        help="judge model stub for pairwise battles",
+    )
     p.add_argument("--dry", action="store_true", help="print commands only")
     p.add_argument("--debug", action="store_true", help="verbose logging")
     return p
@@ -87,6 +104,8 @@ def _validate_args(parser: argparse.ArgumentParser, args: argparse.Namespace) ->
         parser.error("--workers must be a positive integer")
     if args.judge_only and not args.judge:
         parser.error("--judge-only requires --judge")
+    if args.battle_only and not args.battle:
+        parser.error("--battle-only requires --battle")
 
 
 def main(argv: List[str] | None = None) -> None:
@@ -99,6 +118,18 @@ def main(argv: List[str] | None = None) -> None:
 
     models = parse_csv_or_file(args.models)
     datasets = parse_csv_or_file(args.datasets)
+    battle_model_1 = args.battle_model_1
+    battle_model_2 = args.battle_model_2
+    if args.battle:
+        if not battle_model_1 and models:
+            battle_model_1 = models[0]
+        if not battle_model_2 and len(models) > 1:
+            battle_model_2 = models[1]
+        if not battle_model_1 or not battle_model_2:
+            parser.error(
+                "--battle requires two models via --battle-model-1/2 "
+                "or the first two --models entries"
+            )
 
     logging.info(
         "workers=%d  shots=%d  sample=%s",
@@ -107,18 +138,31 @@ def main(argv: List[str] | None = None) -> None:
         "full" if args.n_rows is None else args.n_rows,
     )
 
-    for model in models:
-        for ds in datasets:
-            run_single_combo(
-                model=model,
-                dataset=ds,
+    if not args.battle_only:
+        for model in models:
+            for ds in datasets:
+                run_single_combo(
+                    model=model,
+                    dataset=ds,
+                    n_rows=args.n_rows,
+                    shots=args.shots,
+                    workers=args.workers,
+                    judge=args.judge,
+                    judge_model=args.judge_model,
+                    judge_mode=args.judge_mode,
+                    judge_only=args.judge_only,
+                    dry_run=args.dry,
+                )
+
+    if args.battle:
+        for dataset in datasets:
+            run_battle(
+                dataset=dataset,
+                model_1=battle_model_1,
+                model_2=battle_model_2,
+                judge_model=args.battle_judge_model,
                 n_rows=args.n_rows,
-                shots=args.shots,
                 workers=args.workers,
-                judge=args.judge,
-                judge_model=args.judge_model,
-                judge_mode=args.judge_mode,
-                judge_only=args.judge_only,
                 dry_run=args.dry,
             )
 

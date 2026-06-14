@@ -61,6 +61,18 @@ def test_rebuild_leaderboard_dry_run(capsys):
     ]
     expected.append(" ".join(map(str, judge_cmd)))
 
+    battle_cmd = [
+        sys.executable,
+        paths.BUILD_BATTLE_BOARD_SCRIPT,
+        "--results_dir",
+        paths.RESULTS_DIR,
+        "--models_dir",
+        paths.MODELS_DIR,
+        "--out",
+        paths.BATTLE_OUT,
+    ]
+    expected.append(" ".join(map(str, battle_cmd)))
+
     board_builder.rebuild_leaderboard(dry_run=True)
     captured = capsys.readouterr()
     assert captured.out.strip().splitlines() == expected

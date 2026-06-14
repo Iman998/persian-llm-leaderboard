@@ -148,6 +148,41 @@ The older `judge: true` form remains supported. Use
 stored by candidate model under `results/<dataset>_judge_reference/` and
 `results/<dataset>_judge_no_reference/`.
 
+### Running Pairwise Battles
+
+The Battle workflow compares two existing model outputs with a third model as
+judge. Candidate generation is never repeated by `--battle-only`.
+
+```yaml
+battle:
+  enabled: true
+  model: deepseek-chat-judge
+  evaluator: evaluators/battle_evaluator.py
+  prompt_template: prompts/battle.jinja2
+  use_reference: true
+```
+
+```bash
+python scripts/main.py \
+    --datasets zharfa_translate \
+    --battle \
+    --battle-only \
+    --battle-model-1 MODEL_1 \
+    --battle-model-2 MODEL_2 \
+    --battle-judge-model deepseek-chat-judge
+```
+
+Candidate order is deterministically counterbalanced to reduce position bias.
+Each row stores `model_1`, `model_2`, or `equal`, along with the winning model,
+judge reason, raw response, and presentation order. The aggregate Battle board
+reports both models' win and loss rates plus their shared equal rate for every
+dataset.
+
+```text
+results/battle/<dataset>/<model-1>__vs__<model-2>/battle.csv
+dashboard/battle_board.csv
+```
+
 The judge model's YAML file defines the model name and `base_url`, and can
 optionally set `enable_thinking` for reasoning-capable models. Set
 `enable_thinking: false` to disable thinking mode (for example with Qwen 3.5),

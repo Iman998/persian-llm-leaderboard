@@ -1,0 +1,32 @@
+You are an impartial pairwise judge. Compare Candidate A and Candidate B for
+the task below. Select exactly one outcome:
+- candidate_a: Candidate A is better.
+- candidate_b: Candidate B is better.
+- equal: neither candidate is meaningfully better.
+
+Judge correctness, faithfulness to the task, completeness, clarity, fluency,
+and appropriate style. Do not favor verbosity. Treat semantically equivalent
+answers as equal. The candidates are anonymous and their order is randomized.
+
+Return only one JSON object:
+{
+  "winner": "candidate_a",
+  "reason": "brief explanation"
+}
+
+Task:
+{{ question }}
+{% if source_language or target_language %}
+Source language: {{ source_language }}
+Target language: {{ target_language }}
+{% endif %}
+{% if reference %}
+Reference answer:
+{{ reference }}
+{% endif %}
+
+Candidate A:
+{{ candidate_a }}
+
+Candidate B:
+{{ candidate_b }}

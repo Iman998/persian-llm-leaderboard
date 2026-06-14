@@ -29,6 +29,12 @@ judge:
   score_min: 0
   score_max: 100
   metrics: [llm_judge_score]
+battle:
+  enabled: true
+  model: deepseek-chat-judge
+  evaluator: evaluators/battle_evaluator.py
+  prompt_template: prompts/battle.jinja2
+  use_reference: true
 metrics: [bleu, meteor, chrf, ter]
 prompt_template: prompts/zharfa_translate.jinja2
 description: "Zharfa Translation multilingual benchmark with 36,572 examples across 30 directed language pairs"

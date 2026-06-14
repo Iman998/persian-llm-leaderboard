@@ -35,6 +35,11 @@ def test_runner_cli_combinations(monkeypatch):
         judge_model=None,
         judge_mode="reference",
         judge_only=False,
+        battle=False,
+        battle_only=False,
+        battle_model_1=None,
+        battle_model_2=None,
+        battle_judge_model=None,
         dry=False,
         debug=False,
     )
@@ -62,3 +67,45 @@ def test_runner_cli_rejects_invalid_numeric_args(monkeypatch):
 
     with pytest.raises(SystemExit):
         cli.main(["-m", "m", "-d", "d", "--judge-only"])
+
+    with pytest.raises(SystemExit):
+        cli.main(["-m", "m", "-d", "d", "--battle-only"])
+
+    with pytest.raises(SystemExit):
+        cli.main(["-m", "m", "-d", "d", "--battle"])
+
+
+def test_runner_cli_battle_only_uses_configured_pair(monkeypatch):
+    from leaderboard_runner import cli
+
+    battle_mock = MagicMock()
+    rebuild_mock = MagicMock()
+    combo_mock = MagicMock()
+    monkeypatch.setattr(cli, "run_battle", battle_mock)
+    monkeypatch.setattr(cli, "run_single_combo", combo_mock)
+    monkeypatch.setattr(cli, "rebuild_leaderboard", rebuild_mock)
+
+    cli.main(
+        [
+            "-m",
+            "unused",
+            "-d",
+            "ds1,ds2",
+            "--battle",
+            "--battle-only",
+            "--battle-model-1",
+            "first",
+            "--battle-model-2",
+            "second",
+            "--battle-judge-model",
+            "judge",
+        ]
+    )
+
+    combo_mock.assert_not_called()
+    assert battle_mock.call_count == 2
+    assert {
+        (call.kwargs["dataset"], call.kwargs["model_1"], call.kwargs["model_2"])
+        for call in battle_mock.call_args_list
+    } == {("ds1", "first", "second"), ("ds2", "first", "second")}
+    rebuild_mock.assert_called_once_with(dry_run=False)

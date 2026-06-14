@@ -15,6 +15,7 @@ This project provides an intuitive interface for comparing and benchmarking vari
 * **User-friendly Interface:** Built with Streamlit for an intuitive, hassle-free experience.
 * **Interactive Quick Chart:** Use sliders to pick the metric, adjust the page size, and set the start index.
 * **Comprehensive Metrics:** Evaluate translations with BLEU, METEOR, chrF and 1‑TER.
+* **Pairwise Battle Board:** Compare two models with an independent judge and inspect win, loss, and equal rates.
 * **Paginated Category Tables:** Category comparisons now support page controls just like row outputs.
 * **Refreshed Look:** Sidebar navigation with page icons and a red→yellow→green gradient highlights numeric columns.
 
@@ -162,6 +163,45 @@ no-reference results are written separately under
 
 The same options are available in `run_all.sh` through `RUN_JUDGE`,
 `JUDGE_ONLY`, `JUDGE_MODE`, and `JUDGE_MODEL`.
+
+## Battle Board
+
+The **Battle** board compares two models row by row using an independent judge.
+It reuses existing result CSVs, presents the outputs anonymously as Candidate A
+and Candidate B, counterbalances their order, and records one of three outcomes:
+`model_1`, `model_2`, or `equal`.
+
+Configure a dataset for battles:
+
+```yaml
+battle:
+  enabled: true
+  model: deepseek-chat-judge
+  evaluator: evaluators/battle_evaluator.py
+  prompt_template: prompts/battle.jinja2
+  use_reference: true
+```
+
+Run a battle from existing outputs:
+
+```bash
+python scripts/main.py \
+    --datasets zharfa_translate \
+    --battle \
+    --battle-only \
+    --battle-model-1 MODEL_1 \
+    --battle-model-2 MODEL_2 \
+    --battle-judge-model deepseek-chat-judge
+```
+
+Row-level decisions are stored at
+`results/battle/<dataset>/<model-1>__vs__<model-2>/battle.csv`.
+The generated `dashboard/battle_board.csv` contains win, loss, and equal rates
+for both models on every dataset. The Streamlit **Battle** page displays the
+summary table and comparison chart.
+
+`run_all.sh` exposes the same behavior through `RUN_BATTLE`, `BATTLE_ONLY`,
+`BATTLE_MODEL_1`, `BATTLE_MODEL_2`, and `BATTLE_JUDGE_MODEL`.
 
 Model configuration files in `models/` include the model name and base URL.
 You can also set optional request controls such as `enable_thinking` for reasoning-capable

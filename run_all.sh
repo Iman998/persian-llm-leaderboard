@@ -45,6 +45,14 @@ RUN_JUDGE=true
 JUDGE_ONLY=true
 JUDGE_MODE="both"
 JUDGE_MODEL="deepseek-chat-judge"
+
+# Pairwise Battle configuration
+# Battle always consumes existing result CSVs for the two configured models.
+RUN_BATTLE=false
+BATTLE_ONLY=true
+BATTLE_MODEL_1="gemma-3-4b-it"
+BATTLE_MODEL_2="zharfa-mini"
+BATTLE_JUDGE_MODEL="deepseek-chat-judge"
 # ───────────────────────────────────────────────────────────────────── #
 
 #
@@ -62,6 +70,18 @@ if [[ "${RUN_JUDGE}" == "true" ]]; then
     JUDGE_ARGS+=(--judge-only)
   fi
 fi
+BATTLE_ARGS=()
+if [[ "${RUN_BATTLE}" == "true" ]]; then
+  BATTLE_ARGS+=(
+    --battle
+    --battle-model-1 "${BATTLE_MODEL_1}"
+    --battle-model-2 "${BATTLE_MODEL_2}"
+    --battle-judge-model "${BATTLE_JUDGE_MODEL}"
+  )
+  if [[ "${BATTLE_ONLY}" == "true" ]]; then
+    BATTLE_ARGS+=(--battle-only)
+  fi
+fi
 
 #
 # Forward everything to the orchestrator.  If N_ROWS is set (non-empty),
@@ -74,4 +94,5 @@ python3 "${SCRIPT_DIR}/scripts/main.py" \
   -s "${SHOTS}" \
   -w "${WORKERS}" \
   "${JUDGE_ARGS[@]}" \
+  "${BATTLE_ARGS[@]}" \
   "$@"
